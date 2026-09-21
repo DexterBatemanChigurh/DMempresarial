@@ -247,3 +247,48 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- Editor de texto rico (admin): mesma aparência do texto publicado ---------- */
+@layer components {
+  .rich-editor .ProseMirror {
+    @apply min-h-64 space-y-lg rounded-control border border-field-border bg-surface-raised p-md font-serif text-article text-text;
+  }
+  .rich-editor .ProseMirror h2 {
+    @apply pt-md font-serif text-article-h2 font-medium;
+  }
+  .rich-editor .ProseMirror h3 {
+    @apply pt-md font-serif text-h3 font-medium;
+  }
+  .rich-editor .ProseMirror h4 {
+    @apply pt-md font-sans text-h4 font-semibold;
+  }
+  .rich-editor .ProseMirror ul {
+    @apply list-disc space-y-xs pl-lg;
+  }
+  .rich-editor .ProseMirror ol {
+    @apply list-decimal space-y-xs pl-lg;
+  }
+  .rich-editor .ProseMirror blockquote {
+    @apply space-y-md border-l-[3px] border-link pl-lg font-serif text-h3 italic;
+  }
+  .rich-editor .ProseMirror aside[data-callout] {
+    @apply space-y-md border-l-[3px] border-link bg-surface-muted px-lg py-md;
+  }
+  .rich-editor .ProseMirror aside[data-callout]::before {
+    content: "Aplicação na empresa";
+    @apply block font-sans text-label font-semibold tracking-[0.04em] text-text-secondary uppercase;
+  }
+  .rich-editor .ProseMirror a {
+    @apply text-link underline decoration-1 underline-offset-[3px];
+  }
+  .rich-editor .ProseMirror hr {
+    @apply border-border;
+  }
+  .rich-editor .ProseMirror figure.rich-image {
+    @apply border border-dashed border-border p-md font-sans text-caption text-text-secondary;
+  }
+  .rich-editor .ProseMirror .ProseMirror-selectednode {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
