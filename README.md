@@ -6,6 +6,13 @@ institucional, soluções, especialistas, blog editorial e geração de leads.
 > Estado: **Fase 1 (fundação) concluída.** Ainda não há páginas públicas, banco modelado nem CMS.
 > Este README descreve apenas o que existe.
 
+## Documentação de produto e design
+
+- [Product + UX Blueprint](docs/01-product-ux-blueprint.md): arquitetura de informação, jornadas, regras de publicação, lacunas e decisões pendentes.
+- [Design System Blueprint](docs/02-design-system-blueprint.md): direção visual, tipografia, cores (com contraste medido), componentes e motion.
+- [Engineering Architecture Blueprint](docs/03-engineering-architecture-blueprint.md): arquitetura técnica, modelo de dados, segurança, cache, CMS, decisões e roadmap.
+- [Project Audit e plano](docs/04-project-audit-and-plan.md): estado real do repositório, classificação (keep/refactor/replace/create), conflitos, riscos e ordem de implementação.
+
 ## Requisitos
 
 - Node.js 24 (`.nvmrc`), npm 11
