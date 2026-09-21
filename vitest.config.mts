@@ -14,7 +14,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts", "tests/**/*.test.ts"],
+    include: ["src/**/*.test.{ts,tsx}", "tests/**/*.test.{ts,tsx}"],
     // Integração usa Postgres real: `npm run test:integration`.
     exclude: [...configDefaults.exclude, "tests/integration/**"],
   },
