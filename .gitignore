@@ -1,0 +1,23 @@
+# dependências e build
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# segredos e ambiente local (NUNCA versionar)
+.env
+.env.*
+!.env.example
+
+# testes e ferramentas
+playwright-report/
+test-results/
+.vercel/
+
+# sistema/editor
+.DS_Store
+.idea/
+*.log
+npm-debug.log*

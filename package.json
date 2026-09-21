@@ -1,0 +1,45 @@
+{
+  "name": "dm-empresarial",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plataforma digital de autoridade da DM Empresarial",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "db:up": "docker compose --env-file .env.local up -d --wait db",
+    "db:down": "docker compose --env-file .env.local down",
+    "db:check": "node --env-file=.env.local scripts/db-check.mts"
+  },
+  "dependencies": {
+    "next": "16.3.5",
+    "pg": "8.23.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "0.0.1",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "24.13.6",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.5",
+    "prettier": "3.9.8",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3",
+    "vitest": "5.0.1"
+  }
+}

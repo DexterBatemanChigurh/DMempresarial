@@ -1,0 +1,25 @@
+# Banco local da DM Empresarial.
+# Container e volume próprios; porta 5433 (a 5432 pertence a outro projeto).
+name: dm-empresarial
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: dm_empresarial_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dm_owner
+      POSTGRES_PASSWORD: ${DM_DB_PASSWORD:?defina DM_DB_PASSWORD em .env.local}
+      POSTGRES_DB: dm_empresarial
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - dm_empresarial_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dm_owner -d dm_empresarial"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  dm_empresarial_pgdata:
