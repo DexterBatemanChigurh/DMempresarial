@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { EnvError, parseEnv } from "./env";
 
+const SECRET = "s".repeat(32);
+
 describe("parseEnv", () => {
   it("usa padrões seguros em desenvolvimento", () => {
     const env = parseEnv({});
@@ -28,13 +30,21 @@ describe("parseEnv", () => {
       parseEnv({ APP_ENV: "production", SITE_URL: "http://exemplo.test", DATABASE_URL: "x" }),
     ).toThrow(/https/);
     expect(
-      parseEnv({ APP_ENV: "production", SITE_URL: "https://exemplo.test", DATABASE_URL: "x" })
-        .APP_ENV,
+      parseEnv({
+        APP_ENV: "production",
+        SITE_URL: "https://exemplo.test",
+        DATABASE_URL: "x",
+        BETTER_AUTH_SECRET: SECRET,
+      }).APP_ENV,
     ).toBe("production");
   });
 
   it("em production exige a URL do role de aplicação, não a do dono do banco", () => {
-    const base = { APP_ENV: "production", SITE_URL: "https://exemplo.test" };
+    const base = {
+      APP_ENV: "production",
+      SITE_URL: "https://exemplo.test",
+      BETTER_AUTH_SECRET: SECRET,
+    };
     // Só a URL do dono do banco não basta: o runtime não deve operar com privilégio de DDL.
     expect(() => parseEnv({ ...base, DATABASE_URL_ADMIN: "x" })).toThrow(/DATABASE_URL:/);
     // O runtime de produção não precisa (nem deve) receber a URL do dono.
@@ -47,6 +57,34 @@ describe("parseEnv", () => {
     expect(parseEnv({ NODE_ENV: "production", APP_ENV: "staging" }).APP_ENV).toBe("staging");
     // Fora de production o padrão continua valendo.
     expect(parseEnv({ NODE_ENV: "development" }).APP_ENV).toBe("development");
+  });
+
+  it("em production exige o segredo de sessão, com pelo menos 32 caracteres", () => {
+    const base = {
+      APP_ENV: "production",
+      SITE_URL: "https://exemplo.test",
+      DATABASE_URL: "x",
+    };
+    expect(() => parseEnv(base)).toThrow(/BETTER_AUTH_SECRET/);
+    expect(() => parseEnv({ ...base, BETTER_AUTH_SECRET: "curto" })).toThrow(/BETTER_AUTH_SECRET/);
+    expect(parseEnv({ ...base, BETTER_AUTH_SECRET: SECRET }).BETTER_AUTH_SECRET).toBe(SECRET);
+  });
+
+  it("BETTER_AUTH_URL cai em SITE_URL quando ausente e o segredo nunca aparece em erro", () => {
+    expect(parseEnv({ SITE_URL: "https://exemplo.test/" }).BETTER_AUTH_URL).toBe(
+      "https://exemplo.test",
+    );
+    expect(parseEnv({ BETTER_AUTH_URL: "https://auth.exemplo.test/" }).BETTER_AUTH_URL).toBe(
+      "https://auth.exemplo.test",
+    );
+    let message = "";
+    try {
+      parseEnv({ BETTER_AUTH_SECRET: "muito-curto-segredo" });
+    } catch (error) {
+      message = (error as Error).message;
+    }
+    expect(message).toContain("BETTER_AUTH_SECRET");
+    expect(message).not.toContain("muito-curto-segredo");
   });
 
   it("rejeita ambiente e nível de log desconhecidos", () => {

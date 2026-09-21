@@ -224,3 +224,14 @@ O Prompt 4 §7 exige parar depois da auditoria. Respostas recebidas em 21/09/202
 **Autorizado e em execução:** passos 0 a 3 (commits, banco e roles, autenticação esqueleto, Design System). **Parada obrigatória** antes do passo 4 (schema completo e domínio).
 
 **Continuam adiadas** (não bloqueiam os passos 0 a 3): T-01/T-02 (deploy e Postgres gerenciado), T-03 (storage), T-04 (quem vê leads), T-05 (2FA), T-06/T-07 (jurídico), T-11 (domínio de e-mail).
+
+### Progresso da execução (21/09/2026)
+
+| Passo | Estado | O que ficou pronto e verificado                                                                                                                                                         |
+| ----- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | ✔      | 4 commits do trabalho pendente                                                                                                                                                          |
+| 1     | ✔      | Drizzle + cliente em `src/db`, role `dm_app` sem DDL (com autocorreção de privilégios), migrations, logger lendo o nível via `env()`, 9 testes de integração em Postgres real           |
+| 2     | ✔      | Better Auth (cadastro fechado, sessão em banco, scrypt), schema e migration de auth, guarda de origem contra login CSRF, `can()` com matriz testada (75 casos), 22 testes de integração |
+| 3     | —      | Design System (próximo)                                                                                                                                                                 |
+
+Achados durante a execução (todos corrigidos e cobertos por teste): bootstrap não retirava privilégio excedente; ADMIN conseguia excluir artigo já publicado na política inicial; a biblioteca de auth desliga a checagem de origem em `NODE_ENV=test` e não valida origem em login sem cookie (login CSRF).

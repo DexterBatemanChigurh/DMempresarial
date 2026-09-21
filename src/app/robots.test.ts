@@ -6,6 +6,7 @@ async function robotsFor(appEnv: string) {
   if (appEnv === "production") {
     vi.stubEnv("SITE_URL", "https://exemplo.test");
     vi.stubEnv("DATABASE_URL", "postgres://x");
+    vi.stubEnv("BETTER_AUTH_SECRET", "s".repeat(32));
   }
   const mod = await import("./robots");
   return mod.default();

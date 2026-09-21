@@ -22,7 +22,7 @@ institucional, soluções, especialistas, blog editorial e geração de leads.
 
 ```bash
 npm install
-cp .env.example .env.local     # preencha DM_DB_PASSWORD e DATABASE_URL_ADMIN
+cp .env.example .env.local     # preencha as senhas e o BETTER_AUTH_SECRET (openssl rand -hex 32)
 npm run db:up                  # Postgres 17 em 127.0.0.1:5433 (container dm_empresarial_db)
 npm run db:setup               # cria o role dm_app (sem DDL) e aplica as migrations
 npm run db:check               # confirma a conexão

@@ -16,6 +16,10 @@ const rawSchema = z.object({
   DATABASE_URL: z.string().min(1).optional(),
   // Dono do banco: só migrations/bootstrap. A aplicação em runtime não deve recebê-la.
   DATABASE_URL_ADMIN: z.string().min(1).optional(),
+  // Segredo de assinatura das sessões (mínimo de 32 caracteres). Obrigatório em production.
+  BETTER_AUTH_SECRET: z.string().min(32).optional(),
+  // URL base da autenticação; se ausente, usa SITE_URL.
+  BETTER_AUTH_URL: z.url().optional(),
 });
 
 export type Env = {
@@ -24,6 +28,8 @@ export type Env = {
   LOG_LEVEL: (typeof LOG_LEVELS)[number];
   DATABASE_URL: string | undefined;
   DATABASE_URL_ADMIN: string | undefined;
+  BETTER_AUTH_SECRET: string | undefined;
+  BETTER_AUTH_URL: string;
 };
 
 export class EnvError extends Error {
@@ -61,15 +67,20 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     else if (!value.SITE_URL.startsWith("https://"))
       problems.push("SITE_URL: deve usar https em production");
     if (!value.DATABASE_URL) problems.push("DATABASE_URL: obrigatório em production");
+    if (!value.BETTER_AUTH_SECRET) problems.push("BETTER_AUTH_SECRET: obrigatório em production");
     if (problems.length > 0) throw new EnvError(problems);
   }
 
+  const siteUrl = (value.SITE_URL ?? LOCAL_SITE_URL).replace(/\/+$/, "");
+
   return {
     APP_ENV: value.APP_ENV,
-    SITE_URL: (value.SITE_URL ?? LOCAL_SITE_URL).replace(/\/+$/, ""),
+    SITE_URL: siteUrl,
     LOG_LEVEL: value.LOG_LEVEL,
     DATABASE_URL: value.DATABASE_URL,
     DATABASE_URL_ADMIN: value.DATABASE_URL_ADMIN,
+    BETTER_AUTH_SECRET: value.BETTER_AUTH_SECRET,
+    BETTER_AUTH_URL: (value.BETTER_AUTH_URL ?? siteUrl).replace(/\/+$/, ""),
   };
 }
 
