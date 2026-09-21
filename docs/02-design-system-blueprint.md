@@ -132,7 +132,7 @@ Padding horizontal = margem lateral da tabela anterior. Alinhamento à esquerda;
 | IBM Plex Sans  | Conotação técnica/tecnológica                                                 |
 | Hanken Grotesk | Boa, mas genérica frente à Instrument Sans                                    |
 
-**Regra para implementação:** carregar as duas por self-hosting do framework (sem requisição a terceiros), com troca segura (`swap`), apenas Newsreader (normal + itálico) e Instrument Sans (normal): **3 arquivos variáveis**. Meta de orçamento de fontes: ≲ 150 KB no total (**a medir** na implementação). Itálico só para ênfase e citação. Texto corrido longo (artigo, biografia) em Newsreader; textos curtos de apoio em Instrument Sans.
+**Regra para implementação:** carregar as duas por self-hosting do framework (sem requisição a terceiros), com troca segura (`swap`), apenas Newsreader (normal + itálico) e Instrument Sans (normal): **3 arquivos variáveis**. Orçamento de fontes: ≲ 150 KB no total. **Medido na implementação (21/09/2026):** com o eixo `opsz`, a Newsreader (normal + itálico, subconjunto latino) pesa 272 KB; **sem `opsz`, 120 KB** (+ 29 KB da Instrument Sans = **149 KB**, dentro do orçamento). **Decisão: sem `opsz`.** O que se perde é o corte óptico mais refinado nos títulos muito grandes; a hierarquia, a leitura e o caráter da fonte se mantêm. Reavaliar só se a revisão visual com a DM exigir. Itálico só para ênfase e citação. Texto corrido longo (artigo, biografia) em Newsreader; textos curtos de apoio em Instrument Sans.
 
 ## 08. Escala tipográfica
 
@@ -622,3 +622,11 @@ Neon, cyberpunk, glassmorphism, gradiente genérico, blobs, 3D gratuito, sombras
 | Como se diferencia de um template? | Paleta e tipografia próprias, composição assimétrica, linha em vez de caixa, e regra rígida de dado e foto reais              |
 
 **Pendências para sair do papel:** L-02 (marca), L-10 (fotografia) e validação dos valores de cor/fonte em tela real com a DM. **Qualquer ajuste de matiz exige recalcular a tabela de contraste da seção 10.**
+
+---
+
+## Estado da implementação (21/09/2026)
+
+Implementado e verificado (fase 2 do plano): tokens de cor, tipografia fluida, espaçamento, raio, sombra, containers, breakpoints e movimento em `src/app/globals.css`; fontes Newsreader e Instrument Sans (sem `opsz`, 149 KB); primitivos em `src/components/ui`; página de referência em `/design-system` (indisponível em produção). Os pares de contraste da seção 10 são **testados contra os valores reais do CSS** (`tests/design-tokens.test.ts`), inclusive o que cada faixa de tom resolve, e o teste falha se uma cor sair dos tokens.
+
+Decisões da implementação: (1) as cores padrão do Tailwind foram desligadas, existe só a paleta da marca; (2) o Tailwind mantém os utilitários numéricos de espaçamento (`p-4`, `h-12`); a regra é usar a escala nomeada para espaçamento de layout e os numéricos só para dimensões de controle (revisão de código, sem lint); (3) `Figure`, Header, Footer e MobileMenu ficam para a fase de páginas públicas, quando houver imagem real, marca e conteúdo.
