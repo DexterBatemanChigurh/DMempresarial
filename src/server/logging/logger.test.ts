@@ -92,4 +92,28 @@ describe("redact", () => {
     for (let i = 0; i < 20; i++) deep = { filho: deep };
     expect(JSON.stringify(redact(deep))).toContain("[truncated]");
   });
+
+  it("avalia o nível a cada evento quando ele é uma função (leitura tardia da configuração)", () => {
+    let level: LogLevel = "error";
+    const lines: string[] = [];
+    const logger = createLogger({ level: () => level, sink: (_l, line) => lines.push(line) });
+    logger.info("antes");
+    level = "info";
+    logger.info("depois");
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain("depois");
+  });
+
+  it("logger filho herda a função de nível", () => {
+    let level: LogLevel = "warn";
+    const lines: string[] = [];
+    const child = createLogger({ level: () => level, sink: (_l, line) => lines.push(line) }).child({
+      module: "x",
+    });
+    child.info("i");
+    level = "debug";
+    child.debug("d");
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('"module":"x"');
+  });
 });

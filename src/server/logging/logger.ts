@@ -1,6 +1,9 @@
+import "server-only";
+import { env } from "@/server/env";
+
 /**
- * Logger estruturado (uma linha JSON por evento) com redação de segredos (Prompt 3, §29).
- * É o único lugar autorizado a usar `console`. Sem dependências.
+ * Logger estruturado (uma linha JSON por evento) com redação de segredos (docs/03, parte 29).
+ * É o único lugar autorizado a usar `console`. Só depende de `server/env` (para o nível).
  */
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
@@ -66,20 +69,22 @@ const consoleSink: Sink = (level, line) => {
 };
 
 type CreateLoggerOptions = {
-  level?: LogLevel;
+  /** Nível fixo, ou função avaliada a cada evento (permite ler a configuração só quando usada). */
+  level?: LogLevel | (() => LogLevel);
   bindings?: LogFields;
   sink?: Sink;
   now?: () => Date;
 };
 
 export function createLogger(options: CreateLoggerOptions = {}): Logger {
-  const level = options.level ?? "info";
+  const levelOption = options.level ?? "info";
+  const currentLevel = () => (typeof levelOption === "function" ? levelOption() : levelOption);
   const bindings = options.bindings ?? {};
   const sink = options.sink ?? consoleSink;
   const now = options.now ?? (() => new Date());
 
   function write(at: LogLevel, message: string, fields?: LogFields) {
-    if (ORDER[at] < ORDER[level]) return;
+    if (ORDER[at] < ORDER[currentLevel()]) return;
     const entry = {
       ...(redact(bindings) as LogFields),
       ...(fields ? (redact(fields) as LogFields) : {}),
@@ -95,15 +100,20 @@ export function createLogger(options: CreateLoggerOptions = {}): Logger {
     info: (message, fields) => write("info", message, fields),
     warn: (message, fields) => write("warn", message, fields),
     error: (message, fields) => write("error", message, fields),
-    child: (extra) => createLogger({ level, bindings: { ...bindings, ...extra }, sink, now }),
+    child: (extra) =>
+      createLogger({ level: levelOption, bindings: { ...bindings, ...extra }, sink, now }),
   };
 }
 
-function levelFromEnv(value: string | undefined): LogLevel {
-  return value === "debug" || value === "info" || value === "warn" || value === "error"
-    ? value
-    : "info";
+/** Nível vindo de `LOG_LEVEL` (validado em `server/env`). Se a configuração for inválida, não
+ * quebra o log: cai em "info" (o erro de configuração aparece onde `env()` é chamado). */
+function levelFromEnv(): LogLevel {
+  try {
+    return env().LOG_LEVEL;
+  } catch {
+    return "info";
+  }
 }
 
-/** Logger padrão da aplicação. O nível vem de LOG_LEVEL (validado em `server/env`). */
-export const logger: Logger = createLogger({ level: levelFromEnv(process.env.LOG_LEVEL) });
+/** Logger padrão da aplicação. O nível é lido na primeira vez em que um evento é emitido. */
+export const logger: Logger = createLogger({ level: levelFromEnv });
