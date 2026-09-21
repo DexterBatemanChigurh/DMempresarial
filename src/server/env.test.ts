@@ -87,6 +87,22 @@ describe("parseEnv", () => {
     expect(message).not.toContain("muito-curto-segredo");
   });
 
+  it("2FA obrigatório por padrão; só pode ser desligado fora de production", () => {
+    expect(parseEnv({}).REQUIRE_2FA).toBe(true);
+    expect(parseEnv({ REQUIRE_2FA: "false" }).REQUIRE_2FA).toBe(false);
+    expect(parseEnv({ REQUIRE_2FA: "true" }).REQUIRE_2FA).toBe(true);
+    expect(() => parseEnv({ REQUIRE_2FA: "talvez" })).toThrow(EnvError);
+
+    const production = {
+      APP_ENV: "production",
+      SITE_URL: "https://exemplo.test",
+      DATABASE_URL: "x",
+      BETTER_AUTH_SECRET: SECRET,
+    };
+    expect(parseEnv(production).REQUIRE_2FA).toBe(true);
+    expect(() => parseEnv({ ...production, REQUIRE_2FA: "false" })).toThrow(/REQUIRE_2FA/);
+  });
+
   it("rejeita ambiente e nível de log desconhecidos", () => {
     expect(() => parseEnv({ APP_ENV: "producao" })).toThrow(EnvError);
     expect(() => parseEnv({ LOG_LEVEL: "verbose" })).toThrow(EnvError);

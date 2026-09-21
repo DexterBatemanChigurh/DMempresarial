@@ -41,6 +41,8 @@ export const users = pgTable("users", {
   role: userRole("role").default("AUTHOR").notNull(),
   // Conta desativada: preserva autoria e auditoria; a sessão deixa de valer (ver actor.ts).
   disabledAt: timestamp("disabled_at", { withTimezone: true }),
+  // 2FA por TOTP (plugin da biblioteca). ADMIN e EDITOR precisam tê-lo ativo para usar o painel.
+  twoFactorEnabled: boolean("two_factor_enabled").default(false).notNull(),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
@@ -101,6 +103,27 @@ export const verifications = pgTable(
   (table) => [index("verifications_identifier_idx").on(table.identifier)],
 );
 
+/**
+ * Segundo fator (TOTP). O segredo e os códigos de backup são guardados CIFRADOS pela biblioteca
+ * com o BETTER_AUTH_SECRET; nunca são devolvidos pela API depois do cadastro.
+ */
+export const twoFactors = pgTable(
+  "two_factors",
+  {
+    id: text("id").primaryKey(),
+    secret: text("secret").notNull(),
+    backupCodes: text("backup_codes").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // Falso até o usuário provar que configurou o app (primeiro código válido).
+    verified: boolean("verified").default(true),
+    failedVerificationCount: integer("failed_verification_count").default(0),
+    lockedUntil: timestamp("locked_until", { withTimezone: true }),
+  },
+  (table) => [index("two_factors_user_id_idx").on(table.userId)],
+);
+
 // Contadores do rate limit do LOGIN (biblioteca de auth). O limitador dos formulários públicos
 // terá tabela própria (`rate_limits`), com outro formato.
 export const authRateLimits = pgTable("auth_rate_limits", {
@@ -113,6 +136,7 @@ export const authRateLimits = pgTable("auth_rate_limits", {
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
+  twoFactors: many(twoFactors),
 }));
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, { fields: [sessions.userId], references: [users.id] }),

@@ -20,6 +20,8 @@ const rawSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(32).optional(),
   // URL base da autenticação; se ausente, usa SITE_URL.
   BETTER_AUTH_URL: z.url().optional(),
+  // 2FA obrigatório para ADMIN e EDITOR. Padrão: ligado. Só desligue em desenvolvimento local.
+  REQUIRE_2FA: z.enum(["true", "false"]).default("true"),
 });
 
 export type Env = {
@@ -30,6 +32,7 @@ export type Env = {
   DATABASE_URL_ADMIN: string | undefined;
   BETTER_AUTH_SECRET: string | undefined;
   BETTER_AUTH_URL: string;
+  REQUIRE_2FA: boolean;
 };
 
 export class EnvError extends Error {
@@ -68,6 +71,9 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
       problems.push("SITE_URL: deve usar https em production");
     if (!value.DATABASE_URL) problems.push("DATABASE_URL: obrigatório em production");
     if (!value.BETTER_AUTH_SECRET) problems.push("BETTER_AUTH_SECRET: obrigatório em production");
+    // Em produção o 2FA não pode ser desligado por configuração (decisão T-05).
+    if (value.REQUIRE_2FA === "false")
+      problems.push("REQUIRE_2FA: não pode ser false em production");
     if (problems.length > 0) throw new EnvError(problems);
   }
 
@@ -81,6 +87,7 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     DATABASE_URL_ADMIN: value.DATABASE_URL_ADMIN,
     BETTER_AUTH_SECRET: value.BETTER_AUTH_SECRET,
     BETTER_AUTH_URL: (value.BETTER_AUTH_URL ?? siteUrl).replace(/\/+$/, ""),
+    REQUIRE_2FA: value.REQUIRE_2FA === "true",
   };
 }
 

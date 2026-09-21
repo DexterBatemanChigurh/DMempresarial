@@ -2,6 +2,7 @@ import "server-only";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
+import { twoFactor } from "better-auth/plugins/two-factor";
 import { getDb, type Database } from "@/db/client";
 import * as schema from "@/db/schema";
 import { AppError } from "@/lib/errors";
@@ -37,6 +38,7 @@ export function createAuth({ db, secret, baseURL }: AuthDeps) {
         account: schema.accounts,
         verification: schema.verifications,
         rateLimit: schema.authRateLimits,
+        twoFactor: schema.twoFactors,
       },
     }),
     emailAndPassword: {
@@ -88,8 +90,12 @@ export function createAuth({ db, secret, baseURL }: AuthDeps) {
         else log.warn(message);
       },
     },
-    // nextCookies deve ser o ÚLTIMO plugin (permite definir cookies em Server Actions).
-    plugins: [nextCookies()],
+    plugins: [
+      // 2FA por TOTP (app autenticador) + códigos de backup. O segredo fica cifrado no banco.
+      twoFactor({ issuer: "DM Empresarial" }),
+      // nextCookies deve ser o ÚLTIMO plugin (permite definir cookies em Server Actions).
+      nextCookies(),
+    ],
   });
 }
 
