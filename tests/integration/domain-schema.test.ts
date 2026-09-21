@@ -122,12 +122,13 @@ describe("relacionamentos e integridade referencial", () => {
     const category = await fx.category();
     const author = await fx.specialist();
     await fx.post({ authorId: author.id, categoryId: category.id });
-    expect(await code(() => q("delete from categories where id = $1", [category.id]))).toBe(
-      SQLSTATE.foreignKey,
+    // PG 17 responde 23503 e PG 18 responde 23001: ambos significam "exclusão recusada".
+    const refusedCategory = await code(() =>
+      q("delete from categories where id = $1", [category.id]),
     );
-    expect(await code(() => q("delete from specialists where id = $1", [author.id]))).toBe(
-      SQLSTATE.foreignKey,
-    );
+    const refusedAuthor = await code(() => q("delete from specialists where id = $1", [author.id]));
+    expect(SQLSTATE.foreignKey).toContain(refusedCategory);
+    expect(SQLSTATE.foreignKey).toContain(refusedAuthor);
   });
 
   it("apagar o artigo leva junto categorias, tags e soluções vinculadas (CASCADE)", async () => {

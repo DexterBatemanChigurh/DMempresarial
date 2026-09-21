@@ -180,6 +180,11 @@ export async function pgErrorCode(run: () => Promise<unknown>): Promise<string |
 export const SQLSTATE = {
   unique: "23505",
   check: "23514",
-  foreignKey: "23503",
+  /**
+   * Recusa por chave estrangeira. O PostgreSQL 17 responde 23503 (foreign_key_violation) e o 18
+   * responde 23001 (restrict_violation) para `ON DELETE RESTRICT`. O comportamento é o mesmo (a
+   * exclusão é recusada); código de aplicação que traduza este erro deve aceitar os dois.
+   */
+  foreignKey: ["23503", "23001"],
   insufficientPrivilege: "42501",
 } as const;
