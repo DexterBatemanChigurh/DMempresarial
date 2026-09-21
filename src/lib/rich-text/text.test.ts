@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractPlainText, isEmptyRichText, readingMinutes } from "./rich-text";
+import { extractPlainText, isEmptyRichText, readingMinutes } from "./text";
 
 const doc = (...content: unknown[]) => ({ type: "doc", content });
 const p = (text: string) => ({ type: "paragraph", content: [{ type: "text", text }] });
