@@ -32,6 +32,14 @@ describe("parseEnv", () => {
     ).toBe("production");
   });
 
+  it("com NODE_ENV=production exige APP_ENV explícito (não cai no padrão development)", () => {
+    expect(() => parseEnv({ NODE_ENV: "production" })).toThrow(/APP_ENV/);
+    expect(() => parseEnv({ NODE_ENV: "production", APP_ENV: "" })).toThrow(/APP_ENV/);
+    expect(parseEnv({ NODE_ENV: "production", APP_ENV: "staging" }).APP_ENV).toBe("staging");
+    // Fora de production o padrão continua valendo.
+    expect(parseEnv({ NODE_ENV: "development" }).APP_ENV).toBe("development");
+  });
+
   it("rejeita ambiente e nível de log desconhecidos", () => {
     expect(() => parseEnv({ APP_ENV: "producao" })).toThrow(EnvError);
     expect(() => parseEnv({ LOG_LEVEL: "verbose" })).toThrow(EnvError);

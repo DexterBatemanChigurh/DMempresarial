@@ -43,6 +43,14 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
   }
   const value = parsed.data;
 
+  // `APP_ENV` tem padrão "development". Sem esta trava, esquecer a variável no provedor de
+  // hospedagem sobe o site "válido" e pula as checagens de production abaixo.
+  if (cleaned.NODE_ENV === "production" && cleaned.APP_ENV === undefined) {
+    throw new EnvError([
+      "APP_ENV: obrigatório quando NODE_ENV=production (development | staging | production)",
+    ]);
+  }
+
   if (value.APP_ENV === "production") {
     const problems: string[] = [];
     if (!value.SITE_URL) problems.push("SITE_URL: obrigatório em production");
