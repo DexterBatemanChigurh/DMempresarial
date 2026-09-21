@@ -63,11 +63,25 @@ export async function bootstrapRoles(adminUrl: string, appPassword: string): Pro
     const ident = (name: string) => client.escapeIdentifier(name);
     const password = client.escapeLiteral(appPassword);
 
-    const exists = await client.query("select 1 from pg_roles where rolname = $1", [APP_ROLE]);
-    const verb = exists.rowCount === 0 ? "create" : "alter";
-    await client.query(
-      `${verb} role ${ident(APP_ROLE)} login password ${password} nosuperuser nocreatedb nocreaterole`,
-    );
+    const existing = await client.query<{
+      rolsuper: boolean;
+      rolcreatedb: boolean;
+      rolcreaterole: boolean;
+    }>("select rolsuper, rolcreatedb, rolcreaterole from pg_roles where rolname = $1", [APP_ROLE]);
+    const role = existing.rows[0];
+    if (!role) {
+      await client.query(
+        `create role ${ident(APP_ROLE)} login password ${password} nosuperuser nocreatedb nocreaterole`,
+      );
+    } else {
+      // Só a senha em toda execução. Em banco gerenciado (PostgreSQL 16+), quem não é superusuário
+      // NÃO pode reescrever atributos como CREATEDB/CREATEROLE de outro role, então os atributos só
+      // são tocados quando derivaram do mínimo (e aí o erro, se houver, aparece de verdade).
+      await client.query(`alter role ${ident(APP_ROLE)} with login password ${password}`);
+      if (role.rolsuper || role.rolcreatedb || role.rolcreaterole) {
+        await client.query(`alter role ${ident(APP_ROLE)} nosuperuser nocreatedb nocreaterole`);
+      }
+    }
 
     await client.query("begin");
     try {

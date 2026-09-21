@@ -75,6 +75,29 @@ describe("bootstrap", () => {
     );
   });
 
+  it("devolve ao mínimo um role que ganhou atributos a mais (CREATEDB/CREATEROLE)", async () => {
+    const password = process.env.DM_APP_DB_PASSWORD ?? "";
+    await owner.query("alter role dm_app createdb createrole");
+    const before = await owner.query(
+      "select rolcreatedb, rolcreaterole from pg_roles where rolname = 'dm_app'",
+    );
+    expect(before.rows[0]).toEqual({ rolcreatedb: true, rolcreaterole: true });
+
+    await bootstrapRoles(testAdminUrl(), password);
+    const after = await owner.query(
+      "select rolsuper, rolcreatedb, rolcreaterole from pg_roles where rolname = 'dm_app'",
+    );
+    expect(after.rows[0]).toEqual({ rolsuper: false, rolcreatedb: false, rolcreaterole: false });
+  });
+
+  it("numa segunda execução só troca a senha (o que um dono sem superusuário consegue fazer)", async () => {
+    const password = process.env.DM_APP_DB_PASSWORD ?? "";
+    await bootstrapRoles(testAdminUrl(), password);
+    const login = new pg.Client({ connectionString: testAppUrl() });
+    await login.connect();
+    await login.end();
+  });
+
   it("recusa senha curta de aplicação", async () => {
     await expect(bootstrapRoles(testAdminUrl(), "curta")).rejects.toThrow(/16 caracteres/);
   });
