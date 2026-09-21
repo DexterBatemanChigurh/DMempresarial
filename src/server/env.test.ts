@@ -7,11 +7,12 @@ describe("parseEnv", () => {
     expect(env.APP_ENV).toBe("development");
     expect(env.SITE_URL).toBe("http://localhost:3000");
     expect(env.LOG_LEVEL).toBe("info");
+    expect(env.DATABASE_URL).toBeUndefined();
     expect(env.DATABASE_URL_ADMIN).toBeUndefined();
   });
 
   it("trata string vazia (VAR=) como ausente", () => {
-    const env = parseEnv({ SITE_URL: "", LOG_LEVEL: "", DATABASE_URL_ADMIN: "" });
+    const env = parseEnv({ SITE_URL: "", LOG_LEVEL: "", DATABASE_URL: "", DATABASE_URL_ADMIN: "" });
     expect(env.SITE_URL).toBe("http://localhost:3000");
     expect(env.LOG_LEVEL).toBe("info");
     expect(env.DATABASE_URL_ADMIN).toBeUndefined();
@@ -24,12 +25,20 @@ describe("parseEnv", () => {
   it("em production exige SITE_URL https e banco configurado", () => {
     expect(() => parseEnv({ APP_ENV: "production" })).toThrow(EnvError);
     expect(() =>
-      parseEnv({ APP_ENV: "production", SITE_URL: "http://exemplo.test", DATABASE_URL_ADMIN: "x" }),
+      parseEnv({ APP_ENV: "production", SITE_URL: "http://exemplo.test", DATABASE_URL: "x" }),
     ).toThrow(/https/);
     expect(
-      parseEnv({ APP_ENV: "production", SITE_URL: "https://exemplo.test", DATABASE_URL_ADMIN: "x" })
+      parseEnv({ APP_ENV: "production", SITE_URL: "https://exemplo.test", DATABASE_URL: "x" })
         .APP_ENV,
     ).toBe("production");
+  });
+
+  it("em production exige a URL do role de aplicação, não a do dono do banco", () => {
+    const base = { APP_ENV: "production", SITE_URL: "https://exemplo.test" };
+    // Só a URL do dono do banco não basta: o runtime não deve operar com privilégio de DDL.
+    expect(() => parseEnv({ ...base, DATABASE_URL_ADMIN: "x" })).toThrow(/DATABASE_URL:/);
+    // O runtime de produção não precisa (nem deve) receber a URL do dono.
+    expect(parseEnv({ ...base, DATABASE_URL: "x" }).DATABASE_URL_ADMIN).toBeUndefined();
   });
 
   it("com NODE_ENV=production exige APP_ENV explícito (não cai no padrão development)", () => {
@@ -52,7 +61,7 @@ describe("parseEnv", () => {
       parseEnv({
         APP_ENV: "production",
         SITE_URL: "isto-nao-e-url",
-        DATABASE_URL_ADMIN: secretUrl,
+        DATABASE_URL: secretUrl,
       });
     } catch (error) {
       message = (error as Error).message;

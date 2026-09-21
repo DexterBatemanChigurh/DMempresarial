@@ -12,6 +12,9 @@ const rawSchema = z.object({
   APP_ENV: z.enum(["development", "test", "staging", "production"]).default("development"),
   SITE_URL: z.url().optional(),
   LOG_LEVEL: z.enum(LOG_LEVELS).default("info"),
+  // Runtime da aplicação (role dm_app, sem DDL). Obrigatória em production.
+  DATABASE_URL: z.string().min(1).optional(),
+  // Dono do banco: só migrations/bootstrap. A aplicação em runtime não deve recebê-la.
   DATABASE_URL_ADMIN: z.string().min(1).optional(),
 });
 
@@ -19,6 +22,7 @@ export type Env = {
   APP_ENV: "development" | "test" | "staging" | "production";
   SITE_URL: string;
   LOG_LEVEL: (typeof LOG_LEVELS)[number];
+  DATABASE_URL: string | undefined;
   DATABASE_URL_ADMIN: string | undefined;
 };
 
@@ -56,7 +60,7 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     if (!value.SITE_URL) problems.push("SITE_URL: obrigatório em production");
     else if (!value.SITE_URL.startsWith("https://"))
       problems.push("SITE_URL: deve usar https em production");
-    if (!value.DATABASE_URL_ADMIN) problems.push("DATABASE_URL_ADMIN: obrigatório em production");
+    if (!value.DATABASE_URL) problems.push("DATABASE_URL: obrigatório em production");
     if (problems.length > 0) throw new EnvError(problems);
   }
 
@@ -64,6 +68,7 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     APP_ENV: value.APP_ENV,
     SITE_URL: (value.SITE_URL ?? LOCAL_SITE_URL).replace(/\/+$/, ""),
     LOG_LEVEL: value.LOG_LEVEL,
+    DATABASE_URL: value.DATABASE_URL,
     DATABASE_URL_ADMIN: value.DATABASE_URL_ADMIN,
   };
 }
