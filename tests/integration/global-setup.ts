@@ -1,4 +1,5 @@
 import { bootstrapRoles, ensureDatabase, runMigrations } from "../../scripts/lib/db-admin.mts";
+import { seedBase } from "../../scripts/lib/db-seed.mts";
 import { testAdminUrl } from "./helpers";
 
 // Prepara o banco de teste do zero a cada execução: cria se faltar, aplica roles e migrations.
@@ -11,4 +12,5 @@ export default async function setup(): Promise<void> {
   await ensureDatabase(admin, "dm_empresarial_test");
   await bootstrapRoles(testAdminUrl(), password);
   await runMigrations(testAdminUrl());
+  await seedBase(testAdminUrl());
 }
