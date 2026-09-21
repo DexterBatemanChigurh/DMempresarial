@@ -23,10 +23,12 @@
     "db:check": "node --env-file=.env.local scripts/db-check.mts",
     "db:bootstrap": "node --env-file-if-exists=.env.local scripts/db-bootstrap.mts",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/db-migrate.mts",
-    "db:setup": "npm run db:bootstrap && npm run db:migrate",
+    "db:seed": "node --env-file-if-exists=.env.local scripts/db-seed.mts",
+    "db:setup": "npm run db:bootstrap && npm run db:migrate && npm run db:seed",
     "db:generate": "drizzle-kit generate",
     "db:verify": "drizzle-kit check",
-    "prepare": "git config core.hooksPath .githooks || true"
+    "prepare": "git config core.hooksPath .githooks || true",
+    "db:setup:remote": "node --env-file=.env.neon scripts/db-bootstrap.mts && node --env-file=.env.neon scripts/db-migrate.mts && node --env-file=.env.neon scripts/db-seed.mts"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.5",

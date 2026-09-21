@@ -15,6 +15,27 @@
       "when": 1790011586585,
       "tag": "0001_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790015628521,
+      "tag": "0002_search_helpers",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790015630901,
+      "tag": "0003_domain",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790015659952,
+      "tag": "0004_audit_append_only",
+      "breakpoints": true
     }
   ]
 }

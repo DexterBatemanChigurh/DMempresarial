@@ -13,6 +13,12 @@ import * as schema from "./schema";
 
 export type Database = NodePgDatabase<typeof schema>;
 
+/** Transação aberta por `db.transaction(...)`. */
+export type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+
+/** Onde uma consulta roda: no banco ou dentro de uma transação. */
+export type Executor = Database | Transaction;
+
 export type DatabaseHandle = {
   db: Database;
   pool: Pool;

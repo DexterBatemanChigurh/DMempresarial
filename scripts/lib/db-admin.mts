@@ -9,6 +9,9 @@ import pg from "pg";
 /** Role usado pela aplicação em runtime: DML apenas, sem DDL. */
 export const APP_ROLE = "dm_app";
 
+/** Tabelas em que a aplicação só pode INSERIR e LER (sem UPDATE/DELETE/TRUNCATE). */
+export const APPEND_ONLY_TABLES = ["audit_logs"] as const;
+
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../drizzle", import.meta.url));
 
 export function withDatabase(url: string, database: string): string {
@@ -90,6 +93,18 @@ export async function bootstrapRoles(adminUrl: string, appPassword: string): Pro
       await client.query(
         `revoke truncate, references, trigger on all tables in schema public from ${ident(APP_ROLE)}`,
       );
+      // Tabelas append-only: a concessão geral acima devolveria UPDATE/DELETE; retira de novo.
+      for (const table of APPEND_ONLY_TABLES) {
+        const found = await client.query(
+          "select 1 from information_schema.tables where table_schema = 'public' and table_name = $1",
+          [table],
+        );
+        if (found.rowCount) {
+          await client.query(
+            `revoke update, delete, truncate on table public.${ident(table)} from ${ident(APP_ROLE)}`,
+          );
+        }
+      }
       await client.query("commit");
     } catch (error) {
       await client.query("rollback");
