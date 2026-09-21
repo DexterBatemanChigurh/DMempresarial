@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 const src = fileURLToPath(new URL("./src", import.meta.url));
 const serverOnlyStub = fileURLToPath(new URL("./tests/stubs/server-only.ts", import.meta.url));
@@ -15,5 +15,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts", "tests/**/*.test.ts"],
+    // Integração usa Postgres real: `npm run test:integration`.
+    exclude: [...configDefaults.exclude, "tests/integration/**"],
   },
 });

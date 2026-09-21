@@ -16,6 +16,20 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: dm_owner
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: dm_empresarial
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dm_owner -d dm_empresarial"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     env:
       # O build roda com NODE_ENV=production e exige APP_ENV explícito (src/server/env.ts).
       # "test" evita as exigências de production (https, banco) num build de verificação.
@@ -29,5 +43,12 @@ jobs:
       - run: npm ci
       - run: npm run format:check
       - run: npm run check
+      # Migrations coerentes entre si (nada editado à mão).
+      - run: npm run db:verify
+      # Testes contra Postgres real (banco dm_empresarial_test, criado pelo setup).
+      - run: npm run test:integration
+        env:
+          DATABASE_URL_ADMIN: postgres://dm_owner:ci-only-password@127.0.0.1:5432/dm_empresarial
+          DM_APP_DB_PASSWORD: ci-only-app-password-0123456789
       # Falha em vulnerabilidade alta/crítica nas dependências de produção.
       - run: npm audit --omit=dev --audit-level=high

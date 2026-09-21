@@ -6,7 +6,27 @@ import nextTs from "eslint-config-next/typescript";
 // e o domínio puro não conhece framework, ORM nem servidor.
 const serverOnlyPatterns = [
   { group: ["@/server/*", "@/server/**"], message: "UI não importa infraestrutura de servidor." },
+  {
+    group: ["@/db", "@/db/*", "@/db/**"],
+    message: "UI e domínio não importam o cliente do banco.",
+  },
   { group: ["pg", "drizzle-orm", "drizzle-orm/*"], message: "UI não acessa o banco diretamente." },
+];
+
+// Rotas (`src/app`) chamam a camada de aplicação; nunca o banco nem a infraestrutura dos módulos.
+const appLayerPatterns = [
+  {
+    group: ["@/db", "@/db/*", "@/db/**"],
+    message: "Rotas usam a camada application, não o banco.",
+  },
+  {
+    group: ["@/features/*/infrastructure", "@/features/*/infrastructure/**"],
+    message: "Rotas usam application; infrastructure é detalhe do módulo.",
+  },
+  {
+    group: ["pg", "drizzle-orm", "drizzle-orm/*"],
+    message: "Rotas não acessam o banco diretamente.",
+  },
 ];
 
 export default defineConfig([
@@ -21,6 +41,11 @@ export default defineConfig([
       ],
       "no-console": "error",
     },
+  },
+  {
+    // Rotas: só application (nunca banco nem infrastructure).
+    files: ["src/app/**/*.{ts,tsx}"],
+    rules: { "no-restricted-imports": ["error", { patterns: appLayerPatterns }] },
   },
   {
     // Componentes: sem servidor, sem banco.

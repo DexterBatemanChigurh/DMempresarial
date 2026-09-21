@@ -24,6 +24,7 @@ institucional, soluções, especialistas, blog editorial e geração de leads.
 npm install
 cp .env.example .env.local     # preencha DM_DB_PASSWORD e DATABASE_URL_ADMIN
 npm run db:up                  # Postgres 17 em 127.0.0.1:5433 (container dm_empresarial_db)
+npm run db:setup               # cria o role dm_app (sem DDL) e aplica as migrations
 npm run db:check               # confirma a conexão
 npm run dev
 ```
@@ -32,13 +33,17 @@ A porta **5433** é deliberada: a 5432 costuma estar ocupada por outros projetos
 
 ## Comandos
 
-| Comando                           | O que faz                                    |
-| --------------------------------- | -------------------------------------------- |
-| `npm run check`                   | lint + typecheck + testes + build (o portão) |
-| `npm run lint` / `typecheck`      | ESLint 9 (config do Next) / TypeScript 6     |
-| `npm test`                        | Vitest                                       |
-| `npm run format` / `format:check` | Prettier                                     |
-| `npm run db:up` / `db:down`       | Sobe/derruba o Postgres local                |
+| Comando                             | O que faz                                               |
+| ----------------------------------- | ------------------------------------------------------- |
+| `npm run check`                     | lint + typecheck + testes + build (o portão)            |
+| `npm run lint` / `typecheck`        | ESLint 9 (config do Next) / TypeScript 6                |
+| `npm test`                          | Vitest (sem banco)                                      |
+| `npm run test:integration`          | Vitest contra Postgres real (banco de teste)            |
+| `npm run format` / `format:check`   | Prettier                                                |
+| `npm run db:up` / `db:down`         | Sobe/derruba o Postgres local                           |
+| `npm run db:setup`                  | Role dm_app + migrations (`db:bootstrap`, `db:migrate`) |
+| `npm run db:generate` / `db:verify` | Gera migration a partir do schema / confere coerência   |
+| `npm run db:check`                  | Confirma a conexão com o banco                          |
 
 ## Estrutura
 
