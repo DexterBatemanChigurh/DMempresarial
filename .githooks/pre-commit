@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+# Portão rápido antes de cada commit. Pular em emergência: git commit --no-verify
+set -e
+
+# Bloqueia arquivos de ambiente com segredos (só .env.example é permitido).
+if git diff --cached --name-only | grep -E '(^|/)\.env(\..+)?$' | grep -vE '(^|/)\.env\.example$'; then
+  echo "pre-commit: arquivo .env staged. Remova com: git restore --staged <arquivo>" >&2
+  exit 1
+fi
+
+npm run --silent format:check
+npm run --silent lint
+npm run --silent typecheck
+npm run --silent test
