@@ -29,7 +29,7 @@ export default defineConfig([
   },
   {
     // Domínio puro e utilitários isomórficos: sem Next, React, ORM, banco ou servidor.
-    files: ["src/lib/**/*.{ts,tsx}", "src/modules/**/domain/**/*.{ts,tsx}"],
+    files: ["src/lib/**/*.{ts,tsx}", "src/features/**/domain/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",

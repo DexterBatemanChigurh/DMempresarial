@@ -46,7 +46,8 @@ A porta **5433** é deliberada: a 5432 costuma estar ocupada por outros projetos
 src/app          rotas (Next.js App Router)
 src/components   UI (não importa servidor nem banco — imposto por lint)
 src/lib          código puro e isomórfico (erros, resultado)
-src/modules      domínios (a partir da fase de banco); `domain/` é puro
+src/features     domínios (a partir da fase de banco); `domain/` é puro
+src/db           cliente e schema do banco (Drizzle)
 src/server       infraestrutura de servidor (env validado, logger)
 scripts          utilitários de linha de comando
 ```

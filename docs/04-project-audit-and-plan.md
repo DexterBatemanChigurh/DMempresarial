@@ -30,7 +30,7 @@ Base: [01 Product + UX](./01-product-ux-blueprint.md) · [02 Design System](./02
 ├── src/app/         layout.tsx  page.tsx  globals.css  robots.ts  api/health/route.ts   (+ testes)
 ├── src/lib/         errors.ts  result.ts                                                  (+ testes)
 ├── src/server/      env.ts  logging/logger.ts                                             (+ testes)
-├── src/components/  (vazia)          src/modules/  (vazia)
+├── src/components/  (vazia)          src/modules/  (vazia; renomeada para src/features/ em 21/09/2026)
 ├── scripts/         db-check.mts
 ├── tests/           stubs/server-only.ts  next-config.test.ts
 ├── docs/            01, 02, 03, 04 (criados nesta etapa; a pasta estava vazia)
@@ -125,27 +125,27 @@ Nenhuma (sem e-mail, storage, analytics, CDN, monitoramento). Deploy: **nenhum c
 
 ## 13. Classificação (KEEP / REFACTOR / REPLACE / REMOVE / CREATE)
 
-| Item                                                                          | Classe                  | Justificativa                                                                                     |
-| ----------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------- |
-| Next 16, React 19, TS 6, Tailwind 4, ESLint 9, Vitest, Prettier               | **KEEP**                | Funcionam, alinhados ao Prompt 3; versões pinadas por motivos documentados                        |
-| `src/lib/errors.ts`, `result.ts`                                              | **KEEP**                | Já implementam o modelo de erros do Prompt 3 §32; testados                                        |
-| `src/server/env.ts`                                                           | **KEEP**                | Será **estendido** por grupo (banco, auth, storage, e-mail); a regra de produção já foi reforçada |
-| `src/server/logging/logger.ts`                                                | **REFACTOR**            | Ler nível via `env()`, adicionar `server-only` e `request_id` (P7); não reescrever                |
-| `src/app/robots.ts`                                                           | **REFACTOR**            | Trocar `force-dynamic` por `connection()` quando `cacheComponents` for ligado (P4)                |
-| `next.config.ts` (cabeçalhos)                                                 | **REFACTOR**            | Acrescentar CSP (camada pública), HSTS, COOP; manter os 4 existentes                              |
-| `eslint.config.mjs` (fronteiras)                                              | **REFACTOR**            | Estender: `app/` não importa `infrastructure` nem `drizzle-orm`; regra de tokens                  |
-| `compose.yaml`, `scripts/db-check.mts`                                        | **KEEP**                | Ambiente local do banco; acrescentar banco de teste e role `dm_app` via migration                 |
-| `.env.example`                                                                | **REFACTOR**            | Ampliar com `DATABASE_URL`, auth, storage, e-mail (placeholders)                                  |
-| `src/app/layout.tsx`, `page.tsx`, `globals.css`                               | **REPLACE**             | Provisórios por definição (comentários do próprio código); substituídos pelas Fases 2 e 5         |
-| `.github/workflows/ci.yml`, `.githooks/pre-commit`                            | **KEEP** (criados hoje) | Estender com integração, E2E, segredos                                                            |
-| Estrutura `modules/` e `server/`                                              | **KEEP**                | ADR-013: preservar a convenção existente em vez de renomear para `features/`/`src/db`             |
-| Página `/` placeholder                                                        | **REMOVE**              | Somente quando a Home real existir (Fase 5). Até lá permanece                                     |
-| Cliente de banco, schema, migrations, roles                                   | **CREATE**              | Fase 1b/3                                                                                         |
-| Autenticação, `can(...)`, CMS, editor, mídia                                  | **CREATE**              | Fase 4                                                                                            |
-| Tokens, fontes, primitivos, componentes, templates                            | **CREATE**              | Fases 2, 5, 6                                                                                     |
-| Leads, newsletter, e-mail, rate limit                                         | **CREATE**              | Fase 7                                                                                            |
-| Sitemap, JSON-LD, redirecionamentos, `not-found`/`error`                      | **CREATE**              | Fase 8                                                                                            |
-| ADRs, `ARCHITECTURE`, `SECURITY`, `DEPLOYMENT`, `DATABASE`, `CMS`, _runbooks_ | **CREATE**              | Ao longo das fases; só documentar o que existir (Prompt 4 §75)                                    |
+| Item                                                                          | Classe                  | Justificativa                                                                                                       |
+| ----------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Next 16, React 19, TS 6, Tailwind 4, ESLint 9, Vitest, Prettier               | **KEEP**                | Funcionam, alinhados ao Prompt 3; versões pinadas por motivos documentados                                          |
+| `src/lib/errors.ts`, `result.ts`                                              | **KEEP**                | Já implementam o modelo de erros do Prompt 3 §32; testados                                                          |
+| `src/server/env.ts`                                                           | **KEEP**                | Será **estendido** por grupo (banco, auth, storage, e-mail); a regra de produção já foi reforçada                   |
+| `src/server/logging/logger.ts`                                                | **REFACTOR**            | Ler nível via `env()`, adicionar `server-only` e `request_id` (P7); não reescrever                                  |
+| `src/app/robots.ts`                                                           | **REFACTOR**            | Trocar `force-dynamic` por `connection()` quando `cacheComponents` for ligado (P4)                                  |
+| `next.config.ts` (cabeçalhos)                                                 | **REFACTOR**            | Acrescentar CSP (camada pública), HSTS, COOP; manter os 4 existentes                                                |
+| `eslint.config.mjs` (fronteiras)                                              | **REFACTOR**            | Estender: `app/` não importa `infrastructure` nem `drizzle-orm`; regra de tokens                                    |
+| `compose.yaml`, `scripts/db-check.mts`                                        | **KEEP**                | Ambiente local do banco; acrescentar banco de teste e role `dm_app` via migration                                   |
+| `.env.example`                                                                | **REFACTOR**            | Ampliar com `DATABASE_URL`, auth, storage, e-mail (placeholders)                                                    |
+| `src/app/layout.tsx`, `page.tsx`, `globals.css`                               | **REPLACE**             | Provisórios por definição (comentários do próprio código); substituídos pelas Fases 2 e 5                           |
+| `.github/workflows/ci.yml`, `.githooks/pre-commit`                            | **KEEP** (criados hoje) | Estender com integração, E2E, segredos                                                                              |
+| Estrutura `modules/` e `server/`                                              | **REFACTOR**            | ADR-013 (revisto em 21/09/2026): renomear para `features/` e criar `src/db`. As pastas estavam vazias: custo mínimo |
+| Página `/` placeholder                                                        | **REMOVE**              | Somente quando a Home real existir (Fase 5). Até lá permanece                                                       |
+| Cliente de banco, schema, migrations, roles                                   | **CREATE**              | Fase 1b/3                                                                                                           |
+| Autenticação, `can(...)`, CMS, editor, mídia                                  | **CREATE**              | Fase 4                                                                                                              |
+| Tokens, fontes, primitivos, componentes, templates                            | **CREATE**              | Fases 2, 5, 6                                                                                                       |
+| Leads, newsletter, e-mail, rate limit                                         | **CREATE**              | Fase 7                                                                                                              |
+| Sitemap, JSON-LD, redirecionamentos, `not-found`/`error`                      | **CREATE**              | Fase 8                                                                                                              |
+| ADRs, `ARCHITECTURE`, `SECURITY`, `DEPLOYMENT`, `DATABASE`, `CMS`, _runbooks_ | **CREATE**              | Ao longo das fases; só documentar o que existir (Prompt 4 §75)                                                      |
 
 **Nada a remover agora.** Não há código funcional a descartar; toda mudança é **aditiva** ou de refino.
 
@@ -157,8 +157,8 @@ Detalhados no [documento 03, seção 43](./03-engineering-architecture-blueprint
 
 | Conflito                                                                                                          | Recomendação                                                                          |
 | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `features/` (Prompt 3) × `modules/` (repositório)                                                                 | Manter `modules/` (ADR-013)                                                           |
-| `src/db` (Prompt 3) × `src/server` (repositório)                                                                  | Manter `src/server/db`                                                                |
+| `features/` (Prompt 3) × `modules/` (repositório)                                                                 | **Trocar para `features/`** (decidido em 21/09/2026, ADR-013)                         |
+| `src/db` (Prompt 3) × `src/server` (repositório)                                                                  | **Usar `src/db`** (decidido em 21/09/2026)                                            |
 | Tabela `authors` (Prompt 3) × autor = especialista (Blueprint 1, D5)                                              | Uma entidade só (`specialists` com `kind`)                                            |
 | `/servicos` (Prompt 1) × entidade única de soluções (Prompt 3 §8)                                                 | Só `/solucoes` (Blueprint 1, D1). **Muda o menu.**                                    |
 | Badge e Modal (Prompt 4 §11) × Design System que os removeu                                                       | Seguir o Design System                                                                |
@@ -189,7 +189,7 @@ Toda etapa é **aditiva** (nenhuma exclusão em massa, nenhuma reescrita do que 
 | Passo | Fase  | Entrega                                                                                                                                                                                                                                                                  | Depende de                                               |
 | ----- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
 | 0     | —     | **Commit** do trabalho pendente (em commits pequenos e coerentes) e, se quiser, criar o _remote_                                                                                                                                                                         | Sua autorização                                          |
-| 1     | 1b    | Drizzle (0.45.x) + cliente em `src/server/db`; role `dm_app` por migration; `DATABASE_URL`; banco de teste; P7 (logger via `env()`); ADRs 001, 002, 013, 017                                                                                                             | Aprovação da pilha (ADR-002)                             |
+| 1     | 1b    | Drizzle (0.45.x) + cliente em `src/db`; role `dm_app` por migration; `DATABASE_URL`; banco de teste; P7 (logger via `env()`); ADRs 001, 002, 013, 017                                                                                                                    | Aprovação da pilha (ADR-002)                             |
 | 2     | 1b    | Configuração do Better Auth (sem telas ainda) e `can(...)` esqueleto com testes; ADRs 005, 006                                                                                                                                                                           | Aprovação da pilha (ADR-005)                             |
 | 3     | 2     | **Design System**: tokens (paleta e escala do Blueprint 2), Newsreader + Instrument Sans por `next/font`, Container/Section/Heading/Button/Link/Field/SectionLabel/Figure, estados, regra de movimento reduzido, **teste de contraste dos tokens**, página de referência | Blueprint 2 (valores de cor/fonte a validar visualmente) |
 | 4     | 3     | Schema completo, migrations revisadas, constraints e índices, seeds (categorias reais + `[DEMO]`), repositórios e testes de integração                                                                                                                                   | Passos 1–2; aprovação de D1, D3, D5                      |
@@ -210,19 +210,17 @@ Cada feature importante será relatada com: objetivo, arquivos alterados, banco,
 
 ---
 
-## 17. CHECKPOINT — o que preciso de você antes de implementar
+## 17. Checkpoint — respostas e execução
 
-O Prompt 4 §7 manda **parar** depois da auditoria e do plano, e o §84 manda parar e documentar em decisões de arquitetura, segurança, banco ou produto. Nada do plano é destrutivo; a parada é por decisão, não por risco de dano.
+O Prompt 4 §7 exige parar depois da auditoria. Respostas recebidas em 21/09/2026:
 
-**Autorizações e decisões, em ordem de necessidade:**
+| #   | Pergunta                                                 | Resposta                                                    |
+| --- | -------------------------------------------------------- | ----------------------------------------------------------- |
+| 1   | Commitar o trabalho pendente em commits pequenos         | **Sim** (4 commits feitos). Sem remote e sem push           |
+| 2   | Pilha: Drizzle + PostgreSQL, Better Auth, Tiptap, Resend | **Aprovada**                                                |
+| 3   | Decisões de produto D1, D3, D4, D5                       | **Aprovadas** (D3: todos os campos existem, 3 obrigatórios) |
+| 4   | Manter `modules/` e `src/server/db`?                     | **Trocar**: `src/features/` e `src/db`                      |
 
-1. **Posso commitar o trabalho pendente** em commits pequenos (env/robots, testes, CI/hook, docs)? E você quer criar um _remote_ agora?
-2. **Aprova a pilha** dos ADRs 002 e 005: Drizzle 0.45.x + PostgreSQL, Better Auth com sessões em banco, Tiptap 3 em JSON, Resend? (Sem isso não começo a Fase 1b.)
-3. **Aprova as decisões de produto** D1 (sem `/servicos`, menu com "Soluções"), D3 (3 campos obrigatórios), D4 (publicar só com conteúdo real) e D5 (autor = especialista)? (Necessárias antes da Fase 3.)
-4. **Confirma manter `modules/` e `src/server/db`** (ADR-013), em vez de renomear para `features/` e `src/db`?
-5. **Pode esperar até a Fase 4:** T-01/T-02 (deploy e Postgres gerenciado), T-03 (storage), T-04 (quem vê leads), T-05 (2FA obrigatório).
-6. **Pode esperar até a Fase 7:** T-06/T-07 (jurídico, retenção, atribuição) e T-11 (domínio de e-mail).
+**Autorizado e em execução:** passos 0 a 3 (commits, banco e roles, autenticação esqueleto, Design System). **Parada obrigatória** antes do passo 4 (schema completo e domínio).
 
-**O que dá para começar já, sem esperar as decisões 5 e 6:** passos 0, 1, 2 e 3 (commit, Drizzle + roles, Better Auth esqueleto e o Design System).
-
-**Sugestão de sequência:** responda 1 a 4; eu executo os passos 0 a 3, com relatório por fase, e paro de novo antes do passo 4.
+**Continuam adiadas** (não bloqueiam os passos 0 a 3): T-01/T-02 (deploy e Postgres gerenciado), T-03 (storage), T-04 (quem vê leads), T-05 (2FA), T-06/T-07 (jurídico), T-11 (domínio de e-mail).

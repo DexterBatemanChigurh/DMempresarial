@@ -10,6 +10,8 @@ Versão 1 · 21/09/2026 · Etapa: Prompt 3. **Sem código de produto, sem migrat
 - **[ABERTA]** depende de escolha da DM ou de informação que não existe.
 - Prioridade (Prompt 3, §89): **CRÍTICA** (bloqueia a implementação) · **IMPORTANTE** · **RECOMENDADA** · **FUTURA**.
 
+**Decisões aprovadas em 21/09/2026 (checkpoint do Prompt 4):** pilha Drizzle + PostgreSQL, Better Auth, Tiptap e Resend (ADR-002, 004, 005); decisões de produto D1 (sem `/servicos`), D3 (3 campos obrigatórios), D4 (publicar só com conteúdo real) e D5 (autor = especialista) (ADR-003); estrutura `features/` e `src/db` (ADR-013). Demais ADRs continuam como proposta.
+
 **Numeração das seções = as 45 partes exigidas pelo Prompt 3 (§90).** Comentários do código já citam essas partes (por exemplo "§5 e §38" em `eslint.config.mjs`, "§28" em `errors.ts`, "§29" no logger). Elas correspondem às partes 5 Application Architecture, 38 Project Structure, 28 Error Handling e 29 Logging deste documento.
 
 ---
@@ -139,22 +141,22 @@ Versão 1 · 21/09/2026 · Etapa: Prompt 3. **Sem código de produto, sem migrat
 ```text
 UI (src/app, src/components)
    ↓ chama
-Application (src/modules/*/application  +  src/server/*)   ← serviços, DAL, autorização, transações
+Application (src/features/*/application  +  src/server/*)   ← serviços, DAL, autorização, transações
    ↓ usa
-Domain (src/modules/*/domain, src/lib)                      ← regras puras, sem framework, sem I/O
+Domain (src/features/*/domain, src/lib)                      ← regras puras, sem framework, sem I/O
    ↑ implementado por
-Infrastructure (src/modules/*/infrastructure, src/server/db|storage|email)  ← Drizzle, S3, Resend
+Infrastructure (src/features/*/infrastructure, src/db, src/server/storage|email)  ← Drizzle, S3, Resend
 ```
 
 **Regras de dependência (impostas por ESLint, ampliando as já existentes) [EXISTENTE] + [PROPOSTA]:**
 
-| De                              | Pode importar                                                              | Não pode importar                                                     |
-| ------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `components/**`                 | `lib`, outros `components`                                                 | `server/**`, `modules/**`, `pg`, `drizzle-orm` [EXISTENTE]            |
-| `lib/**`, `modules/*/domain/**` | `lib`                                                                      | `next`, `react`, `pg`, `drizzle-orm`, `server/**` [EXISTENTE]         |
-| `app/**` (páginas/actions)      | `components`, `modules/*/application`, `server/auth`, `server/permissions` | `modules/*/infrastructure`, `drizzle-orm`, `pg` [PROPOSTA]            |
-| `modules/*/application/**`      | `domain`, `infrastructure` do **próprio** módulo, `server/*`               | infraestrutura de outro módulo (usar o `application` dele) [PROPOSTA] |
-| `modules/*/infrastructure/**`   | `domain`, `server/db`                                                      | `app/**`, `components/**`                                             |
+| De                               | Pode importar                                                               | Não pode importar                                                     |
+| -------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `components/**`                  | `lib`, outros `components`                                                  | `server/**`, `modules/**`, `pg`, `drizzle-orm` [EXISTENTE]            |
+| `lib/**`, `features/*/domain/**` | `lib`                                                                       | `next`, `react`, `pg`, `drizzle-orm`, `server/**` [EXISTENTE]         |
+| `app/**` (páginas/actions)       | `components`, `features/*/application`, `server/auth`, `server/permissions` | `features/*/infrastructure`, `db`, `drizzle-orm`, `pg` [PROPOSTA]     |
+| `features/*/application/**`      | `domain`, `infrastructure` do **próprio** módulo, `server/*`                | infraestrutura de outro módulo (usar o `application` dele) [PROPOSTA] |
+| `features/*/infrastructure/**`   | `domain`, `db`                                                              | `app/**`, `components/**`                                             |
 
 **Consequência:** `React Component → SQL` é impossível por construção; `Database → UI` sem camada intermediária também.
 
@@ -175,7 +177,7 @@ Infrastructure (src/modules/*/infrastructure, src/server/db|storage|email)  ← 
 
 ## 6. Domain Model
 
-**Módulos (bounded contexts)** sob `src/modules/`:
+**Módulos (bounded contexts)** sob `src/features/`:
 
 | Módulo       | Responsabilidade                            | Entidades principais             |
 | ------------ | ------------------------------------------- | -------------------------------- |
@@ -1044,7 +1046,7 @@ Sem valores em reais/dólares: **não os verifiquei** e preços mudam. O que ori
 
 ## 38. Project Structure
 
-**Adaptada** da sugestão do Prompt 3 §58, **preservando** as convenções já existentes (`modules/` em vez de `features/`; `server/` para infraestrutura transversal):
+**Segue a sugestão do Prompt 3 §58** (`features/` e `src/db`, decisão de 21/09/2026), mantendo `server/` para infraestrutura transversal (env, logging, auth, permissões):
 
 ```text
 src/
@@ -1057,12 +1059,12 @@ src/
 │   └── globals.css [EXISTE]    # tokens do Design System
 ├── components/
 │   ├── ui/  layout/  content/  forms/  sections/  templates/     # (pasta existe, vazia)
-├── modules/                    # (pasta existe, vazia)
+├── features/                   # domínios
 │   └── <modulo>/{ domain/  application/  infrastructure/  schemas.ts  index.ts }
 │       # modulos: content, catalog, people, pages, media, conversion, identity, platform
+├── db/             # cliente Drizzle, schema (por módulo), utilitários de migration
 ├── server/
 │   ├── env.ts [EXISTE]  logging/ [EXISTE]
-│   ├── db/         # cliente Drizzle, schema, migrator
 │   ├── auth/       # configuração Better Auth, getSession, requireUser
 │   ├── permissions/# can(user, action, resource)
 │   ├── rate-limit/ storage/ email/ analytics/ jobs/
@@ -1073,7 +1075,7 @@ scripts/                        # db-check [EXISTE], bootstrap-admin, seed-dev
 docs/                           # blueprints, ADRs, runbooks
 ```
 
-**Regras:** sem pasta `utils/` genérica; toda regra de negócio mora em `modules/*/domain|application`; `src/lib` é só código puro e isomórfico (imposto por ESLint [EXISTENTE]). A escolha `modules/` × `features/` está no ADR-013 (item de conflito na seção 43).
+**Regras:** sem pasta `utils/` genérica; toda regra de negócio mora em `features/*/domain|application`; `src/lib` é só código puro e isomórfico (imposto por ESLint [EXISTENTE]). A escolha de `features/` e `src/db` está no ADR-013.
 
 ---
 
@@ -1101,25 +1103,25 @@ docs/                           # blueprints, ADRs, runbooks
 
 Registros a criar em `docs/adr/` (formato: contexto, decisão, alternativas, consequência). Status: **Aceita** (já refletida no código), **Proposta** (a aprovar), **Aberta** (depende da DM).
 
-| ADR     | Título                                                 | Status     | Resumo                                                                                          |
-| ------- | ------------------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------------- |
-| ADR-001 | Monólito modular em Next.js                            | Aceita     | Um deploy, fronteiras por módulo, sem microserviços                                             |
-| ADR-002 | PostgreSQL + Drizzle ORM 0.45.x                        | Proposta   | Relacional, migrations SQL; 1.0 só após estável                                                 |
-| ADR-003 | Unificação de Soluções                                 | Proposta   | `solutions.type` + `solution_items`; sem `/servicos` próprio                                    |
-| ADR-004 | Arquitetura do CMS                                     | Proposta   | Tiptap em JSON, allowlist, máquina de estados, templates de página                              |
-| ADR-005 | Autenticação com Better Auth e sessões em banco        | Proposta   | Cadastro fechado, 2FA, sem auth caseira                                                         |
-| ADR-006 | RBAC de 3 papéis + propriedade, negado por padrão      | Proposta   | `can(...)` no servidor; 404 para invisíveis                                                     |
-| ADR-007 | Cache Components e invalidação por tag                 | Proposta   | `use cache` + `cacheTag`; `updateTag`/`revalidateTag(tag,'max')`                                |
-| ADR-008 | Mídia: `StoragePort` + reprocessamento com sharp       | Proposta   | Sem SVG de usuário; magic bytes                                                                 |
-| ADR-009 | CSP em duas camadas e cabeçalhos de segurança          | Proposta   | Público sem nonce (estático); admin com nonce. **É a referência já citada em `next.config.ts`** |
-| ADR-010 | Pipeline de leads e atribuição mínima                  | Proposta   | Servidor valida tudo; first-touch atrás de _flag_ até parecer jurídico                          |
-| ADR-011 | Newsletter com duplo aceite                            | Proposta   |                                                                                                 |
-| ADR-012 | Busca por Postgres FTS e paginação por offset          | Proposta   |                                                                                                 |
-| ADR-013 | Estrutura `modules/` (e não `features/`)               | Aceita     | Preserva a convenção existente (README, ESLint)                                                 |
-| ADR-014 | Plataforma de deploy, banco e storage                  | **Aberta** | Recomendação A (seção 34)                                                                       |
-| ADR-015 | Rate limit em Postgres                                 | Proposta   | Janela fixa, sem serviço extra                                                                  |
-| ADR-016 | Resolução de redirecionamentos na página, não no Proxy | Proposta   |                                                                                                 |
-| ADR-017 | Falha para o lado seguro em ambiente                   | Aceita     | `APP_ENV` explícito em produção; `robots` fechado fora dela                                     |
+| ADR     | Título                                                  | Status     | Resumo                                                                                          |
+| ------- | ------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------- |
+| ADR-001 | Monólito modular em Next.js                             | Aceita     | Um deploy, fronteiras por módulo, sem microserviços                                             |
+| ADR-002 | PostgreSQL + Drizzle ORM 0.45.x                         | Aceita     | Relacional, migrations SQL; 1.0 só após estável                                                 |
+| ADR-003 | Unificação de Soluções                                  | Aceita     | `solutions.type` + `solution_items`; sem `/servicos` próprio                                    |
+| ADR-004 | Arquitetura do CMS                                      | Aceita     | Tiptap em JSON, allowlist, máquina de estados, templates de página                              |
+| ADR-005 | Autenticação com Better Auth e sessões em banco         | Aceita     | Cadastro fechado, 2FA, sem auth caseira                                                         |
+| ADR-006 | RBAC de 3 papéis + propriedade, negado por padrão       | Proposta   | `can(...)` no servidor; 404 para invisíveis                                                     |
+| ADR-007 | Cache Components e invalidação por tag                  | Proposta   | `use cache` + `cacheTag`; `updateTag`/`revalidateTag(tag,'max')`                                |
+| ADR-008 | Mídia: `StoragePort` + reprocessamento com sharp        | Proposta   | Sem SVG de usuário; magic bytes                                                                 |
+| ADR-009 | CSP em duas camadas e cabeçalhos de segurança           | Proposta   | Público sem nonce (estático); admin com nonce. **É a referência já citada em `next.config.ts`** |
+| ADR-010 | Pipeline de leads e atribuição mínima                   | Proposta   | Servidor valida tudo; first-touch atrás de _flag_ até parecer jurídico                          |
+| ADR-011 | Newsletter com duplo aceite                             | Proposta   |                                                                                                 |
+| ADR-012 | Busca por Postgres FTS e paginação por offset           | Proposta   |                                                                                                 |
+| ADR-013 | Estrutura `features/` e `src/db` (segue o Prompt 3 §58) | Aceita     | Decidido em 21/09/2026: renomeado de `modules/`; regras de ESLint e README atualizados          |
+| ADR-014 | Plataforma de deploy, banco e storage                   | **Aberta** | Recomendação A (seção 34)                                                                       |
+| ADR-015 | Rate limit em Postgres                                  | Proposta   | Janela fixa, sem serviço extra                                                                  |
+| ADR-016 | Resolução de redirecionamentos na página, não no Proxy  | Proposta   |                                                                                                 |
+| ADR-017 | Falha para o lado seguro em ambiente                    | Aceita     | `APP_ENV` explícito em produção; `robots` fechado fora dela                                     |
 
 ---
 
@@ -1178,8 +1180,8 @@ Situação em 21/09/2026: ✔ feito · ◐ parcial · ☐ pendente.
 
 | Conflito                                                                                                                             | Impacto                          | Opções                                               | Recomendação                                                                          | Decisão necessária        |
 | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------- |
-| Prompt 3 sugere `features/`; o repositório e o README usam `modules/`                                                                | Renomear pastas e regras de lint | (A) manter `modules/`; (B) renomear para `features/` | **A** (Prompt 4 §80: não reescrever sem problema real)                                | Confirmação               |
-| Prompt 3 sugere `src/db`; o repositório usa `src/server`                                                                             | Local do cliente/schema          | (A) `src/server/db`; (B) `src/db`                    | **A**                                                                                 | Confirmação               |
+| Prompt 3 sugere `features/`; o repositório usava `modules/`                                                                          | Renomear pastas e regras de lint | (A) manter `modules/`; (B) renomear para `features/` | **B, decidido em 21/09/2026** (pasta ainda vazia: custo mínimo)                       | Decidido                  |
+| Prompt 3 sugere `src/db`; o repositório usava `src/server`                                                                           | Local do cliente/schema          | (A) `src/server/db`; (B) `src/db`                    | **B, decidido em 21/09/2026**                                                         | Confirmação               |
 | Prompt 3 lista `authors`; Blueprint 1 D5 unifica autor = especialista                                                                | Uma tabela a menos               | (A) `specialists` com `kind`; (B) `authors` separada | **A**                                                                                 | Aprovar D5 do Blueprint 1 |
 | `/servicos` (Prompt 1) × entidade única (Prompt 3, §8)                                                                               | URLs e menu                      | (A) só `/solucoes`; (B) duas árvores                 | **A**                                                                                 | Aprovar D1 do Blueprint 1 |
 | Prompt 4 §11 pede Badge e Modal; Blueprint 2 os removeu                                                                              | Componentes a construir          | (A) seguir o Design System; (B) incluir              | **A** (Prompt 4 §81: decisão local não destrói a global)                              | Confirmação               |

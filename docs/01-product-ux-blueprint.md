@@ -392,6 +392,8 @@ Clareza · Hierarquia · Contexto · Profundidade · Confiança · Fricção mí
 
 ## 21. Decisões recomendadas
 
+**Status em 21/09/2026:** **D1, D3, D4 e D5 aprovadas.** D2, D6 e D7 seguem como recomendação. Sobre a D3, a pergunta "a DM usa mesmo `site` e `segmento`?" continua aberta; enquanto não houver resposta, todos os 8 campos existem e apenas 3 são obrigatórios.
+
 ### D1 — Uma entidade "Solução" ou duas árvores (`/solucoes` e `/servicos`)?
 
 - **Opção A:** `/solucoes/[slug]` é a única URL de detalhe; `tipo` (consultoria/serviço) é um atributo. `/servicos` vira visão filtrada, se necessária.
