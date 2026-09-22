@@ -273,6 +273,19 @@ export async function changePostSlug(
   });
 }
 
+// -----------------------------------------------------------------------------------------------
+// Wrappers para Server Actions (`src/app/**` não importa `@/db`).
+// -----------------------------------------------------------------------------------------------
+import { getDb } from "@/db/client";
+
+export function transitionPostForRoute(input: TransitionInput): Promise<PostMutationResult> {
+  return transitionPost({ db: getDb() }, input);
+}
+
+export function changePostSlugForRoute(input: ChangeSlugInput): Promise<PostMutationResult> {
+  return changePostSlug({ db: getDb() }, input);
+}
+
 /** Útil para a UI decidir quais botões mostrar (a autorização real acontece nas funções acima). */
 export function availableTransitions(
   actor: Actor | null | undefined,

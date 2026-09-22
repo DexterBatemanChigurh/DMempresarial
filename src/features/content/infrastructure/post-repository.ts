@@ -1,7 +1,8 @@
 import "server-only";
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import type { Executor, Transaction } from "@/db/client";
-import { media, postCategories, posts, specialists } from "@/db/schema";
+import { postCategories, postSolutions, postTags, media, posts, specialists } from "@/db/schema";
+import type { PostStatus } from "../domain/post-status";
 
 /** Artigo carregado para uma transição de estado, já com o que as regras de publicação exigem. */
 export type PostForTransition = {
@@ -34,6 +35,110 @@ export async function loadPostForTransition(
     coverAltText = cover?.altText ?? null;
   }
   return { post, primaryCategoryId: primary?.categoryId ?? null, coverAltText };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Leitura ADMINISTRATIVA: qualquer status, colunas internas incluídas. Sempre atrás de
+// `requireAdminSession` + `assertCan` na camada `application` — nada aqui decide permissão.
+// ---------------------------------------------------------------------------------------------
+
+/** Chave de storage e texto alternativo da mídia de capa (para montar a URL e a pré-visualização
+ * no formulário de edição). */
+export async function loadMediaInfo(
+  executor: Executor,
+  mediaId: string,
+): Promise<{ storageKey: string; altText: string | null } | null> {
+  const [row] = await executor
+    .select({ storageKey: media.storageKey, altText: media.altText })
+    .from(media)
+    .where(eq(media.id, mediaId))
+    .limit(1);
+  return row ?? null;
+}
+
+export type PostAssociations = {
+  categoryIds: string[];
+  primaryCategoryId: string | null;
+  tagIds: string[];
+  solutionIds: string[];
+  primarySolutionId: string | null;
+};
+
+export async function loadPostAssociations(
+  executor: Executor,
+  postId: string,
+): Promise<PostAssociations> {
+  const [categoryRows, tagRows, solutionRows] = await Promise.all([
+    executor
+      .select({ categoryId: postCategories.categoryId, isPrimary: postCategories.isPrimary })
+      .from(postCategories)
+      .where(eq(postCategories.postId, postId)),
+    executor.select({ tagId: postTags.tagId }).from(postTags).where(eq(postTags.postId, postId)),
+    executor
+      .select({ solutionId: postSolutions.solutionId, isPrimary: postSolutions.isPrimary })
+      .from(postSolutions)
+      .where(eq(postSolutions.postId, postId)),
+  ]);
+  return {
+    categoryIds: categoryRows.map((r) => r.categoryId),
+    primaryCategoryId: categoryRows.find((r) => r.isPrimary)?.categoryId ?? null,
+    tagIds: tagRows.map((r) => r.tagId),
+    solutionIds: solutionRows.map((r) => r.solutionId),
+    primarySolutionId: solutionRows.find((r) => r.isPrimary)?.solutionId ?? null,
+  };
+}
+
+export type PostForEdit = { post: typeof posts.$inferSelect } & PostAssociations;
+
+/** Carrega um artigo por completo para a tela de edição (sem travar linha: não é uma transação
+ * de escrita). A autorização (dono/status) é responsabilidade de quem chama. */
+export async function findPostForEdit(executor: Executor, id: string): Promise<PostForEdit | null> {
+  const [post] = await executor.select().from(posts).where(eq(posts.id, id)).limit(1);
+  if (!post) return null;
+  const associations = await loadPostAssociations(executor, id);
+  return { post, ...associations };
+}
+
+export type PostSummaryForAdmin = {
+  id: string;
+  slug: string;
+  title: string;
+  status: PostStatus;
+  authorName: string;
+  updatedAt: Date;
+  version: number;
+};
+
+/** Lista para a tela `/admin/artigos`. `ownerId` restringe a AUTHOR aos próprios artigos. */
+export async function listPostsForAdmin(
+  executor: Executor,
+  options: { page?: number; pageSize?: number; ownerId?: string; status?: PostStatus } = {},
+): Promise<Page<PostSummaryForAdmin>> {
+  const { page, pageSize, offset } = boundedPaging(options.page ?? 1, options.pageSize ?? 20);
+  const filters = [
+    options.ownerId ? eq(posts.createdBy, options.ownerId) : undefined,
+    options.status ? eq(posts.status, options.status) : undefined,
+  ].filter((f) => f !== undefined);
+  const where = filters.length > 0 ? and(...filters) : undefined;
+
+  const [totalRow] = await executor.select({ n: count() }).from(posts).where(where);
+  const rows = await executor
+    .select({
+      id: posts.id,
+      slug: posts.slug,
+      title: posts.title,
+      status: posts.status,
+      authorName: specialists.name,
+      updatedAt: posts.updatedAt,
+      version: posts.version,
+    })
+    .from(posts)
+    .innerJoin(specialists, eq(specialists.id, posts.authorId))
+    .where(where)
+    .orderBy(desc(posts.updatedAt), desc(posts.id))
+    .limit(pageSize)
+    .offset(offset);
+  return { items: rows, total: totalRow?.n ?? 0, page, pageSize };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -108,7 +213,7 @@ export async function findPublishedPostBySlug(
 export type Page<T> = { items: T[]; total: number; page: number; pageSize: number };
 
 /** Tamanho de página com teto: parâmetro do cliente nunca decide quanto é lido do banco. */
-function boundedPaging(page: number, pageSize: number) {
+export function boundedPaging(page: number, pageSize: number) {
   const safePage = Number.isInteger(page) && page >= 1 ? Math.min(page, 10_000) : 1;
   const safeSize = Number.isInteger(pageSize) && pageSize >= 1 ? Math.min(pageSize, 50) : 12;
   return { page: safePage, pageSize: safeSize, offset: (safePage - 1) * safeSize };
