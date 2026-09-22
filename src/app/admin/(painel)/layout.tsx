@@ -22,6 +22,9 @@ export default async function PanelLayout({ children }: { children: React.ReactN
           : []),
         ...(can(actor, "solution:manage") ? [{ href: "/admin/solucoes", label: "Soluções" }] : []),
         ...(can(actor, "page:manage") ? [{ href: "/admin/paginas", label: "Páginas" }] : []),
+        ...(can(actor, "settings:manage")
+          ? [{ href: "/admin/configuracoes", label: "Configurações" }]
+          : []),
         { href: "/admin/midia", label: "Mídia" },
         { href: "/admin/seguranca", label: "Segurança" },
       ]}
