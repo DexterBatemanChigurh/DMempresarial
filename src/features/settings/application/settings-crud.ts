@@ -96,6 +96,12 @@ export async function updateSettings(
   });
 }
 
+/** Leitura pública (rodapé, JSON-LD): sem sessão, sem checagem de permissão — é a mesma
+ * informação institucional que qualquer visitante já vê no rodapé. */
+export async function getPublicSettings({ db }: Deps): Promise<SiteSettingsRow | null> {
+  return getSiteSettings(db);
+}
+
 export async function getSettingsForEdit(
   { db }: Deps,
   actor: Actor | null | undefined,
@@ -112,3 +118,4 @@ export const updateSettingsForRoute = (input: UpdateSettingsInput) =>
   updateSettings({ db: getDb() }, input);
 export const getSettingsForEditForRoute = (actor: Actor | null | undefined) =>
   getSettingsForEdit({ db: getDb() }, actor);
+export const getPublicSettingsForRoute = () => getPublicSettings({ db: getDb() });
