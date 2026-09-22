@@ -67,6 +67,14 @@ export function createFixtures() {
       return { id: row!.id, slug };
     },
 
+    async tag(slug = uniq("tag-")) {
+      const [row] = await q<{ id: string }>(
+        "insert into tags (slug, name) values ($1, $2) returning id",
+        [slug, `Tag ${slug}`],
+      );
+      return { id: row!.id, slug };
+    },
+
     async media(over: { alt?: string | null } = {}) {
       const key = uniq("media/");
       const [row] = await q<{ id: string }>(
@@ -152,6 +160,7 @@ export function createFixtures() {
       await q("delete from specialists where slug like $1", [`${PREFIX}%`]);
       await q("delete from solutions where slug like $1", [`${PREFIX}%`]);
       await q("delete from categories where slug like $1", [`${PREFIX}%`]);
+      await q("delete from tags where slug like $1", [`${PREFIX}%`]);
       await q("delete from media where storage_key like $1", [`${PREFIX}%`]);
       // Mídia de upload real usa chave `aaaa/mm/<uuid>.webp` (nunca prefixada); identificada pelo
       // dono. Precisa rodar ANTES de apagar os usuários (a FK vira NULL em cascata e perderíamos o rastro).
