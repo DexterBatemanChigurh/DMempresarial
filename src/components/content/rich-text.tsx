@@ -8,6 +8,7 @@ import {
   type Inline,
   type ListItem,
   type Mark,
+  type MediaResolver,
 } from "@/lib/rich-text";
 
 /**
@@ -19,9 +20,6 @@ import {
  * alterado direto no banco nunca chega à página sem passar pela lista. Documento inválido
  * renderiza vazio em vez de derrubar a página.
  */
-export type ResolvedMedia = { url: string; alt: string; width: number; height: number };
-export type MediaResolver = (mediaId: string) => ResolvedMedia | null;
-
 type Props = {
   value: unknown;
   /** Resolve o id da mídia para URL, texto alternativo e dimensões (vêm da tabela `media`). */

@@ -1,15 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RichTextEditor } from "@/components/admin/rich-text/rich-text-editor";
 import { RichText } from "@/components/content/rich-text";
 import { Heading, SectionLabel } from "@/components/ui";
-import { validateRichText } from "@/lib/rich-text";
+import {
+  extractMediaIds,
+  validateRichText,
+  type ResolvedMedia,
+  type RichDoc,
+} from "@/lib/rich-text";
+import { resolveMediaMapAction } from "./resolve-action";
 
 /** Demonstração do editor: o que ele produz, se o validador do servidor aceita e como fica publicado. */
 export function EditorDemo() {
   const [doc, setDoc] = useState<unknown>(null);
   const result = doc ? validateRichText(doc) : null;
+
+  // Resolve as imagens referenciadas (mesmo caminho usado numa página pública real): sempre que
+  // o conjunto de ids muda, busca de novo; o resultado alimenta um `resolveMedia` síncrono.
+  const [mediaMap, setMediaMap] = useState<Record<string, ResolvedMedia>>({});
+  const lastIdsRef = useRef<string>("");
+  useEffect(() => {
+    if (!result?.ok) return;
+    const ids = extractMediaIds(result.doc as RichDoc)
+      .slice()
+      .sort()
+      .join(",");
+    if (ids === lastIdsRef.current) return;
+    lastIdsRef.current = ids;
+    resolveMediaMapAction(result.doc as RichDoc).then(setMediaMap);
+  }, [result]);
 
   return (
     <div className="grid gap-2xl lg:grid-cols-2">
@@ -44,7 +65,7 @@ export function EditorDemo() {
             Como fica publicado
           </Heading>
           <div data-testid="preview" className="mt-md">
-            <RichText value={doc} />
+            <RichText value={doc} resolveMedia={(id) => mediaMap[id] ?? null} />
           </div>
         </section>
       </div>

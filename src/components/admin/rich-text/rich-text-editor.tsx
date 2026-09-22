@@ -3,6 +3,7 @@
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import { useId, useState } from "react";
 import { Button, TextField } from "@/components/ui";
+import { MediaPicker } from "@/components/admin/media/media-picker";
 import { cn } from "@/lib/cn";
 import { EMPTY_DOC, isAllowedHref, validateRichText } from "@/lib/rich-text";
 import { richTextExtensions, toEditorContent } from "./extensions";
@@ -227,6 +228,13 @@ export function RichTextEditor({
           onClick={() => run().setHorizontalRule().run()}
         />
         <ToolButton label="Link" text="Link" active={tool.link} onClick={openLink} />
+        <MediaPicker
+          onPick={({ mediaId, alt }) =>
+            run()
+              .insertContent({ type: "image", attrs: { mediaId, caption: alt || undefined } })
+              .run()
+          }
+        />
         <ToolButton
           label="Desfazer"
           text="Desfazer"
