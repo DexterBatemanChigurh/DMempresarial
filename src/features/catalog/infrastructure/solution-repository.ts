@@ -31,6 +31,28 @@ export async function listPublishedSolutions(executor: Executor): Promise<Public
     .orderBy(asc(solutions.position), asc(solutions.title));
 }
 
+export type SolutionOption = {
+  id: string;
+  title: string;
+  slug: string;
+  type: "CONSULTORIA" | "SERVICO";
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+};
+
+/** Para o seletor de solução relacionada do artigo: TODAS as soluções, qualquer status. */
+export async function listSolutionsForAdmin(executor: Executor): Promise<SolutionOption[]> {
+  return executor
+    .select({
+      id: solutions.id,
+      title: solutions.title,
+      slug: solutions.slug,
+      type: solutions.type,
+      status: solutions.status,
+    })
+    .from(solutions)
+    .orderBy(asc(solutions.title));
+}
+
 export async function findPublishedSolutionBySlug(executor: Executor, slug: string) {
   const [solution] = await executor
     .select({

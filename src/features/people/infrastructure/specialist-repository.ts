@@ -23,6 +23,29 @@ export async function listPublishedSpecialists(executor: Executor) {
     .orderBy(asc(specialists.position), asc(specialists.name));
 }
 
+export type SpecialistOption = {
+  id: string;
+  name: string;
+  slug: string;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  kind: "TEAM" | "GUEST";
+};
+
+/** Para o seletor de autor do artigo: TODOS os especialistas, qualquer status (um artigo pode
+ * ter como autor um especialista ainda não publicado; a checagem de publicação é do artigo). */
+export async function listSpecialistsForAdmin(executor: Executor): Promise<SpecialistOption[]> {
+  return executor
+    .select({
+      id: specialists.id,
+      name: specialists.name,
+      slug: specialists.slug,
+      status: specialists.status,
+      kind: specialists.kind,
+    })
+    .from(specialists)
+    .orderBy(asc(specialists.name));
+}
+
 export async function findPublishedSpecialistBySlug(executor: Executor, slug: string) {
   const [row] = await executor
     .select({
