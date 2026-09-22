@@ -92,6 +92,9 @@ export function RichTextEditor({
     content: toEditorContent(parsed.ok ? parsed.doc : EMPTY_DOC),
     // Next.js renderiza no servidor: o editor só nasce no navegador.
     immediatelyRender: false,
+    // O CSS base do Tiptap (cursor de lacunas, espaço em branco…) é injetado sem nonce, o que a
+    // CSP bloqueia; ele vive em `globals.css` (`.rich-editor .ProseMirror…`) em vez disso.
+    injectCSS: false,
     editorProps: {
       attributes: {
         role: "textbox",
