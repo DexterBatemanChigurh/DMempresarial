@@ -16,6 +16,9 @@ playwright-report/
 test-results/
 .vercel/
 
+# storage local de arquivos
+.storage/
+
 # sistema/editor
 .DS_Store
 .idea/

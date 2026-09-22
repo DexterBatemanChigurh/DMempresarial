@@ -22,6 +22,8 @@ const rawSchema = z.object({
   BETTER_AUTH_URL: z.url().optional(),
   // 2FA obrigatório para ADMIN e EDITOR. Padrão: ligado. Só desligue em desenvolvimento local.
   REQUIRE_2FA: z.enum(["true", "false"]).default("true"),
+  // Diretório local para o adaptador de storage (usado em desenvolvimento).
+  STORAGE_LOCAL_DIR: z.string().default(".storage"),
 });
 
 export type Env = {
@@ -33,6 +35,7 @@ export type Env = {
   BETTER_AUTH_SECRET: string | undefined;
   BETTER_AUTH_URL: string;
   REQUIRE_2FA: boolean;
+  STORAGE_LOCAL_DIR: string;
 };
 
 export class EnvError extends Error {
@@ -88,6 +91,7 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     BETTER_AUTH_SECRET: value.BETTER_AUTH_SECRET,
     BETTER_AUTH_URL: (value.BETTER_AUTH_URL ?? siteUrl).replace(/\/+$/, ""),
     REQUIRE_2FA: value.REQUIRE_2FA === "true",
+    STORAGE_LOCAL_DIR: value.STORAGE_LOCAL_DIR,
   };
 }
 
