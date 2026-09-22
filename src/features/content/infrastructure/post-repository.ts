@@ -37,6 +37,26 @@ export async function loadPostForTransition(
   return { post, primaryCategoryId: primary?.categoryId ?? null, coverAltText };
 }
 
+/**
+ * IDs de artigos agendados vencidos, já travados (`FOR UPDATE SKIP LOCKED`): uma execução
+ * concorrente do cron simplesmente pula linhas que outra já está processando, em vez de esperar
+ * ou duplicar a publicação (docs/03, incremento 5).
+ */
+export async function findDueScheduledPostIds(
+  tx: Transaction,
+  now: Date,
+  limit = 100,
+): Promise<string[]> {
+  const rows = await tx
+    .select({ id: posts.id })
+    .from(posts)
+    .where(and(eq(posts.status, "SCHEDULED"), sql`${posts.scheduledFor} <= ${now}`))
+    .orderBy(posts.scheduledFor)
+    .limit(limit)
+    .for("update", { skipLocked: true });
+  return rows.map((r) => r.id);
+}
+
 // ---------------------------------------------------------------------------------------------
 // Leitura ADMINISTRATIVA: qualquer status, colunas internas incluídas. Sempre atrás de
 // `requireAdminSession` + `assertCan` na camada `application` — nada aqui decide permissão.

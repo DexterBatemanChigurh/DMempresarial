@@ -24,6 +24,8 @@ const rawSchema = z.object({
   REQUIRE_2FA: z.enum(["true", "false"]).default("true"),
   // Diretório local para o adaptador de storage (usado em desenvolvimento).
   STORAGE_LOCAL_DIR: z.string().default(".storage"),
+  // Segredo do cron de publicação agendada (`/api/cron/publish`). Obrigatório em production.
+  CRON_SECRET: z.string().min(32).optional(),
 });
 
 export type Env = {
@@ -36,6 +38,7 @@ export type Env = {
   BETTER_AUTH_URL: string;
   REQUIRE_2FA: boolean;
   STORAGE_LOCAL_DIR: string;
+  CRON_SECRET: string | undefined;
 };
 
 export class EnvError extends Error {
@@ -77,6 +80,7 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     // Em produção o 2FA não pode ser desligado por configuração (decisão T-05).
     if (value.REQUIRE_2FA === "false")
       problems.push("REQUIRE_2FA: não pode ser false em production");
+    if (!value.CRON_SECRET) problems.push("CRON_SECRET: obrigatório em production");
     if (problems.length > 0) throw new EnvError(problems);
   }
 
@@ -92,6 +96,7 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     BETTER_AUTH_URL: (value.BETTER_AUTH_URL ?? siteUrl).replace(/\/+$/, ""),
     REQUIRE_2FA: value.REQUIRE_2FA === "true",
     STORAGE_LOCAL_DIR: value.STORAGE_LOCAL_DIR,
+    CRON_SECRET: value.CRON_SECRET,
   };
 }
 

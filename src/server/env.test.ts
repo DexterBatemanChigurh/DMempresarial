@@ -35,6 +35,7 @@ describe("parseEnv", () => {
         SITE_URL: "https://exemplo.test",
         DATABASE_URL: "x",
         BETTER_AUTH_SECRET: SECRET,
+        CRON_SECRET: SECRET,
       }).APP_ENV,
     ).toBe("production");
   });
@@ -44,6 +45,7 @@ describe("parseEnv", () => {
       APP_ENV: "production",
       SITE_URL: "https://exemplo.test",
       BETTER_AUTH_SECRET: SECRET,
+      CRON_SECRET: SECRET,
     };
     // Só a URL do dono do banco não basta: o runtime não deve operar com privilégio de DDL.
     expect(() => parseEnv({ ...base, DATABASE_URL_ADMIN: "x" })).toThrow(/DATABASE_URL:/);
@@ -64,10 +66,23 @@ describe("parseEnv", () => {
       APP_ENV: "production",
       SITE_URL: "https://exemplo.test",
       DATABASE_URL: "x",
+      CRON_SECRET: SECRET,
     };
     expect(() => parseEnv(base)).toThrow(/BETTER_AUTH_SECRET/);
     expect(() => parseEnv({ ...base, BETTER_AUTH_SECRET: "curto" })).toThrow(/BETTER_AUTH_SECRET/);
     expect(parseEnv({ ...base, BETTER_AUTH_SECRET: SECRET }).BETTER_AUTH_SECRET).toBe(SECRET);
+  });
+
+  it("em production exige CRON_SECRET, com pelo menos 32 caracteres", () => {
+    const base = {
+      APP_ENV: "production",
+      SITE_URL: "https://exemplo.test",
+      DATABASE_URL: "x",
+      BETTER_AUTH_SECRET: SECRET,
+    };
+    expect(() => parseEnv(base)).toThrow(/CRON_SECRET/);
+    expect(() => parseEnv({ ...base, CRON_SECRET: "curto" })).toThrow(/CRON_SECRET/);
+    expect(parseEnv({ ...base, CRON_SECRET: SECRET }).CRON_SECRET).toBe(SECRET);
   });
 
   it("BETTER_AUTH_URL cai em SITE_URL quando ausente e o segredo nunca aparece em erro", () => {
@@ -98,6 +113,7 @@ describe("parseEnv", () => {
       SITE_URL: "https://exemplo.test",
       DATABASE_URL: "x",
       BETTER_AUTH_SECRET: SECRET,
+      CRON_SECRET: SECRET,
     };
     expect(parseEnv(production).REQUIRE_2FA).toBe(true);
     expect(() => parseEnv({ ...production, REQUIRE_2FA: "false" })).toThrow(/REQUIRE_2FA/);

@@ -9,7 +9,7 @@ import { recordAudit } from "@/features/platform/infrastructure/audit";
 import { assertCan, can, type Action, type Actor } from "@/server/permissions";
 import { canTransition, requiresPublishChecks, type PostStatus } from "../domain/post-status";
 import { postPublishBlockers } from "../domain/publish-rules";
-import { loadPostForTransition } from "../infrastructure/post-repository";
+import { findDueScheduledPostIds, loadPostForTransition } from "../infrastructure/post-repository";
 
 /**
  * Serviços de artigo (docs/03, partes 9, 16 e 35). Independentes de Next e de UI: a Server
@@ -284,6 +284,87 @@ export function transitionPostForRoute(input: TransitionInput): Promise<PostMuta
 
 export function changePostSlugForRoute(input: ChangeSlugInput): Promise<PostMutationResult> {
   return changePostSlug({ db: getDb() }, input);
+}
+
+export function publishDuePostsForRoute(
+  input: { now?: Date; requestId?: string } = {},
+): Promise<PublishDuePostsResult> {
+  return publishDuePosts({ db: getDb() }, input);
+}
+
+export type PublishDuePostsResult = {
+  publishedIds: string[];
+  invalidateTags: string[];
+};
+
+/**
+ * Publica os artigos `SCHEDULED` vencidos (docs/03, incremento 5 — `/api/cron/publish`). Sem
+ * ator humano: quem autoriza é o segredo do cron, verificado na Route Handler antes de chamar
+ * esta função. Idempotente — `FOR UPDATE SKIP LOCKED` faz duas execuções concorrentes se
+ * dividirem as linhas em vez de disputar ou duplicar, e uma vez publicado o artigo some do
+ * filtro `status = 'SCHEDULED'` da próxima chamada.
+ */
+export async function publishDuePosts(
+  { db }: Deps,
+  input: { now?: Date; requestId?: string } = {},
+): Promise<PublishDuePostsResult> {
+  const now = input.now ?? new Date();
+
+  return db.transaction(async (tx) => {
+    const ids = await findDueScheduledPostIds(tx, now);
+    const publishedIds: string[] = [];
+    const invalidateTags = new Set<string>();
+
+    for (const id of ids) {
+      const loaded = await loadPostForTransition(tx, id);
+      if (!loaded || loaded.post.status !== "SCHEDULED") continue; // já mudou por outra via
+      const { post } = loaded;
+
+      const blockers = postPublishBlockers(
+        {
+          title: post.title,
+          slug: post.slug,
+          authorId: post.authorId,
+          primaryCategoryId: loaded.primaryCategoryId,
+          body: post.body,
+          coverMediaId: post.coverMediaId,
+          coverAltText: loaded.coverAltText,
+        },
+        { scheduling: false, now },
+      );
+      // Um artigo que deixou de atender aos pré-requisitos depois de agendado (ex.: perdeu a
+      // capa) não publica sozinho — fica agendado, visível para alguém corrigir manualmente.
+      if (blockers.length > 0) continue;
+
+      const publishedAt = post.scheduledFor ?? now;
+      const [updated] = await tx
+        .update(posts)
+        .set({
+          status: "PUBLISHED",
+          publishedAt,
+          firstPublishedAt: post.firstPublishedAt ?? publishedAt,
+          scheduledFor: null,
+          version: sql`${posts.version} + 1`,
+        })
+        .where(and(eq(posts.id, id), eq(posts.version, post.version)))
+        .returning({ id: posts.id, slug: posts.slug });
+      if (!updated) continue; // versão mudou entre o SELECT e o UPDATE: pula, próxima vez pega
+
+      await recordAudit(tx, {
+        actorId: null,
+        action: "post.published",
+        entityType: "post",
+        entityId: id,
+        metadata: { from: "SCHEDULED", to: "PUBLISHED", via: "cron" },
+        requestId: input.requestId,
+      });
+
+      publishedIds.push(id);
+      for (const tag of tagsFor(updated.slug)) invalidateTags.add(tag);
+    }
+
+    return { publishedIds, invalidateTags: [...invalidateTags] };
+  });
 }
 
 /** Útil para a UI decidir quais botões mostrar (a autorização real acontece nas funções acima). */
