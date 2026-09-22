@@ -26,6 +26,7 @@ export const ACTIONS = [
   "solution:manage",
   "page:manage",
   "media:upload",
+  "media:manage",
   "media:delete",
   "lead:view",
   "lead:update",
@@ -83,6 +84,7 @@ const POLICY: Record<Role, Partial<Record<Action, Rule>>> = {
     "solution:manage": always,
     "page:manage": always,
     "media:upload": always,
+    "media:manage": always,
     "media:delete": always,
     "redirect:manage": always,
   },
@@ -93,6 +95,7 @@ const POLICY: Record<Role, Partial<Record<Action, Rule>>> = {
     "post:delete-draft": deletableDraft,
     "specialist:edit-own": isOwner,
     "media:upload": always,
+    "media:manage": isOwner,
     "media:delete": isOwner,
   },
 };

@@ -10,6 +10,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       role={actor.role}
       nav={[
         { href: "/admin", label: "Início" },
+        { href: "/admin/midia", label: "Mídia" },
         { href: "/admin/seguranca", label: "Segurança" },
       ]}
     >
