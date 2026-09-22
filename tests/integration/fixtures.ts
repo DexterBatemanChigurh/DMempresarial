@@ -96,6 +96,17 @@ export function createFixtures() {
       return { id: row!.id, slug };
     },
 
+    async page(over: { key?: string; template?: string; status?: string; data?: unknown } = {}) {
+      const key = over.key ?? uniq("pag-");
+      const status = over.status ?? "DRAFT";
+      const [row] = await q<{ id: string }>(
+        `insert into pages (key, template, title, data, status, published_at)
+         values ($1, $2::page_template, $3, $4::jsonb, $5::publish_status, ${status === "PUBLISHED" ? "now()" : "null"}) returning id`,
+        [key, over.template ?? "LEGAL", `Página ${key}`, JSON.stringify(over.data ?? {}), status],
+      );
+      return { id: row!.id, key };
+    },
+
     /** Artigo pronto para publicar (categoria primária, texto). Ajuste por `over`. */
     async post(over: {
       authorId: string;
@@ -161,6 +172,7 @@ export function createFixtures() {
       await q("delete from solutions where slug like $1", [`${PREFIX}%`]);
       await q("delete from categories where slug like $1", [`${PREFIX}%`]);
       await q("delete from tags where slug like $1", [`${PREFIX}%`]);
+      await q("delete from pages where key like $1", [`${PREFIX}%`]);
       await q("delete from media where storage_key like $1", [`${PREFIX}%`]);
       // Mídia de upload real usa chave `aaaa/mm/<uuid>.webp` (nunca prefixada); identificada pelo
       // dono. Precisa rodar ANTES de apagar os usuários (a FK vira NULL em cascata e perderíamos o rastro).
