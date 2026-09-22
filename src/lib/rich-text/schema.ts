@@ -69,3 +69,8 @@ export type ImageBlock = { type: "image"; attrs: { mediaId: string; caption?: st
 export type Block = Paragraph | Heading | List | Blockquote | Callout | HorizontalRule | ImageBlock;
 
 export type RichDoc = { type: "doc"; content: Block[] };
+
+/** Resolve um id de mídia (imagem) para o que o renderizador precisa. Sempre SÍNCRONO: quem
+ * chama já pré-carregou as imagens referenciadas (ver `features/media/application/resolve.ts`). */
+export type ResolvedMedia = { url: string; alt: string; width: number; height: number };
+export type MediaResolver = (mediaId: string) => ResolvedMedia | null;

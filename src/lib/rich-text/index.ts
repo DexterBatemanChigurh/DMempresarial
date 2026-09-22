@@ -1,4 +1,5 @@
 export { isAllowedHref, isExternalHref } from "./href";
+export { extractMediaIds } from "./media-refs";
 export * from "./schema";
 export { extractPlainText, isEmptyRichText, readingMinutes } from "./text";
 export {
