@@ -1,7 +1,16 @@
 import { sql } from "drizzle-orm";
-import { check, index, jsonb, pgTable, smallint, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  check,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  smallint,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { users } from "./auth";
-import { createdAt, maxLen, pk, updatedAt } from "./_helpers";
+import { createdAt, maxLen, pk, tz, updatedAt } from "./_helpers";
 import { redirectOrigin } from "./enums";
 
 /**
@@ -93,3 +102,17 @@ export const auditLogs = pgTable(
     index("audit_logs_actor_idx").on(t.actorUserId, t.at.desc()),
   ],
 );
+
+/**
+ * Limitador dos formulários públicos (docs/03, parte 21 e 22): janela fixa, contador simples.
+ * `key` já traz a janela embutida (ex.: `lead:ip:<hash>:2026-09-23T14`, uma chave por hora), então
+ * o PK dobra como identidade da janela — sem isso duas requisições concorrentes na mesma janela
+ * poderiam ler o mesmo contador antes de gravar (a consulta usa `INSERT ... ON CONFLICT` atômico,
+ * não select-depois-update). Limpeza periódica: linhas velhas somem sozinhas quando a janela
+ * muda de chave, um job pode apagar as antigas sem risco (não são a fonte de verdade de nada).
+ */
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  windowStart: tz("window_start").notNull().defaultNow(),
+  count: integer("count").notNull().default(1),
+});

@@ -43,6 +43,13 @@
       "when": 1790018160897,
       "tag": "0005_two_factor",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790184215402,
+      "tag": "0006_fuzzy_goblin_queen",
+      "breakpoints": true
     }
   ]
 }
