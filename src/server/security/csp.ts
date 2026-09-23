@@ -55,3 +55,37 @@ export function buildAdminCsp(nonce: string, options: CspOptions = {}): string {
   if (!dev) parts.push("upgrade-insecure-requests");
   return parts.join("; ");
 }
+
+/**
+ * CSP das páginas públicas (camada 2). Sem nonce de propósito: nonce em toda resposta exige
+ * renderização dinâmica em TODA página (documentação do Next 16), desligando o cache estático e
+ * o PPR do Cache Components — inviável para o site público. A própria hidratação do Next injeta
+ * scripts inline sem nonce em página estática/PPR (confirmado testando no navegador: sem
+ * `unsafe-inline` a página nem carrega), então segue a orientação oficial do Next para CSP sem
+ * nonce ("Without Nonces", doc local) e a mitigação já registrada em docs/03 parte 42: o risco de
+ * XSS por `unsafe-inline` é reduzido porque o site nunca renderiza HTML arbitrário (nenhum
+ * HTML montado como string no projeto — testado por `tests/no-raw-html.test.ts` — e todo texto
+ * rico passa por `<RichText>`, que só produz os elementos de uma lista de permissão). Reavaliar
+ * SRI (`experimental.sri`) mais adiante para apertar isso sem perder o cache estático.
+ */
+export function buildPublicCsp(options: CspOptions = {}): string {
+  const dev = options.isDevelopment === true;
+  const images = ["'self'", "data:", ...(options.imageOrigins ?? [])];
+
+  const directives: Record<string, string[]> = {
+    "default-src": ["'self'"],
+    "script-src": ["'self'", "'unsafe-inline'", ...(dev ? ["'unsafe-eval'"] : [])],
+    "style-src": ["'self'", "'unsafe-inline'"],
+    "img-src": images,
+    "font-src": ["'self'"],
+    "connect-src": ["'self'"],
+    "object-src": ["'none'"],
+    "base-uri": ["'self'"],
+    "form-action": ["'self'"],
+    "frame-ancestors": ["'none'"],
+  };
+
+  const parts = Object.entries(directives).map(([name, values]) => `${name} ${values.join(" ")}`);
+  if (!dev) parts.push("upgrade-insecure-requests");
+  return parts.join("; ");
+}
