@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
 import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
+import { publicMetadata } from "@/components/site/seo";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -15,10 +16,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const categories = await listPublicCategoriesForRoute();
   const cat = categories.find((c) => c.slug === slug);
   if (!cat) return { title: "Categoria não encontrada" };
-  return {
+  return publicMetadata({
     title: `${cat.name} — Blog`,
     description: `${cat.postCount} artigos sobre ${cat.name.toLowerCase()}.`,
-  };
+    path: `/blog/categoria/${cat.slug}`,
+  });
 }
 
 export default async function CategoryPage({ params }: Params) {

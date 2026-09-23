@@ -7,6 +7,8 @@ import {
   getPublicPostBySlugForRoute,
   listPublicPostsForRoute,
 } from "@/features/content/application/public-posts";
+import { JsonLd, publicMetadata } from "@/components/site/seo";
+import { env } from "@/server/env";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -19,10 +21,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPublicPostBySlugForRoute(slug);
   if (!post) return { title: "Artigo não encontrado" };
-  return {
+  return publicMetadata({
     title: post.seoTitle ?? post.title,
     description: post.seoDescription ?? post.excerpt ?? undefined,
-  };
+    path: `/blog/${post.slug}`,
+    type: "article",
+  });
 }
 
 export default async function BlogPostPage({ params }: Params) {
@@ -40,6 +44,18 @@ export default async function BlogPostPage({ params }: Params) {
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: post.title,
+          datePublished: post.publishedAt.toISOString(),
+          dateModified: post.updatedAt.toISOString(),
+          author: { "@type": "Person", name: post.authorName },
+          url: `${env().SITE_URL}/blog/${post.slug}`,
+        }}
+      />
+
       <Section spacing="loose">
         <Container>
           {post.primaryCategorySlug ? (

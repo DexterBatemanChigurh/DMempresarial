@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { RichText } from "@/components/content/rich-text";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { getPublicSpecialistBySlugForRoute } from "@/features/people/application/public-specialists";
+import { publicMetadata } from "@/components/site/seo";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -18,10 +19,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const person = await getPublicSpecialistBySlugForRoute(slug);
   if (!person) return { title: "Especialista não encontrado" };
-  return {
+  return publicMetadata({
     title: person.seoTitle ?? `${person.name} — ${person.roleTitle}`,
     description: person.seoDescription ?? person.summary ?? undefined,
-  };
+    path: `/sobre/especialistas/${person.slug}`,
+  });
 }
 
 export default async function SpecialistProfilePage({ params }: Params) {

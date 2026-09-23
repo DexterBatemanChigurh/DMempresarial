@@ -14,11 +14,13 @@ import {
 import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
 import { contactDataSchema } from "@/features/pages/domain/page-schemas";
+import { publicMetadata } from "@/components/site/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Contato",
   description: "Fale com a DM Empresarial. Endereço, canais e formulário de contato.",
-};
+  path: "/contato",
+});
 
 export default async function ContactPage() {
   const [page, settings] = await Promise.all([

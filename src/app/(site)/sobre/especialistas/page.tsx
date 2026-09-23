@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { listPublicSpecialistsForRoute } from "@/features/people/application/public-specialists";
+import { publicMetadata } from "@/components/site/seo";
 
 // Rota própria do diretório (docs/01 §05, separada de /sobre) — grade de retratos.
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Especialistas",
   description: "Conheça a equipe da DM Empresarial.",
-};
+  path: "/sobre/especialistas",
+});
 
 function mediaUrl(storageKey: string): string {
   return `/media/${storageKey}`;

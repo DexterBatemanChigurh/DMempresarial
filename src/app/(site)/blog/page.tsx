@@ -3,11 +3,13 @@ import Link from "next/link";
 import { Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
 import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
+import { publicMetadata } from "@/components/site/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Blog",
   description: "Conhecimento para quem toma decisões.",
-};
+  path: "/blog",
+});
 
 // Lê `searchParams` (paginação) — dado de requisição, mesmo padrão das rotas `[slug]`.
 export const instant = false;

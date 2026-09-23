@@ -7,12 +7,15 @@ import { listPublicPostsForRoute } from "@/features/content/application/public-p
 import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
 import { homeDataSchema } from "@/features/pages/domain/page-schemas";
 import { listPublicSpecialistsForRoute } from "@/features/people/application/public-specialists";
+import { JsonLd, publicMetadata } from "@/components/site/seo";
+import { env } from "@/server/env";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "DM Empresarial — Consultoria empresarial em Frutal/MG",
   description:
     "Consultoria empresarial em Frutal/MG. Método, acompanhamento e gente de verdade por trás de cada decisão.",
-};
+  path: "/",
+});
 
 function mediaUrl(storageKey: string): string {
   return `/media/${storageKey}`;
@@ -39,6 +42,15 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "DM Empresarial",
+          url: env().SITE_URL,
+        }}
+      />
+
       {/* 1 HERO */}
       <Section spacing="loose">
         <Container>

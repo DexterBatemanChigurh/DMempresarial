@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { RichText } from "@/components/content/rich-text";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { getPublicSolutionBySlugForRoute } from "@/features/catalog/application/public-solutions";
+import { publicMetadata } from "@/components/site/seo";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -32,10 +33,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const solution = await getPublicSolutionBySlugForRoute(slug);
   if (!solution) return { title: "Solução não encontrada" };
-  return {
+  return publicMetadata({
     title: solution.seoTitle ?? solution.title,
     description: solution.seoDescription ?? solution.summary,
-  };
+    path: `/solucoes/${solution.slug}`,
+  });
 }
 
 export default async function SolutionDetailPage({ params }: Params) {

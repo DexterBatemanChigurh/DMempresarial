@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Instrument_Sans, Newsreader } from "next/font/google";
 import { SkipLink } from "@/components/ui";
+import { env } from "@/server/env";
 import "./globals.css";
 
 // Fontes do Design System (Blueprint 2, seção 07), hospedadas pelo próprio Next (sem requisição
@@ -21,11 +22,17 @@ const instrumentSans = Instrument_Sans({
   variable: "--font-instrument-sans",
 });
 
-// Metadata provisória, só com dados confirmados. A metadata real (por página, com fallback)
-// entra na fase de SEO.
+// `metadataBase` resolve os `canonical`/Open Graph relativos que cada página declara para URL
+// absoluta — sem isso o Next usa a URL da própria requisição, que não é estável atrás de proxy.
 export const metadata: Metadata = {
-  title: "DM Empresarial",
+  metadataBase: new URL(env().SITE_URL),
+  title: { default: "DM Empresarial", template: "%s · DM Empresarial" },
   description: "Consultoria empresarial em Frutal, MG.",
+  openGraph: {
+    siteName: "DM Empresarial",
+    locale: "pt_BR",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

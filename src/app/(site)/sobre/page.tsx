@@ -5,12 +5,14 @@ import { Button, Container, Heading, Section, SectionLabel, Text } from "@/compo
 import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
 import { listPublicSpecialistsForRoute } from "@/features/people/application/public-specialists";
 import { aboutDataSchema } from "@/features/pages/domain/page-schemas";
+import { publicMetadata } from "@/components/site/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Sobre",
   description:
     "Conheça a DM Empresarial: quem somos, como pensamos, como trabalhamos e quem faz parte da equipe.",
-};
+  path: "/sobre",
+});
 
 function mediaUrl(storageKey: string): string {
   return `/media/${storageKey}`;

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { InstitutionalPage } from "@/components/site/institutional-page";
 import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
+import { publicMetadata } from "@/components/site/seo";
 
 // Rotas estáticas (`/sobre`, `/contato`, `/solucoes`, `/blog`, `/politica-de-privacidade`,
 // `/termos-de-uso`) resolvem antes desta rota dinâmica, então ela só atende chaves que não têm
@@ -27,10 +28,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (RESERVED.has(key)) return { title: "Página não encontrada" };
   const page = await getPublishedPageForRoute(key);
   if (!page) return { title: "Página não encontrada" };
-  return {
+  return publicMetadata({
     title: page.seoTitle ?? page.title,
     description: page.seoDescription ?? undefined,
-  };
+    path: `/${page.key}`,
+  });
 }
 
 export default async function DynamicInstitutionalPage({ params }: Params) {

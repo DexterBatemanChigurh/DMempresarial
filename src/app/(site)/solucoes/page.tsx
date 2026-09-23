@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { listPublicSolutionsForRoute } from "@/features/catalog/application/public-solutions";
+import { publicMetadata } from "@/components/site/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Soluções",
   description:
     "Consultoria e serviços da DM Empresarial para empresas que precisam de método e acompanhamento.",
-};
+  path: "/solucoes",
+});
 
 type Group = {
   label: string;

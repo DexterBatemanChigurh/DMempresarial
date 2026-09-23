@@ -3,6 +3,7 @@ import { Button, Container, Heading, Section, SectionLabel, Text } from "@/compo
 
 export const metadata: Metadata = {
   title: "Página não encontrada",
+  robots: { index: false, follow: false },
 };
 
 // Renderiza dentro do layout do grupo `(site)`, então mantém cabeçalho e rodapé.

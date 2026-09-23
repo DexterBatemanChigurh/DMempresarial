@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
+import { publicMetadata } from "@/components/site/seo";
 
 // Confirmação de envio (docs/01 §05, medição de conversão). Não indexável: só existe depois de
 // um envio real, e o formulário ainda não existe (Fase 7) — ninguém chega aqui organicamente.
 export const metadata: Metadata = {
-  title: "Mensagem enviada",
+  ...publicMetadata({ title: "Mensagem enviada", path: "/contato/obrigado" }),
   robots: { index: false, follow: false },
 };
 
