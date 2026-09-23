@@ -169,6 +169,11 @@ export default async function AboutPage() {
                 </li>
               ))}
             </ul>
+            <div className="mt-2xl">
+              <Button href="/sobre/especialistas" variant="secondary">
+                Ver todos os especialistas
+              </Button>
+            </div>
           </Container>
         </Section>
       ) : null}

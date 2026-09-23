@@ -23,8 +23,8 @@ const NAV = [
 ];
 
 const LEGAL = [
-  { href: "/privacy", label: "Política de Privacidade" },
-  { href: "/terms", label: "Termos de Uso" },
+  { href: "/politica-de-privacidade", label: "Política de Privacidade" },
+  { href: "/termos-de-uso", label: "Termos de Uso" },
 ];
 
 const SOCIAL_LABEL: Record<string, string> = {
