@@ -167,6 +167,9 @@ export function createFixtures() {
       ]);
       await q("delete from leads where email like $1", [`%${EMAIL_DOMAIN}`]);
       await q("delete from newsletter_subscribers where email like $1", [`%${EMAIL_DOMAIN}`]);
+      // Contador de rate limit dos formulários públicos: sem dado sensível, seguro limpar tudo
+      // que é do pipeline de lead entre execuções (banco de teste dedicado).
+      await q("delete from rate_limits where key like 'lead:%'");
       await q("delete from posts where slug like $1", [`${PREFIX}%`]);
       await q("delete from specialists where slug like $1", [`${PREFIX}%`]);
       await q("delete from solutions where slug like $1", [`${PREFIX}%`]);

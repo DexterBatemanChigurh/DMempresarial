@@ -1,20 +1,14 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { RichText } from "@/components/content/rich-text";
-import {
-  Button,
-  Container,
-  FormMessage,
-  Heading,
-  Section,
-  SectionLabel,
-  Text,
-  TextareaField,
-  TextField,
-} from "@/components/ui";
+import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
+import { ContactForm } from "@/components/site/contact-form";
 import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
 import { contactDataSchema } from "@/features/pages/domain/page-schemas";
 import { publicMetadata } from "@/components/site/seo";
+import { mintFormToken } from "@/server/security/form-token";
+import { submitLeadAction } from "./actions";
 
 export const metadata: Metadata = publicMetadata({
   title: "Contato",
@@ -22,11 +16,19 @@ export const metadata: Metadata = publicMetadata({
   path: "/contato",
 });
 
+// `mintFormToken()` carrega o instante da requisição — precisa renderizar por requisição, não
+// no build (mesmo motivo das rotas `[slug]`).
+export const instant = false;
+
 export default async function ContactPage() {
+  // `mintFormToken()` usa `new Date()`: sem um ponto explícito de dado de requisição, o Next
+  // tenta chamá-la no prerender estático do build, onde não existe "agora" de verdade.
+  await connection();
   const [page, settings] = await Promise.all([
     getPublishedPageForRoute("contact"),
     getPublicSettingsForRoute(),
   ]);
+  const formToken = mintFormToken();
 
   const parsed = page ? contactDataSchema.safeParse(page.data) : null;
   const intro = parsed?.success ? parsed.data.intro : null;
@@ -127,29 +129,18 @@ export default async function ContactPage() {
               </div>
             </div>
 
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-7 relative overflow-hidden rounded-control border border-border bg-surface-raised p-xl">
               <SectionLabel>Formulário</SectionLabel>
               <Heading as="h2" variant="h2" className="mt-md">
                 Escreva para a gente
               </Heading>
 
-              <FormMessage tone="info" className="mt-lg">
-                O envio pelo site ainda não está disponível. Use um dos canais ao lado — telefone,
-                WhatsApp ou e-mail.
-              </FormMessage>
-
-              <form noValidate aria-label="Formulário de contato (em construção)" className="mt-xl">
-                <fieldset disabled className="space-y-lg opacity-60">
-                  <TextField id="contato-nome" label="Nome" required />
-                  <TextField id="contato-email" label="E-mail" type="email" required />
-                  <TextField id="contato-telefone" label="Telefone" type="tel" />
-                  <TextField id="contato-empresa" label="Empresa" />
-                  <TextareaField id="contato-mensagem" label="Mensagem" required />
-                </fieldset>
-              </form>
+              <div className="mt-xl">
+                <ContactForm action={submitLeadAction} formToken={formToken} />
+              </div>
 
               <Text size="sm" tone="secondary" className="mt-lg max-w-reading">
-                Preferindo contato direto?{" "}
+                Prefere contato direto?{" "}
                 {settings?.email ? (
                   <a
                     href={`mailto:${settings.email}`}
