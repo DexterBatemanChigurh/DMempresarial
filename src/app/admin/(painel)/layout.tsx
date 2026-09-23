@@ -2,6 +2,12 @@ import { AdminShell } from "@/components/admin/admin-shell";
 import { can } from "@/server/permissions";
 import { requireAdminSession } from "@/server/auth/admin-guard";
 
+// Área autenticada: `requireAdminSession` lê `cookies()` (sessão) no servidor. Com Cache
+// Components, esse acesso a dado de requisição bloqueia o static shell — e o painel não
+// precisa de shell estático (nenhum SEO, conteúdo 100% dependente de sessão). `instant = false`
+// marca o segmento como "permitido a bloquear" e desativa a validação (docs do Next 16).
+export const instant = false;
+
 // Todo o painel exige sessão válida no servidor e, para ADMIN e EDITOR, o 2FA ativo.
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const { actor, user } = await requireAdminSession();

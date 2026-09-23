@@ -7,6 +7,10 @@ import { safeNextPath } from "@/server/auth/session-cookie";
 
 export const metadata: Metadata = { title: "Entrar" };
 
+// Lê `searchParams` e a sessão (`getActor` → cookies) no servidor: dado de requisição, sem
+// static shell útil. Com Cache Components, `instant = false` marca a rota como bloqueante.
+export const instant = false;
+
 export default async function LoginPage({
   searchParams,
 }: {

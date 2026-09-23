@@ -5,22 +5,36 @@ import { media, posts, specialistCategories, specialistSolutions, specialists } 
 
 /**
  * Leitura PÚBLICA de especialistas: só `PUBLISHED` e só da equipe (`TEAM`). Autor convidado
- * nunca tem página pública. Nada de `user_id`, versão ou criadores.
+ * nunca tem página pública. Nada de `user_id`, versão ou criadores. A foto é exposta como
+ * `photoStorageKey` (chave `yyyy/mm/<uuid>.webp`) para a UI montar `/media/<key>` — mesma
+ * convenção do adaptador de storage local (`publicUrl`).
  */
 const listed = and(eq(specialists.status, "PUBLISHED"), eq(specialists.kind, "TEAM"));
 
-export async function listPublishedSpecialists(executor: Executor) {
-  return executor
+export type PublicSpecialist = {
+  slug: string;
+  name: string;
+  roleTitle: string | null;
+  summary: string | null;
+  photoMediaId: string | null;
+  photoStorageKey: string | null;
+};
+
+export async function listPublishedSpecialists(executor: Executor): Promise<PublicSpecialist[]> {
+  const rows = await executor
     .select({
       slug: specialists.slug,
       name: specialists.name,
       roleTitle: specialists.roleTitle,
       summary: specialists.summary,
       photoMediaId: specialists.photoMediaId,
+      photoStorageKey: media.storageKey,
     })
     .from(specialists)
+    .leftJoin(media, eq(media.id, specialists.photoMediaId))
     .where(listed)
     .orderBy(asc(specialists.position), asc(specialists.name));
+  return rows;
 }
 
 export type SpecialistOption = {
@@ -55,10 +69,12 @@ export async function findPublishedSpecialistBySlug(executor: Executor, slug: st
       summary: specialists.summary,
       bio: specialists.bio,
       photoMediaId: specialists.photoMediaId,
+      photoStorageKey: media.storageKey,
       seoTitle: specialists.seoTitle,
       seoDescription: specialists.seoDescription,
     })
     .from(specialists)
+    .leftJoin(media, eq(media.id, specialists.photoMediaId))
     .where(and(listed, eq(specialists.slug, slug)))
     .limit(1);
   return row ?? null;

@@ -1,7 +1,14 @@
 import "server-only";
 import { and, asc, count, eq } from "drizzle-orm";
 import type { Executor, Transaction } from "@/db/client";
-import { categories, postCategories, postTags, specialistCategories, tags } from "@/db/schema";
+import {
+  categories,
+  postCategories,
+  postTags,
+  posts,
+  specialistCategories,
+  tags,
+} from "@/db/schema";
 
 /**
  * Leitura administrativa de categorias e tags: sem filtro de status (elas não têm um — são
@@ -9,6 +16,41 @@ import { categories, postCategories, postTags, specialistCategories, tags } from
  */
 export type CategoryOption = { id: string; slug: string; name: string };
 export type TagOption = { id: string; slug: string; name: string };
+
+/**
+ * Leitura pública de categorias: ordenadas por posição, com contagem de artigos publicados.
+ * Usada no índice do blog e na sidebar de categorias.
+ */
+export type PublicCategory = {
+  id: string;
+  slug: string;
+  name: string;
+  postCount: number;
+};
+
+export async function listPublishedCategories(executor: Executor): Promise<PublicCategory[]> {
+  const rows = await executor
+    .select({
+      id: categories.id,
+      slug: categories.slug,
+      name: categories.name,
+    })
+    .from(categories)
+    .orderBy(asc(categories.position), asc(categories.name));
+
+  const postCounts = await executor
+    .select({ categoryId: postCategories.categoryId, n: count() })
+    .from(postCategories)
+    .innerJoin(posts, eq(posts.id, postCategories.postId))
+    .where(eq(posts.status, "PUBLISHED"))
+    .groupBy(postCategories.categoryId);
+  const countById = new Map(postCounts.map((r) => [r.categoryId, r.n]));
+
+  return rows.map((row) => ({
+    ...row,
+    postCount: countById.get(row.id) ?? 0,
+  }));
+}
 
 export async function listCategories(executor: Executor): Promise<CategoryOption[]> {
   return executor

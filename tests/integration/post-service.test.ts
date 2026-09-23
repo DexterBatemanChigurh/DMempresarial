@@ -434,7 +434,9 @@ describe("rascunho NUNCA vaza para o público", () => {
       [
         "authorName",
         "body",
+        "coverMediaId",
         "excerpt",
+        "primaryCategorySlug",
         "publishedAt",
         "readingMinutes",
         "seoDescription",

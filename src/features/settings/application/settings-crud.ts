@@ -113,9 +113,16 @@ export async function getSettingsForEdit(
 
 // -----------------------------------------------------------------------------------------------
 import { getDb } from "@/db/client";
+import { cacheLife, cacheTag } from "next/cache";
 
 export const updateSettingsForRoute = (input: UpdateSettingsInput) =>
   updateSettings({ db: getDb() }, input);
 export const getSettingsForEditForRoute = (actor: Actor | null | undefined) =>
   getSettingsForEdit({ db: getDb() }, actor);
-export const getPublicSettingsForRoute = () => getPublicSettings({ db: getDb() });
+
+export async function getPublicSettingsForRoute() {
+  "use cache";
+  cacheTag("site-settings");
+  cacheLife("max");
+  return getPublicSettings({ db: getDb() });
+}

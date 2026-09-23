@@ -7,6 +7,10 @@ import { requiresTwoFactor } from "@/server/auth/two-factor-policy";
 
 export const metadata: Metadata = { title: "Segurança" };
 
+// Lê a sessão (`requireAdminSession` → cookies) no servidor: dado de requisição. O grupo
+// `(conta)` não herda o `instant = false` do layout do painel, então marca aqui.
+export const instant = false;
+
 export default async function SecurityPage() {
   const { actor, user } = await requireAdminSession({ allowSetup: true });
   const mustSetup = requiresTwoFactor(actor.role) && !user.twoFactorEnabled;

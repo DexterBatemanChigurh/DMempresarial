@@ -20,7 +20,10 @@ import { env } from "@/server/env";
 
 // Página de REFERÊNCIA do Design System: mostra tokens, escala e componentes com estados.
 // Só existe fora de produção e nunca é indexada. Os textos são exemplos de interface, não
-// conteúdo da DM.
+// conteúdo da DM. Usa `await connection()` (avaliada por requisição) para decidir se existe —
+// com Cache Components isso bloqueia o static shell; é intencional (`instant = false`).
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Design System",
   robots: { index: false, follow: false },

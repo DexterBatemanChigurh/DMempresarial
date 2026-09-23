@@ -8,6 +8,9 @@ import { safeNextPath } from "@/server/auth/session-cookie";
 
 export const metadata: Metadata = { title: "Verificação em duas etapas" };
 
+// Lê `searchParams` e `cookies` no servidor: dado de requisição. `instant = false` (ver login).
+export const instant = false;
+
 export default async function VerifyPage({
   searchParams,
 }: {

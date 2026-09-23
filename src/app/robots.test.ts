@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// `connection()` é uma API de requisição do Next: fora do scope de renderização ela lança.
+// O teste de unit cobre a lógica de indexação; a marcação "avaliado a cada requisição" é
+// garantida pelo `await connection()` e verificada de forma indireta abaixo.
+vi.mock("next/server", async () => {
+  const actual = await vi.importActual<typeof import("next/server")>("next/server");
+  return { ...actual, connection: vi.fn(async () => {}) };
+});
+
 // `env()` guarda o resultado em cache no módulo; cada teste carrega o módulo do zero.
 async function robotsFor(appEnv: string) {
   vi.stubEnv("APP_ENV", appEnv);
@@ -29,7 +37,11 @@ describe("robots", () => {
 
   it("é avaliado a cada requisição, não no build", async () => {
     vi.stubEnv("APP_ENV", "development");
+    const { connection } = await import("next/server");
     const mod = await import("./robots");
-    expect(mod.dynamic).toBe("force-dynamic");
+    await mod.default();
+    // Com `cacheComponents`, o comportamento dinâmico vem de `await connection()` dentro da
+    // função — não existe mais `export const dynamic`.
+    expect(connection).toHaveBeenCalled();
   });
 });

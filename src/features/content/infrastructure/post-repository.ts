@@ -1,7 +1,15 @@
 import "server-only";
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import type { Executor, Transaction } from "@/db/client";
-import { postCategories, postSolutions, postTags, media, posts, specialists } from "@/db/schema";
+import {
+  categories,
+  postCategories,
+  postSolutions,
+  postTags,
+  media,
+  posts,
+  specialists,
+} from "@/db/schema";
 import type { PostStatus } from "../domain/post-status";
 
 /** Artigo carregado para uma transição de estado, já com o que as regras de publicação exigem. */
@@ -175,6 +183,7 @@ export type PublicPostSummary = {
   publishedAt: Date;
   readingMinutes: number;
   authorName: string;
+  primaryCategorySlug: string | null;
 };
 
 export type PublicPost = PublicPostSummary & {
@@ -182,6 +191,8 @@ export type PublicPost = PublicPostSummary & {
   seoTitle: string | null;
   seoDescription: string | null;
   updatedAt: Date;
+  coverMediaId: string | null;
+  primaryCategorySlug: string | null;
 };
 
 const isPublished = eq(posts.status, "PUBLISHED");
@@ -194,7 +205,15 @@ const summaryColumns = {
   publishedAt: posts.publishedAt,
   readingMinutes: posts.readingMinutes,
   authorName: specialists.name,
+  primaryCategorySlug: categories.slug,
 };
+
+/** `where` para a categoria PRIMÁRIA, junto ao mesmo par de `leftJoin` usado nas consultas
+ * abaixo (`postCategories`→`categories`, filtrando `is_primary`). */
+const primaryCategoryJoin = and(
+  eq(postCategories.postId, posts.id),
+  eq(postCategories.isPrimary, true),
+);
 
 type SummaryRow = Omit<PublicPostSummary, "publishedAt"> & { publishedAt: Date | null };
 
@@ -214,9 +233,16 @@ export async function findPublishedPostBySlug(
       seoTitle: posts.seoTitle,
       seoDescription: posts.seoDescription,
       updatedAt: posts.updatedAt,
+      coverMediaId: posts.coverMediaId,
+      primaryCategorySlug: categories.slug,
     })
     .from(posts)
     .innerJoin(specialists, eq(specialists.id, posts.authorId))
+    .leftJoin(
+      postCategories,
+      and(eq(postCategories.postId, posts.id), eq(postCategories.isPrimary, true)),
+    )
+    .leftJoin(categories, eq(categories.id, postCategories.categoryId))
     .where(and(isPublished, eq(posts.slug, slug)))
     .limit(1);
   return row
@@ -226,6 +252,8 @@ export async function findPublishedPostBySlug(
         seoTitle: row.seoTitle,
         seoDescription: row.seoDescription,
         updatedAt: row.updatedAt,
+        coverMediaId: row.coverMediaId,
+        primaryCategorySlug: row.primaryCategorySlug,
       }
     : null;
 }
@@ -241,15 +269,28 @@ export function boundedPaging(page: number, pageSize: number) {
 
 export async function listPublishedPosts(
   executor: Executor,
-  options: { page?: number; pageSize?: number } = {},
+  options: { page?: number; pageSize?: number; categorySlug?: string } = {},
 ): Promise<Page<PublicPostSummary>> {
   const { page, pageSize, offset } = boundedPaging(options.page ?? 1, options.pageSize ?? 12);
-  const [totalRow] = await executor.select({ n: count() }).from(posts).where(isPublished);
+  // Filtra pela categoria PRIMÁRIA (mesma que a consulta expõe como `primaryCategorySlug`):
+  // uma página de categoria não deveria misturar posts em que ela é só secundária.
+  const where = options.categorySlug
+    ? and(isPublished, eq(categories.slug, options.categorySlug))
+    : isPublished;
+
+  const [totalRow] = await executor
+    .select({ n: count() })
+    .from(posts)
+    .leftJoin(postCategories, primaryCategoryJoin)
+    .leftJoin(categories, eq(categories.id, postCategories.categoryId))
+    .where(where);
   const rows = await executor
     .select(summaryColumns)
     .from(posts)
     .innerJoin(specialists, eq(specialists.id, posts.authorId))
-    .where(isPublished)
+    .leftJoin(postCategories, primaryCategoryJoin)
+    .leftJoin(categories, eq(categories.id, postCategories.categoryId))
+    .where(where)
     // Ordem estável: sem o desempate por id, itens com a mesma data se repetem ou somem entre páginas.
     .orderBy(desc(posts.publishedAt), desc(posts.id))
     .limit(pageSize)
@@ -274,6 +315,8 @@ export async function searchPublishedPosts(
     .select(summaryColumns)
     .from(posts)
     .innerJoin(specialists, eq(specialists.id, posts.authorId))
+    .leftJoin(postCategories, primaryCategoryJoin)
+    .leftJoin(categories, eq(categories.id, postCategories.categoryId))
     .where(matches)
     .orderBy(
       sql`ts_rank_cd(${posts.searchVector}, ${tsquery}) DESC`,

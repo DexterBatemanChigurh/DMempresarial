@@ -1,5 +1,5 @@
 import "server-only";
-import { count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import type { Executor } from "@/db/client";
 import { pages } from "@/db/schema";
 
@@ -51,5 +51,37 @@ export async function findPageForEdit(
   id: string,
 ): Promise<typeof pages.$inferSelect | null> {
   const [row] = await executor.select().from(pages).where(eq(pages.id, id)).limit(1);
+  return row ?? null;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Leitura PÚBLICA: só `PUBLISHED`, filtrado na própria consulta.
+// ---------------------------------------------------------------------------------------------
+
+export type PublicPage = {
+  key: string;
+  template: "HOME" | "ABOUT" | "CONTACT" | "LEGAL";
+  title: string;
+  data: unknown;
+  seoTitle: string | null;
+  seoDescription: string | null;
+};
+
+export async function findPublishedPageByKey(
+  executor: Executor,
+  key: string,
+): Promise<PublicPage | null> {
+  const [row] = await executor
+    .select({
+      key: pages.key,
+      template: pages.template,
+      title: pages.title,
+      data: pages.data,
+      seoTitle: pages.seoTitle,
+      seoDescription: pages.seoDescription,
+    })
+    .from(pages)
+    .where(and(eq(pages.key, key), eq(pages.status, "PUBLISHED")))
+    .limit(1);
   return row ?? null;
 }

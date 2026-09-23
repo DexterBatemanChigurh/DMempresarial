@@ -6,6 +6,9 @@ import { env } from "@/server/env";
 import { EditorDemo } from "./editor-demo";
 
 // Demonstração do editor de texto rico. Só existe fora de produção e nunca é indexada.
+// Usa `await connection()` por requisição; com Cache Components isso bloqueia o static shell —
+// é intencional (`instant = false`).
+export const instant = false;
 export const metadata: Metadata = { title: "Editor", robots: { index: false, follow: false } };
 
 export default async function EditorDemoPage() {
