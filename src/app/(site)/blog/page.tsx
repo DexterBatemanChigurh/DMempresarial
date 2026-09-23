@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
-import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
+import { Container, Heading, Section, SectionLabel, Text, TextField } from "@/components/ui";
+import {
+  listPublicPostsForRoute,
+  searchPublicPostsForRoute,
+} from "@/features/content/application/public-posts";
 import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
 import { publicMetadata } from "@/components/site/seo";
 
@@ -22,20 +25,28 @@ function parsePage(value: string | string[] | undefined): number {
 export default async function BlogIndexPage({
   searchParams,
 }: {
-  searchParams: Promise<{ pagina?: string }>;
+  searchParams: Promise<{ pagina?: string; q?: string }>;
 }) {
-  const page = parsePage((await searchParams).pagina);
+  const params = await searchParams;
+  const page = parsePage(params.pagina);
+  const query = (params.q ?? "").trim();
+  const isSearch = query !== "";
+
   const [postsPage, categories] = await Promise.all([
-    listPublicPostsForRoute({ page, pageSize: 12 }),
+    isSearch
+      ? searchPublicPostsForRoute(query, { page, pageSize: 12 })
+      : listPublicPostsForRoute({ page, pageSize: 12 }),
     listPublicCategoriesForRoute(),
   ]);
 
   const posts = postsPage.items;
   const hasPosts = posts.length > 0;
-  // Destaque só faz sentido na primeira página — da segunda em diante é uma lista simples.
-  const featured = page === 1 ? posts[0] : undefined;
-  const secondary = page === 1 ? posts.slice(1) : posts;
+  // Destaque só faz sentido na primeira página do índice normal — busca é sempre lista simples.
+  const featured = !isSearch && page === 1 ? posts[0] : undefined;
+  const secondary = !isSearch && page === 1 ? posts.slice(1) : posts;
   const totalPages = Math.max(1, Math.ceil(postsPage.total / postsPage.pageSize));
+  const pageHref = (n: number) =>
+    isSearch ? `/blog?q=${encodeURIComponent(query)}&pagina=${n}` : `/blog?pagina=${n}`;
 
   return (
     <>
@@ -49,6 +60,14 @@ export default async function BlogIndexPage({
             Análises, leituras de mercado, conceitos aplicados e casos reais. Escrito por quem vive
             o dia a dia da consultoria.
           </Text>
+          <form action="/blog" method="get" role="search" className="mt-xl max-w-reading">
+            <TextField
+              id="q"
+              label="Buscar no blog"
+              defaultValue={query}
+              placeholder="Ex.: gestão de caixa"
+            />
+          </form>
         </Container>
       </Section>
 
@@ -97,19 +116,27 @@ export default async function BlogIndexPage({
                 </>
               ) : (
                 <>
-                  <SectionLabel>Blog</SectionLabel>
+                  <SectionLabel>{isSearch ? "Busca" : "Blog"}</SectionLabel>
                   <Heading as="h2" variant="h2" id="destaque" className="mt-md">
-                    Artigos
+                    {isSearch ? `Resultados para "${query}"` : "Artigos"}
                   </Heading>
                 </>
               )}
 
               {secondary.length > 0 ? (
                 <section className="mt-3xl" aria-labelledby="secundarios">
-                  <SectionLabel>Outros artigos</SectionLabel>
-                  <Heading as="h2" variant="h2" id="secundarios" className="mt-md">
-                    Artigos secundários
-                  </Heading>
+                  {!isSearch ? (
+                    <>
+                      <SectionLabel>Outros artigos</SectionLabel>
+                      <Heading as="h2" variant="h2" id="secundarios" className="mt-md">
+                        Artigos secundários
+                      </Heading>
+                    </>
+                  ) : (
+                    <Heading as="h2" variant="h2" id="secundarios" className="sr-only">
+                      Resultados da busca
+                    </Heading>
+                  )}
                   <ul className="mt-xl grid grid-cols-1 gap-xl md:grid-cols-2 lg:grid-cols-3">
                     {secondary.map((post) => (
                       <li key={post.slug} className="border-t border-border pt-lg">
@@ -141,7 +168,7 @@ export default async function BlogIndexPage({
                 >
                   {page > 1 ? (
                     <Link
-                      href={`/blog?pagina=${page - 1}`}
+                      href={pageHref(page - 1)}
                       className="text-link underline underline-offset-4"
                     >
                       Anterior
@@ -152,7 +179,7 @@ export default async function BlogIndexPage({
                   </Text>
                   {page < totalPages ? (
                     <Link
-                      href={`/blog?pagina=${page + 1}`}
+                      href={pageHref(page + 1)}
                       className="text-link underline underline-offset-4"
                     >
                       Próxima
@@ -166,12 +193,14 @@ export default async function BlogIndexPage({
       ) : (
         <Section tone="muted" spacing="loose">
           <Container>
-            <SectionLabel>Blog</SectionLabel>
+            <SectionLabel>{isSearch ? "Busca" : "Blog"}</SectionLabel>
             <Heading as="h2" variant="h2" className="mt-md">
-              Nenhum artigo publicado ainda
+              {isSearch ? `Nada encontrado para "${query}"` : "Nenhum artigo publicado ainda"}
             </Heading>
             <Text tone="secondary" className="mt-lg max-w-reading">
-              Os artigos publicados pela DM aparecerão aqui assim que estiverem prontos.
+              {isSearch
+                ? "Tente outra palavra ou navegue pelas categorias abaixo."
+                : "Os artigos publicados pela DM aparecerão aqui assim que estiverem prontos."}
             </Text>
           </Container>
         </Section>
