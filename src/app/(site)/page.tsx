@@ -7,6 +7,7 @@ import { listPublicPostsForRoute } from "@/features/content/application/public-p
 import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
 import { homeDataSchema } from "@/features/pages/domain/page-schemas";
 import { listPublicSpecialistsForRoute } from "@/features/people/application/public-specialists";
+import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { env } from "@/server/env";
 
@@ -22,11 +23,12 @@ function mediaUrl(storageKey: string): string {
 }
 
 export default async function HomePage() {
-  const [homePage, solutions, specialists, postsPage] = await Promise.all([
+  const [homePage, solutions, specialists, postsPage, settings] = await Promise.all([
     getPublishedPageForRoute("home"),
     listPublicSolutionsForRoute(),
     listPublicSpecialistsForRoute(),
     listPublicPostsForRoute({ pageSize: 4 }),
+    getPublicSettingsForRoute(),
   ]);
 
   const parsed = homePage ? homeDataSchema.safeParse(homePage.data) : null;
@@ -46,8 +48,22 @@ export default async function HomePage() {
         data={{
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "DM Empresarial",
+          name: settings?.legalName ?? "DM Empresarial",
           url: env().SITE_URL,
+          // SEO local (docs/03 §22): só o que site_settings já confirma — nada inventado, e some
+          // sozinho quando o campo estiver vazio (mesma regra do rodapé).
+          ...(settings?.address
+            ? {
+                address: {
+                  "@type": "PostalAddress",
+                  streetAddress: settings.address,
+                  addressRegion: "MG",
+                  addressCountry: "BR",
+                },
+              }
+            : {}),
+          ...(settings?.phone ? { telephone: settings.phone } : {}),
+          ...(settings?.email ? { email: settings.email } : {}),
         }}
       />
 

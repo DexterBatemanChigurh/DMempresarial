@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { RichText } from "@/components/content/rich-text";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { getPublicSpecialistBySlugForRoute } from "@/features/people/application/public-specialists";
-import { publicMetadata } from "@/components/site/seo";
+import { JsonLd, publicMetadata } from "@/components/site/seo";
+import { env } from "@/server/env";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -33,6 +34,18 @@ export default async function SpecialistProfilePage({ params }: Params) {
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Person",
+          name: person.name,
+          ...(person.roleTitle ? { jobTitle: person.roleTitle } : {}),
+          ...(person.summary ? { description: person.summary } : {}),
+          url: `${env().SITE_URL}/sobre/especialistas/${person.slug}`,
+          worksFor: { "@type": "Organization", name: "DM Empresarial" },
+        }}
+      />
+
       <Section spacing="loose">
         <Container>
           <div className="grid grid-cols-1 gap-2xl lg:grid-cols-12">

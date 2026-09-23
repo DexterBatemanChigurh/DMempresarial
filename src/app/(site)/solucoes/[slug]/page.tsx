@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { RichText } from "@/components/content/rich-text";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { getPublicSolutionBySlugForRoute } from "@/features/catalog/application/public-solutions";
-import { publicMetadata } from "@/components/site/seo";
+import { JsonLd, publicMetadata } from "@/components/site/seo";
+import { env } from "@/server/env";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -51,6 +52,19 @@ export default async function SolutionDetailPage({ params }: Params) {
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: solution.title,
+          description: solution.summary,
+          url: `${env().SITE_URL}/solucoes/${solution.slug}`,
+          provider: { "@type": "Organization", name: "DM Empresarial" },
+          serviceType: TYPE_LABEL[solution.type],
+          areaServed: "Frutal e região, MG",
+        }}
+      />
+
       <Section spacing="loose">
         <Container>
           <SectionLabel>{TYPE_LABEL[solution.type]}</SectionLabel>
