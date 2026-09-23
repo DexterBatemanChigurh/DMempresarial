@@ -1,23 +1,26 @@
+import { Suspense } from "react";
 import { Footer } from "@/components/site/footer";
 import { Header } from "@/components/site/header";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
-
-// Provisório: sem isto, o Next tenta gerar estas páginas como estáticas no build e o rodapé
-// (consulta direta ao banco, não `fetch`) fica congelado com o dado de quando o build rodou —
-// `revalidateTag` de Configurações não alcança uma consulta Drizzle. Sai quando a Fase 5 ligar
-// `cacheComponents` com `use cache`/`cacheTag` nas leituras públicas (docs/03, parte 25).
-export const dynamic = "force-dynamic";
+import { getCurrentYear } from "@/server/current-year";
 
 // Cabeçalho e rodapé só nas páginas públicas — o painel (`/admin`) fica fora deste grupo de
-// rotas e não herda esta faixa de navegação.
+// rotas e não herda esta faixa de navegação. A leitura de `site_settings` é cacheada com
+// `"use cache"` + `cacheTag("site-settings")` em `settings-crud.ts`, então o dado do rodapé
+// não congela no build e ainda responde a `revalidateTag` do painel.
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const settings = await getPublicSettingsForRoute();
+  const [settings, year] = await Promise.all([getPublicSettingsForRoute(), getCurrentYear()]);
 
   return (
     <>
-      <Header />
+      {/* O Header lê `usePathname`; em rotas dinâmicas (`/[key]`) o caminho só existe na
+          requisição, então o Suspense deixa o restante do shell estático pré-renderizado. */}
+      <Suspense fallback={null}>
+        <Header />
+      </Suspense>
       {children}
       <Footer
+        year={year}
         settings={
           settings
             ? {

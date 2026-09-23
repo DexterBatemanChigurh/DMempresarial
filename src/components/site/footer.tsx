@@ -2,8 +2,8 @@ import { Container, Section, Text, TextLink } from "@/components/ui";
 
 /**
  * Rodapé público (Blueprint 2, seção 17). Faixa escura, dado real ou nada: telefone, e-mail,
- * WhatsApp e redes só aparecem quando `site_settings` os tem preenchidos (L-05). Sem links
- * legais por enquanto — as páginas de privacidade/termos ainda não têm rota pública.
+ * WhatsApp e redes só aparecem quando `site_settings` os tem preenchidos (L-05). Links legais
+ * apontam para as páginas servidas pela rota `src/app/(site)/[key]/page.tsx`.
  */
 export type FooterSettings = {
   legalName: string | null;
@@ -22,14 +22,18 @@ const NAV = [
   { href: "/contato", label: "Contato" },
 ];
 
+const LEGAL = [
+  { href: "/privacy", label: "Política de Privacidade" },
+  { href: "/terms", label: "Termos de Uso" },
+];
+
 const SOCIAL_LABEL: Record<string, string> = {
   instagram: "Instagram",
   linkedin: "LinkedIn",
   facebook: "Facebook",
 };
 
-export function Footer({ settings }: { settings: FooterSettings | null }) {
-  const year = new Date().getFullYear();
+export function Footer({ settings, year }: { settings: FooterSettings | null; year: number }) {
   const socialEntries = Object.entries(settings?.social ?? {}).filter(
     (entry): entry is [string, string] => Boolean(entry[1]),
   );
@@ -113,6 +117,14 @@ export function Footer({ settings }: { settings: FooterSettings | null }) {
           © {year} {settings?.legalName ?? "DM Empresarial"}
           {settings?.cnpj ? ` · CNPJ ${settings.cnpj}` : ""}
         </Text>
+
+        <ul className="mt-md flex flex-wrap gap-lg">
+          {LEGAL.map((item) => (
+            <li key={item.href}>
+              <TextLink href={item.href}>{item.label}</TextLink>
+            </li>
+          ))}
+        </ul>
       </Container>
     </Section>
   );
