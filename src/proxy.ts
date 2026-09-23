@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { hasSessionCookie, safeNextPath } from "@/server/auth/session-cookie";
 import { buildAdminCsp, buildPublicCsp, generateNonce } from "@/server/security/csp";
+import { getRedirectForRoute } from "@/features/platform/application/public-redirects";
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
@@ -46,14 +47,39 @@ function publicSite(): NextResponse {
 }
 
 /**
- * Proxy (o antigo middleware, Next 16). Roda em toda página (ver matcher) e nunca toca banco:
- * em `/admin` valida sessão de forma otimista e aplica a CSP de nonce; no resto do site, só
- * aplica a CSP pública fixa. NÃO é autorização: toda página e ação de admin valida a sessão de
+ * Redirecionamento de posts com slug trocado (docs/03 §20). Precisa acontecer aqui, e não dentro
+ * de `/blog/[slug]/page.tsx`: sob Cache Components/PPR, um `permanentRedirect()` que depende de
+ * leitura de banco só executa no trecho adiado (streaming) da página — o Next então manda um 200
+ * e resolve a navegação por JS no cliente (comportamento documentado do `permanentRedirect`),
+ * nunca um 301/308 de verdade. O Proxy roda em runtime Node.js por padrão no Next 16 e decide
+ * antes de a página renderizar, então consegue responder com um redirecionamento HTTP real.
+ */
+async function blogRedirect(request: NextRequest): Promise<NextResponse | null> {
+  const target = await getRedirectForRoute(request.nextUrl.pathname);
+  if (!target) return null;
+  const response = NextResponse.redirect(new URL(target.toPath, request.url), target.statusCode);
+  response.headers.set("Content-Security-Policy", publicCsp);
+  return response;
+}
+
+/**
+ * Proxy (o antigo middleware, Next 16). Roda em toda página (ver matcher): em `/admin` valida
+ * sessão de forma otimista e aplica a CSP de nonce; no resto do site, só aplica a CSP pública
+ * fixa, sem tocar banco — exceto em `/blog/<slug>`, onde consulta a tabela de redirecionamentos
+ * (só ali; ver `blogRedirect`). NÃO é autorização: toda página e ação de admin valida a sessão de
  * verdade no servidor (docs/03, parte 11).
  */
-export function proxy(request: NextRequest): NextResponse {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
-  return pathname === "/admin" || pathname.startsWith("/admin/") ? admin(request) : publicSite();
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) return admin(request);
+
+  const blogSlugMatch = /^\/blog\/([^/]+)$/.exec(pathname);
+  if (blogSlugMatch && blogSlugMatch[1] !== "categoria") {
+    const redirected = await blogRedirect(request);
+    if (redirected) return redirected;
+  }
+
+  return publicSite();
 }
 
 export const config = {

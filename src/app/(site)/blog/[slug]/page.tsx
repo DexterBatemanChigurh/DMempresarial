@@ -32,6 +32,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Params) {
   const { slug } = await params;
   const post = await getPublicPostBySlugForRoute(slug);
+  // Slug trocado (docs/03 §20): o redirecionamento de verdade (301, com Location de HTTP) é
+  // resolvido no Proxy (src/proxy.ts), antes desta página renderizar — um `permanentRedirect()`
+  // daqui, que depende de dado de banco, cai no trecho adiado do PPR e vira só uma navegação por
+  // JS no cliente (comportamento documentado do Next para redirect em "streaming context"), não
+  // um 301 de verdade. Se chegou até aqui sem o Proxy ter redirecionado, é 404 mesmo.
   if (!post) notFound();
 
   // Relacionados: mesma categoria primária (docs/01 §17 propõe solução→categoria→tag; a consulta
