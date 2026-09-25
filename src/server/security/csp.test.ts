@@ -96,8 +96,8 @@ describe("buildPublicCsp", () => {
     expect(directive(csp, "default-src")).toEqual(["'self'"]);
   });
 
-  it("sem exceção de style-src-attr (o editor de texto rico não existe no público)", () => {
-    expect(buildPublicCsp()).not.toMatch(/style-src-attr/);
+  it("permite style-src-attr para estilos inline do React/hidratação", () => {
+    expect(directive(buildPublicCsp(), "style-src-attr")).toEqual(["'unsafe-inline'"]);
   });
 
   it("imagens aceitam as origens extras informadas; conexões só para a própria origem", () => {

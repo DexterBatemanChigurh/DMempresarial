@@ -76,6 +76,7 @@ export function buildPublicCsp(options: CspOptions = {}): string {
     "default-src": ["'self'"],
     "script-src": ["'self'", "'unsafe-inline'", ...(dev ? ["'unsafe-eval'"] : [])],
     "style-src": ["'self'", "'unsafe-inline'"],
+    "style-src-attr": ["'unsafe-inline'"],
     "img-src": images,
     "font-src": ["'self'"],
     "connect-src": ["'self'"],
