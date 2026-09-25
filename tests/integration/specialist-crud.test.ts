@@ -129,7 +129,7 @@ describe("updateSpecialist", () => {
         deps,
         updateInput({ actor: author, id: someoneElses.id, expectedVersion: 1 }),
       ),
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("AUTHOR não muda `kind` do próprio perfil (ADMIN/EDITOR sim)", async () => {

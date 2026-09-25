@@ -1,7 +1,14 @@
 "use client";
 
 import { useActionState } from "react";
-import { Button, CheckboxField, FormMessage, TextareaField, TextField } from "@/components/ui";
+import {
+  Button,
+  CheckboxField,
+  FormMessage,
+  SelectField,
+  TextareaField,
+  TextField,
+} from "@/components/ui";
 import type { ActionResult } from "@/lib/result";
 
 type Props = {
@@ -60,6 +67,21 @@ export function ContactForm({ action, formToken }: Props) {
       <TextField id="phone" label="Telefone" type="tel" autoComplete="tel" />
       <TextField id="company" label="Empresa" autoComplete="organization" />
       <TextField id="jobTitle" label="Cargo" />
+      <TextField id="website" label="Site" type="url" autoComplete="url" />
+      <SelectField
+        id="segment"
+        label="Segmento"
+        placeholder="Selecione"
+        options={[
+          { value: "gestao", label: "Gestão" },
+          { value: "financas", label: "Finanças" },
+          { value: "marketing", label: "Marketing" },
+          { value: "processos", label: "Processos" },
+          { value: "empreendedorismo", label: "Empreendedorismo" },
+          { value: "mercado", label: "Mercado" },
+          { value: "regional", label: "Negócios em Frutal e Região" },
+        ]}
+      />
       <CheckboxField id="consent" required error={fieldErrors?.consent?.[0]}>
         Concordo com o uso destes dados para a DM entrar em contato comigo.
       </CheckboxField>

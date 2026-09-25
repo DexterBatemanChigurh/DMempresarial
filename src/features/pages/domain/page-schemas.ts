@@ -23,6 +23,7 @@ export const homeDataSchema = z.object({
   headline: z.string(),
   description: z.unknown(),
   howWeThink: z.unknown(),
+  problems: z.unknown(),
 });
 export const aboutDataSchema = z.object({
   whoWeAre: z.unknown(),
@@ -55,7 +56,7 @@ export function dataSchemaFor(template: PageTemplate) {
  * `prepareRichBody` antes de gravar. As demais (título, `values[].name`/`practice`) são texto
  * plano comum. */
 export const RICH_FIELDS: Record<PageTemplate, readonly string[]> = {
-  HOME: ["description", "howWeThink"],
+  HOME: ["description", "howWeThink", "problems"],
   ABOUT: ["whoWeAre", "howWeThink", "howWeWork"],
   CONTACT: ["intro"],
   LEGAL: ["body"],

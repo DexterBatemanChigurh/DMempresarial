@@ -5,6 +5,7 @@ import { toActionError } from "@/lib/errors";
 import { fail, ok, type ActionResult } from "@/lib/result";
 import {
   createUserForRoute,
+  deleteUserForRoute,
   setDisabledForRoute,
   setRoleForRoute,
 } from "@/features/users/application/user-crud";
@@ -61,6 +62,21 @@ export async function setDisabledAction(
     const userId = str(formData, "userId");
     const disabled = str(formData, "disabled") === "true";
     await setDisabledForRoute({ actor, userId, disabled });
+    revalidatePath("/admin/usuarios");
+    return ok({ userId });
+  } catch (error) {
+    return fail(toActionError(error));
+  }
+}
+
+export async function deleteUserAction(
+  _prevState: ActionResult<{ userId: string }> | null,
+  formData: FormData,
+): Promise<ActionResult<{ userId: string }>> {
+  try {
+    const { actor } = await requireAdminSession();
+    const userId = str(formData, "userId");
+    await deleteUserForRoute({ actor, userId });
     revalidatePath("/admin/usuarios");
     return ok({ userId });
   } catch (error) {

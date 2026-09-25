@@ -18,4 +18,12 @@ describe("next.config", () => {
     });
     expect(headers["Permissions-Policy"]).toContain("camera=()");
   });
+
+  it("manda HSTS por 2 anos, incluindo subdomínios, sem preload", async () => {
+    const rules = (await nextConfig.headers?.()) ?? [];
+    const all = rules.find((rule) => rule.source === "/(.*)");
+    const headers = Object.fromEntries((all?.headers ?? []).map((h) => [h.key, h.value]));
+
+    expect(headers["Strict-Transport-Security"]).toBe("max-age=63072000; includeSubDomains");
+  });
 });

@@ -4,7 +4,7 @@ import { listUsersForAdminForRoute } from "@/features/users/application/user-cru
 import { CreateUserForm } from "@/components/admin/users/create-user-form";
 import { UserRowActions } from "@/components/admin/users/user-row-actions";
 import { requireAdminSession } from "@/server/auth/admin-guard";
-import { createUserAction, setDisabledAction, setRoleAction } from "./actions";
+import { createUserAction, deleteUserAction, setDisabledAction, setRoleAction } from "./actions";
 
 export const metadata: Metadata = { title: "Usuários" };
 
@@ -18,8 +18,9 @@ export default async function UsersPage() {
         Usuários
       </Heading>
       <Text tone="secondary" className="mt-md mb-xl max-w-reading">
-        Sem senha padrão: a temporária aparece uma única vez logo após criar. Contas nunca são
-        apagadas, só desativadas (preserva autoria e auditoria).
+        Sem senha padrão: a temporária aparece uma única vez logo após criar. Contas podem ser
+        desativadas ou excluídas (exclusão remove sessões, contas de autenticação, 2FA e
+        especialista vinculado; preserva autoria em auditoria).
       </Text>
 
       <div className="mb-xl max-w-reading">
@@ -45,6 +46,7 @@ export default async function UsersPage() {
                 isSelf={user.id === actor.id}
                 setRoleAction={setRoleAction}
                 setDisabledAction={setDisabledAction}
+                deleteAction={deleteUserAction}
               />
             </li>
           ))}

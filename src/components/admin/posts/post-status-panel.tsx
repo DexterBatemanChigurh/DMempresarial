@@ -136,6 +136,21 @@ export function PostStatusPanel({
         </p>
       )}
 
+      {/* Preview Button - only for non-published statuses */}
+      {status !== "PUBLISHED" && status !== "ARCHIVED" ? (
+        <div className="border-t border-border pt-lg">
+          <form
+            action={`/api/preview?postId=${postId}&slug=${encodeURIComponent(slug)}`}
+            target="_blank"
+            className="mt-lg"
+          >
+            <Button type="submit" variant="secondary" size="sm">
+              Visualizar rascunho
+            </Button>
+          </form>
+        </div>
+      ) : null}
+
       {canChangeSlug ? (
         <form action={slugFormAction} className="space-y-sm border-t border-border pt-lg">
           <input type="hidden" name="postId" value={postId} />

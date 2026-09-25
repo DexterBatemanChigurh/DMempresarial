@@ -16,6 +16,7 @@ async function robotsFor(appEnv: string) {
     vi.stubEnv("DATABASE_URL", "postgres://x");
     vi.stubEnv("BETTER_AUTH_SECRET", "s".repeat(32));
     vi.stubEnv("CRON_SECRET", "s".repeat(32));
+    vi.stubEnv("SIGNED_TOKEN_SECRET", "s".repeat(32));
   }
   const mod = await import("./robots");
   return mod.default();

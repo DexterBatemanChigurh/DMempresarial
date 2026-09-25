@@ -11,6 +11,10 @@ const { q } = fx;
 let authorId: string;
 beforeAll(async () => {
   await fx.cleanup();
+  // Reseta site_settings para estado inicial do seed (phone=null, email=null)
+  await q("update site_settings set phone = null, email = null where id = 1");
+  // Garante que o seed base está carregado (o global-setup já roda, mas o cleanup pode ter limpo)
+  await seedBase(testAdminUrl());
   authorId = (await fx.specialist()).id;
 });
 afterAll(async () => {

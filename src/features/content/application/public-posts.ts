@@ -1,6 +1,7 @@
 import "server-only";
 import type { Database } from "@/db/client";
 import {
+  findPostBySlugForPreview,
   findPublishedPostBySlug,
   listPublishedPosts,
   searchPublishedPosts,
@@ -30,6 +31,17 @@ export async function getPublicPostBySlug(
   slug: string,
 ): Promise<PublicPost | null> {
   return findPublishedPostBySlug(db, slug);
+}
+
+/**
+ * Busca um post por slug independentemente do status (para preview/Draft Mode).
+ * Retorna o post completo com corpo rico, mesmo se for DRAFT/REVIEW/SCHEDULED.
+ */
+export async function getPostBySlugForPreview(
+  { db }: { db: Database },
+  slug: string,
+): Promise<PublicPost | null> {
+  return findPostBySlugForPreview(db, slug);
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -62,4 +74,12 @@ export async function getPublicPostBySlugForRoute(slug: string) {
   cacheTag(`post:${slug}`, "posts");
   cacheLife("days");
   return getPublicPostBySlug({ db: getDb() }, slug);
+}
+
+/**
+ * Busca um post por slug para preview (Draft Mode) — sem cache, busca direta no banco.
+ * Usado quando o Draft Mode está ativo para visualizar rascunhos.
+ */
+export async function getPostBySlugForPreviewRoute(slug: string) {
+  return getPostBySlugForPreview({ db: getDb() }, slug);
 }

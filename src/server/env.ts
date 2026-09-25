@@ -26,6 +26,8 @@ const rawSchema = z.object({
   STORAGE_LOCAL_DIR: z.string().default(".storage"),
   // Segredo do cron de publicação agendada (`/api/cron/publish`). Obrigatório em production.
   CRON_SECRET: z.string().min(32).optional(),
+  // Segredo para tokens assinados (confirmação newsletter, descadastro). Mínimo 32 chars.
+  SIGNED_TOKEN_SECRET: z.string().min(32).optional(),
 });
 
 export type Env = {
@@ -39,6 +41,7 @@ export type Env = {
   REQUIRE_2FA: boolean;
   STORAGE_LOCAL_DIR: string;
   CRON_SECRET: string | undefined;
+  SIGNED_TOKEN_SECRET: string;
 };
 
 export class EnvError extends Error {
@@ -81,6 +84,7 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     if (value.REQUIRE_2FA === "false")
       problems.push("REQUIRE_2FA: não pode ser false em production");
     if (!value.CRON_SECRET) problems.push("CRON_SECRET: obrigatório em production");
+    if (!value.SIGNED_TOKEN_SECRET) problems.push("SIGNED_TOKEN_SECRET: obrigatório em production");
     if (problems.length > 0) throw new EnvError(problems);
   }
 
@@ -97,6 +101,7 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     REQUIRE_2FA: value.REQUIRE_2FA === "true",
     STORAGE_LOCAL_DIR: value.STORAGE_LOCAL_DIR,
     CRON_SECRET: value.CRON_SECRET,
+    SIGNED_TOKEN_SECRET: value.SIGNED_TOKEN_SECRET ?? "",
   };
 }
 

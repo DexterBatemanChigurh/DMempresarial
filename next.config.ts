@@ -1,11 +1,16 @@
 import type { NextConfig } from "next";
 
-// Cabeçalhos de base. CSP em duas camadas, HSTS e demais entram na fase de segurança (ADR-009).
+// Cabeçalhos de base. CSP em duas camadas fica em src/proxy.ts (ADR-009). HSTS aqui: 2 anos +
+// subdomínios (valor recomendado na doc do Next). Sem `preload` de propósito — entrar na lista de
+// preload do navegador é praticamente irreversível e exige domínio definitivo (lacuna L-02 do
+// Blueprint 1); decisão para o usuário quando o domínio real estiver definido (Fase 12).
+// Em `http://localhost` o cabeçalho é inofensivo (HSTS só tem efeito sobre HTTPS).
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
   { key: "X-Frame-Options", value: "DENY" },
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
 ];
 
 const nextConfig: NextConfig = {

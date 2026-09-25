@@ -89,7 +89,7 @@ export default async function BlogIndexPage({
                     >
                       <Text size="metadata" tone="secondary">
                         {featured.authorName} ·{" "}
-                        {featured.publishedAt.toLocaleDateString("pt-BR", {
+                        {featured.publishedAt?.toLocaleDateString("pt-BR", {
                           day: "2-digit",
                           month: "long",
                           year: "numeric",

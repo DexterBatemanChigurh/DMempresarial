@@ -48,7 +48,7 @@ export function ChangePasswordForm() {
         label="Nova senha"
         type="password"
         autoComplete="new-password"
-        hint="Pelo menos 12 caracteres."
+        hint="Entre 6 e 12 caracteres."
         required
       />
       <TextField

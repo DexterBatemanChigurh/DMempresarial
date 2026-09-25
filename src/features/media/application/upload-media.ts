@@ -7,6 +7,7 @@ import type { Database } from "@/db/client";
 import { AppError } from "@/lib/errors";
 import { recordAudit } from "@/features/platform/infrastructure/audit";
 import { assertCan, type Actor } from "@/server/permissions";
+import { consumeRateLimit, windowedKey } from "@/server/security/rate-limit";
 import type { StoragePort } from "@/server/storage/port";
 import {
   OUTPUT_MIME,
@@ -45,6 +46,11 @@ function firstError<T>(...errors: (T | null)[]): T | null {
   return errors.find((e) => e !== null) ?? null;
 }
 
+// Upload é ação autenticada de admin (não anônima como o formulário de contato): a chave é por
+// USUÁRIO, não por IP, para não travar um escritório inteiro atrás do mesmo IP (docs/03 §41).
+// Janela generosa: cobre abuso automatizado sem incomodar um upload em lote legítimo.
+const UPLOAD_RATE_LIMIT = { windowMs: 10 * 60 * 1000, limit: 30 };
+
 function keyFor(now: Date): string {
   const yyyy = String(now.getUTCFullYear()).padStart(4, "0");
   const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
@@ -58,6 +64,16 @@ export async function uploadMedia(
   const { actor } = input;
   assertCan(actor, "media:upload");
   const now = input.now ?? new Date();
+
+  const uploadCount = await consumeRateLimit(
+    db,
+    windowedKey("media:upload", actor.id, UPLOAD_RATE_LIMIT.windowMs),
+  );
+  if (uploadCount > UPLOAD_RATE_LIMIT.limit) {
+    throw new AppError("RATE_LIMITED", "Muitos envios. Tente de novo em alguns minutos.", {
+      retryAfterSeconds: Math.ceil(UPLOAD_RATE_LIMIT.windowMs / 1000),
+    });
+  }
 
   const sizeError = checkSourceSize(input.bytes.byteLength);
   if (sizeError)

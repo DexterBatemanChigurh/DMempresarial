@@ -1,0 +1,16 @@
+# Configuração do Dependency Review para DM Empresarial
+# Bloqueia PRs que introduzem vulnerabilidades críticas/altas em dependências de produção
+
+# Falha se houver vulnerabilidades críticas ou altas em dependências de produção
+fail-on-severity: high
+
+# Permite vulnerabilidades em dependências de desenvolvimento (devDependencies)
+allow-dev-dependencies: true
+
+# Ignora vulnerabilidades específicas se necessário (ex.: falso positivo documentado)
+# allow-ghsas:
+#   - GHSA-xxxx-xxxx-xxxx
+
+# Configurações adicionais
+fail-on-unpinned-dependencies: false # Não exige versões fixas (lockfile já garante)
+fail-on-unreviewed-dependencies: true # Exige revisão de novas dependências

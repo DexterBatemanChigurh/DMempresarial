@@ -1,0 +1,78 @@
+# Configuração do Gitleaks para DM Empresarial
+# Detecta segredos no código e histórico git
+
+[allowlist]
+description = "Falsos positivos conhecidos e seguros"
+paths = [
+  # Arquivos de configuração de exemplo/template (não versionados com segredos reais)
+  "(?i)\.example\.(env|yml|yaml|json)$",
+  "(?i)\.template\.(env|yml|yaml|json)$",
+  # Testes que usam valores fictícios óbvios
+  "(?i)test",
+  "(?i)spec",
+  "(?i)fixture",
+  # Documentação
+  "(?i)readme\.md$",
+  "(?i)docs/",
+]
+
+[[rules]]
+description = "AWS Access Key ID"
+regex = "(A3T|AKIA|AROA|ASIA)[A-Z0-9]{16}"
+tags = ["aws", "key"]
+
+[[rules]]
+description = "AWS Secret Access Key"
+regex = "(?i)aws(.{0,20})?(secret|access_key)[\s:=]+([A-Za-z0-9/+=]{40})"
+tags = ["aws", "secret"]
+
+[[rules]]
+description = "GitHub Personal Access Token"
+regex = "gh[pousr]_[A-Za-z0-9]{36,}"
+tags = ["github", "token"]
+
+[[rules]]
+description = "GitHub App Token"
+regex = "ghs_[A-Za-z0-9]{36,}"
+tags = ["github", "token"]
+
+[[rules]]
+description = "Generic API Key"
+regex = "(?i)(api[_-]?key|apikey)[\s:=]+[A-Za-z0-9_\-]{20,}"
+tags = ["api", "key"]
+
+[[rules]]
+description = "JWT Token"
+regex = "eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}"
+tags = ["jwt", "token"]
+
+[[rules]]
+description = "PostgreSQL Connection String"
+regex = "postgres(?:ql)?://[^\\s]+:[^\\s]+@[^\\s]+"
+tags = ["database", "postgres"]
+
+[[rules]]
+description = "Generic Password in URL"
+regex = "[a-zA-Z]{3,10}://[^\\s:]+:[^\\s@]+@[^\\s]+"
+tags = ["password", "url"]
+
+[[rules]]
+description = "Private Key"
+regex = "-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----"
+tags = ["private-key", "ssh"]
+
+[[rules]]
+description = "Slack Token"
+regex = "xox[baprs]-[A-Za-z0-9-]{10,}"
+tags = ["slack", "token"]
+
+[[rules]]
+description = "Stripe API Key"
+regex = "sk_live_[A-Za-z0-9]{24,}"
+tags = ["stripe", "key"]
+
+[[rules]]
+description = "Generic Secret (high entropy)"
+entropy = 4.5
+min_length = 20
+tags = ["secret", "high-entropy"]

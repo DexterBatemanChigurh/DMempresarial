@@ -68,14 +68,24 @@ function isUniqueViolation(error: unknown): boolean {
   return false;
 }
 
+/** Para quem não pode nem ver o especialista, a resposta é "não existe" (não revelar existência: BOLA/IDOR). */
+function mustHideExistence(actor: Actor, ownerId: string | null): boolean {
+  return actor.role === "AUTHOR" && ownerId !== actor.id;
+}
+
 /** Editar CONTEÚDO permite ADMIN/EDITOR (qualquer perfil) OU o dono do próprio (`userId`). */
 function assertCanEditContent(
   actor: Actor | null | undefined,
   ownerId: string | null,
 ): asserts actor is Actor {
   if (!actor) throw new AppError("UNAUTHENTICATED", "Sem sessão válida.");
-  if (can(actor, "specialist:manage") || can(actor, "specialist:edit-own", { ownerId })) return;
-  throw new AppError("FORBIDDEN", `Papel ${actor.role} não pode editar este especialista.`);
+  if (can(actor, "specialist:manage")) return;
+  assertCan(
+    actor,
+    "specialist:edit-own",
+    { ownerId },
+    { hideExistence: mustHideExistence(actor, ownerId) },
+  );
 }
 
 export type SpecialistContentInput = {

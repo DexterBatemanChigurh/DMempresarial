@@ -1,16 +1,18 @@
 # DM Empresarial — Engineering Architecture Blueprint
 
-Versão 1 · 21/09/2026 · Etapa: Prompt 3. **Sem código de produto, sem migrations, sem instalação de dependências.** Depende de [01-product-ux-blueprint.md](./01-product-ux-blueprint.md) e [02-design-system-blueprint.md](./02-design-system-blueprint.md). O estado real do repositório está em [04-project-audit-and-plan.md](./04-project-audit-and-plan.md).
+Versão 1 · 21/09/2026 · Etapa: Prompt 3. **Implementação real até 23/09/2026** (Fases 1–8: 6 prontas, 2 parciais, 2 pendentes). Depende de [01-product-ux-blueprint.md](./01-product-ux-blueprint.md) e [02-design-system-blueprint.md](./02-design-system-blueprint.md). O estado real do repositório está em [04-project-audit-and-plan.md](./04-project-audit-and-plan.md).
 
 **Legenda**
 
 - **[VERIFICADO]** conferido neste trabalho (documentação embutida no Next 16.3.5 instalado, `npm view`, documentação oficial via Context7, ou execução no repositório).
-- **[EXISTENTE]** já implementado na Fase 1 e mantido.
+- **[EXISTENTE]** já implementado e validado (build, lint, typecheck, testes passam).
+- **[IMPLEMENTADO]** decisão proposta no blueprint e **já implementada** no repositório (pode ter gaps documentados).
 - **[PROPOSTA]** decisão deste documento, a validar.
 - **[ABERTA]** depende de escolha da DM ou de informação que não existe.
+- **[PARCIAL]** implementado mas com gaps conhecidos (documentados na seção 45).
 - Prioridade (Prompt 3, §89): **CRÍTICA** (bloqueia a implementação) · **IMPORTANTE** · **RECOMENDADA** · **FUTURA**.
 
-**Decisões aprovadas em 21/09/2026 (checkpoint do Prompt 4):** pilha Drizzle + PostgreSQL, Better Auth, Tiptap e Resend (ADR-002, 004, 005); decisões de produto D1 (sem `/servicos`), D3 (3 campos obrigatórios), D4 (publicar só com conteúdo real) e D5 (autor = especialista) (ADR-003); estrutura `features/` e `src/db` (ADR-013). Demais ADRs continuam como proposta.
+**Decisões aprovadas em 21/09/2026 (checkpoint do Prompt 4):** pilha Drizzle + PostgreSQL, Better Auth, Tiptap e Resend (ADR-002, 004, 005); decisões de produto D1 (sem `/servicos`), D3 (3 campos obrigatórios), D4 (publicar só com conteúdo real) e D5 (autor = especialista) (ADR-003); estrutura `features/` e `src/db` (ADR-013). ADRs 001–017 criados em `docs/adr/`; demais continuam como proposta.
 
 **Numeração das seções = as 45 partes exigidas pelo Prompt 3 (§90).** Comentários do código já citam essas partes (por exemplo "§5 e §38" em `eslint.config.mjs`, "§28" em `errors.ts`, "§29" no logger). Elas correspondem às partes 5 Application Architecture, 38 Project Structure, 28 Error Handling e 29 Logging deste documento.
 
@@ -22,16 +24,16 @@ Versão 1 · 21/09/2026 · Etapa: Prompt 3. **Sem código de produto, sem migrat
 
 **Escolhas centrais (todas com alternativa e trade-off nas seções seguintes):**
 
-| Área         | Escolha                                                                                 | Situação                                    |
-| ------------ | --------------------------------------------------------------------------------------- | ------------------------------------------- |
-| Aplicação    | Next.js 16 (App Router), React 19, TypeScript estrito                                   | [EXISTENTE]                                 |
-| Banco        | PostgreSQL 17 + Drizzle ORM 0.45.x (não a 1.0, ainda em RC)                             | [PROPOSTA]                                  |
-| Autenticação | Better Auth (sessões em banco, e-mail + senha, cadastro fechado, 2FA para admin)        | [PROPOSTA]                                  |
-| Autorização  | 3 papéis (ADMIN, EDITOR, AUTHOR) + regra de propriedade, negada por padrão, no servidor | [PROPOSTA]                                  |
-| Editor       | Tiptap 3 guardando **JSON**, nunca HTML; renderização por allowlist                     | [PROPOSTA]                                  |
-| Cache        | Cache Components (`use cache` + `cacheTag`), invalidação por tag na publicação          | [PROPOSTA]                                  |
-| CSP          | Duas camadas: páginas públicas estáticas sem nonce; `/admin` com nonce                  | [PROPOSTA] (é o "ADR-009" citado no código) |
-| Deploy       | Vercel + Postgres gerenciado + storage S3-compatível + Resend; portável por interfaces  | [ABERTA] (recomendação: seção 34)           |
+| Área         | Escolha                                                                                 | Situação                                        |
+| ------------ | --------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Aplicação    | Next.js 16 (App Router), React 19, TypeScript estrito                                   | [EXISTENTE]                                     |
+| Banco        | PostgreSQL 17 + Drizzle ORM 0.45.x (não a 1.0, ainda em RC)                             | [IMPLEMENTADO]                                  |
+| Autenticação | Better Auth (sessões em banco, e-mail + senha, cadastro fechado, 2FA para admin)        | [IMPLEMENTADO]                                  |
+| Autorização  | 3 papéis (ADMIN, EDITOR, AUTHOR) + regra de propriedade, negada por padrão, no servidor | [IMPLEMENTADO]                                  |
+| Editor       | Tiptap 3 guardando **JSON**, nunca HTML; renderização por allowlist                     | [IMPLEMENTADO]                                  |
+| Cache        | Cache Components (`use cache` + `cacheTag`), invalidação por tag na publicação          | [IMPLEMENTADO]                                  |
+| CSP          | Duas camadas: páginas públicas estáticas sem nonce; `/admin` com nonce                  | [IMPLEMENTADO] (é o "ADR-009" citado no código) |
+| Deploy       | Vercel + Postgres gerenciado + storage S3-compatível + Resend; portável por interfaces  | [ABERTA] (recomendação: seção 34)               |
 
 **O que este blueprint muda em relação aos anteriores** (detalhes na seção 43 e no Project Audit):
 
@@ -76,12 +78,12 @@ Versão 1 · 21/09/2026 · Etapa: Prompt 3. **Sem código de produto, sem migrat
 | Estilo           | Tailwind CSS                                                    | 4.3.3                   | [EXISTENTE]              | Tokens do Design System via CSS variables                                                   |
 | Validação        | Zod                                                             | 4.6.5                   | [EXISTENTE]              | Schemas compartilhados entre formulário, action e banco                                     |
 | Driver           | pg                                                              | 8.23.0                  | [EXISTENTE]              | Hoje só usado pelo script `db:check`                                                        |
-| ORM + migrations | drizzle-orm / drizzle-kit                                       | 0.45.3 / 0.31.11        | [PROPOSTA]               | `latest` do npm é a 0.45.x; a 1.0 está em RC. Better Auth aceita `^0.45.2`                  |
-| Autenticação     | better-auth + @better-auth/drizzle-adapter                      | 1.7.5 / 1.7.5           | [PROPOSTA]               | Peer `next ^16`, `drizzle-orm ^0.45.2`; sem autenticação caseira                            |
-| Editor rich text | @tiptap/react, starter-kit, pm, extension-link, static-renderer | 3.31.3                  | [PROPOSTA]               | Editor só no bundle do admin; site público renderiza sem editor                             |
+| ORM + migrations | drizzle-orm / drizzle-kit                                       | 0.45.3 / 0.31.11        | [IMPLEMENTADO]           | `latest` do npm é a 0.45.x; a 1.0 está em RC. Better Auth aceita `^0.45.2`                  |
+| Autenticação     | better-auth + @better-auth/drizzle-adapter                      | 1.7.5 / 1.7.5           | [IMPLEMENTADO]           | Peer `next ^16`, `drizzle-orm ^0.45.2`; sem autenticação caseira                            |
+| Editor rich text | @tiptap/react, starter-kit, pm, extension-link, static-renderer | 3.31.3                  | [IMPLEMENTADO]           | Editor só no bundle do admin; site público renderiza sem editor                             |
 | E-mail           | resend                                                          | 6.28.1                  | [PROPOSTA]               | Só no servidor                                                                              |
-| Upload / imagem  | file-type, sharp                                                | 22.1.1 / 0.35.4         | [PROPOSTA]               | Verificação por conteúdo (magic bytes) e reprocessamento de imagem                          |
-| Testes           | vitest / @playwright/test / @axe-core/playwright                | 5.0.1 / 1.63.0 / 4.13.0 | [EXISTENTE] / [PROPOSTA] | E2E e acessibilidade automática                                                             |
+| Upload / imagem  | file-type, sharp                                                | 22.1.1 / 0.35.4         | [IMPLEMENTADO]           | Verificação por conteúdo (magic bytes) e reprocessamento de imagem                          |
+| Testes           | vitest / @playwright/test / @axe-core/playwright                | 5.0.1 / 1.63.0 / 4.13.0 | [EXISTENTE] / [PROPOSTA] | Unit/integração [IMPLEMENTADO]; E2E e acessibilidade automática [PROPOSTA]                  |
 
 **Avaliados e não adotados (com motivo):**
 
@@ -148,15 +150,15 @@ Domain (src/features/*/domain, src/lib)                      ← regras puras, s
 Infrastructure (src/features/*/infrastructure, src/db, src/server/storage|email)  ← Drizzle, S3, Resend
 ```
 
-**Regras de dependência (impostas por ESLint, ampliando as já existentes) [EXISTENTE] + [PROPOSTA]:**
+**Regras de dependência (impostas por ESLint, ampliando as já existentes) [EXISTENTE] + [IMPLEMENTADO]:**
 
-| De                               | Pode importar                                                               | Não pode importar                                                     |
-| -------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `components/**`                  | `lib`, outros `components`                                                  | `server/**`, `modules/**`, `pg`, `drizzle-orm` [EXISTENTE]            |
-| `lib/**`, `features/*/domain/**` | `lib`                                                                       | `next`, `react`, `pg`, `drizzle-orm`, `server/**` [EXISTENTE]         |
-| `app/**` (páginas/actions)       | `components`, `features/*/application`, `server/auth`, `server/permissions` | `features/*/infrastructure`, `db`, `drizzle-orm`, `pg` [PROPOSTA]     |
-| `features/*/application/**`      | `domain`, `infrastructure` do **próprio** módulo, `server/*`                | infraestrutura de outro módulo (usar o `application` dele) [PROPOSTA] |
-| `features/*/infrastructure/**`   | `domain`, `db`                                                              | `app/**`, `components/**`                                             |
+| De                               | Pode importar                                                               | Não pode importar                                                         |
+| -------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `components/**`                  | `lib`, outros `components`                                                  | `server/**`, `pg`, `drizzle-orm` [EXISTENTE]                              |
+| `lib/**`, `features/*/domain/**` | `lib`                                                                       | `next`, `react`, `pg`, `drizzle-orm`, `server/**` [EXISTENTE]             |
+| `app/**` (páginas/actions)       | `components`, `features/*/application`, `server/auth`, `server/permissions` | `features/*/infrastructure`, `db`, `drizzle-orm`, `pg` [IMPLEMENTADO]     |
+| `features/*/application/**`      | `domain`, `infrastructure` do **próprio** módulo, `server/*`                | infraestrutura de outro módulo (usar o `application` dele) [IMPLEMENTADO] |
+| `features/*/infrastructure/**`   | `domain`, `db`                                                              | `app/**`, `components/**`                                                 |
 
 **Consequência:** `React Component → SQL` é impossível por construção; `Database → UI` sem camada intermediária também.
 
@@ -229,7 +231,7 @@ Infrastructure (src/features/*/infrastructure, src/db, src/server/storage|email)
 - Todo registro: `created_at`, `updated_at` (`timestamptz`, UTC). Entidades editáveis: `version int` (bloqueio otimista, seção 16), `created_by`, `updated_by`.
 - Enums do Postgres para estados fechados; `CHECK` para regras de coerência; `citext` ou índice em `lower(email)` para e-mails.
 - Extensões previstas: `citext`, `unaccent` (busca sem acento). **Verificar disponibilidade no provedor escolhido.**
-- Papéis de banco: `dm_owner` (DDL/migrations, já existe) e **`dm_app`** (runtime, só DML; sem `UPDATE`/`DELETE` em `audit_logs`) [PROPOSTA].
+- Papéis de banco: `dm_owner` (DDL/migrations, já existe) e **`dm_app`** (runtime, só DML; sem `UPDATE`/`DELETE` em `audit_logs`) [IMPLEMENTADO].
 
 ### 7.1 Tabelas do MVP
 
@@ -255,9 +257,9 @@ Infrastructure (src/features/*/infrastructure, src/db, src/server/storage|email)
 | `rate_limits`                                                        | Contadores de janela fixa                 | `key`, `window_start`, `count`; PK (`key`, `window_start`); limpeza periódica                                                                                                                                                                                                                                    |
 | `audit_logs`                                                         | Trilha administrativa (append-only)       | `at`, `actor_user_id`, `action`, `entity_type`, `entity_id`, `metadata` (jsonb mínimo), `request_id`                                                                                                                                                                                                             |
 
-### 7.1.1 Estado da implementação (Fase 3, 21/09/2026)
+### 7.1.1 Estado da implementação (Fase 3, 23/09/2026)
 
-Implementadas **23 tabelas** (5 de autenticação e 18 de domínio e plataforma), 5 migrations (`drizzle/0000` a `0004`) e 12 enums. Diferenças em relação à tabela acima, todas deliberadas:
+Implementadas **23 tabelas** (5 de autenticação e 18 de domínio e plataforma), 5 migrations (`drizzle/0000` a `0004`) e 12 enums. **Todas as tabelas da tabela acima existem**, exceto `rate_limits` (formulários públicos) adiada para a Fase 7. Diferenças deliberadas:
 
 - **`rate_limits` (formulários públicos) adiada para a Fase 7**, quando o limitador existe; criar agora seria uma tabela sem uso. O limite do login usa `auth_rate_limits`, da biblioteca.
 - **Sem `is_demo`** e **sem seed fictício**: o seed carrega só dados confirmados (as 7 categorias e o endereço). Fixtures `[DEMO]` para desenvolvimento entram na fase de páginas públicas, quando houver quem as use.
@@ -382,22 +384,22 @@ O editor escolhe **conteúdo, SEO e publicação**. A apresentação é fixa, pa
 
 Qualquer outra transição é **recusada pelo servidor**. `DRAFT` não vira `PUBLISHED` por acidente: só existe um caminho (`publishPost`), com permissão, validação e auditoria.
 
-**Preview (Prompt 3 §67):** usa **Draft Mode** do Next (cookie `__prerender_bypass`, que ignora todas as camadas de cache [VERIFICADO na doc]). A ativação é uma rota que exige **sessão autenticada e autorizada** (não segredo compartilhado na URL), a resposta leva `noindex` e `Cache-Control: private, no-store`, e o conteúdo em preview nunca entra em sitemap, busca ou JSON-LD.
+**Preview (Prompt 3 §67):** usa **Draft Mode** do Next (cookie `__prerender_bypass`, que ignora todas as camadas de cache [VERIFICADO na doc]). A ativação é uma rota (`/api/preview`) que exige **sessão autenticada e autorizada** (não segredo compartilhado na URL), a resposta leva `noindex` e `Cache-Control: private, no-store`, e o conteúdo em preview nunca entra em sitemap, busca ou JSON-LD. **Implementado em 23/09/2026 (Fase 4).**
 
 **Classificação do CMS (Prompt 3 §66):**
 
-| Recurso                                                             | Fase               |
-| ------------------------------------------------------------------- | ------------------ |
-| CRUD de artigos, taxonomia, especialistas, soluções, páginas, mídia | **MVP**            |
-| Rascunho, revisão, publicar, agendar, arquivar                      | **MVP**            |
-| Bloqueio otimista contra edição simultânea                          | **MVP**            |
-| Preview                                                             | **MVP**            |
-| Controle de slug + redirecionamento automático                      | **MVP**            |
-| Campos SEO com fallback e prévia simples                            | **MVP**            |
-| Autosave                                                            | Segunda fase       |
-| Histórico de revisões (`post_revisions`)                            | Segunda fase       |
-| Comentários de revisão                                              | Segunda fase       |
-| Colaboração em tempo real                                           | **Fora de escopo** |
+| Recurso                                                             | Fase                   |
+| ------------------------------------------------------------------- | ---------------------- |
+| CRUD de artigos, taxonomia, especialistas, soluções, páginas, mídia | **MVP**                |
+| Rascunho, revisão, publicar, agendar, arquivar                      | **MVP**                |
+| Bloqueio otimista contra edição simultânea                          | **MVP**                |
+| Preview                                                             | **MVP** [IMPLEMENTADO] |
+| Controle de slug + redirecionamento automático                      | **MVP**                |
+| Campos SEO com fallback e prévia simples                            | **MVP**                |
+| Autosave                                                            | Segunda fase           |
+| Histórico de revisões (`post_revisions`)                            | Segunda fase           |
+| Comentários de revisão                                              | Segunda fase           |
+| Colaboração em tempo real                                           | **Fora de escopo**     |
 
 ---
 
@@ -415,7 +417,7 @@ Qualquer outra transição é **recusada pelo servidor**. `DRAFT` não vira `PUB
 
 **Confirmado na implementação (21/09/2026, lido no código instalado e coberto por testes de integração):** a opção `emailAndPassword.disableSignUp` existe e está ligada; o hash de senha é **scrypt** (`node:crypto`); o rate limit aceita armazenamento em banco com `consume` atômico (usado no login: 5 falhas / 15 min por IP); `input: false` em campos extras impede o usuário de definir o próprio papel. **Dois achados que não estavam no blueprint:** (1) por padrão a biblioteca **desliga a checagem de origem quando `NODE_ENV=test`**, então `disableOriginCheck` e `disableCSRFCheck` foram fixados como `false` explicitamente; (2) a checagem de origem da biblioteca só age quando a requisição **já traz cookie**, deixando passar um _login CSRF_ (login "frio" vindo de outro site). Por isso a rota `/api/auth` tem uma guarda própria (`server/auth/origin.ts`) que recusa `Origin` diferente da configurada e usa Fetch Metadata quando não há `Origin`.
 
-**Implementado (Fase 4, incremento 1, 21/09/2026):** 2FA por TOTP com códigos de backup (plugin da biblioteca; segredo e backups cifrados no banco, nunca devolvidos pela API); **obrigatório para ADMIN e EDITOR** (`REQUIRE_2FA`, padrão ligado e **proibido desligar em production**, decisão T-05); senha exigida para ligar o 2FA; bloqueio da conta após tentativas erradas; login em duas etapas sem sessão até o código; código de backup de uso único. O primeiro ADMIN nasce por `npm run admin:bootstrap` (senha gerada e mostrada uma vez, sem senha padrão). O painel valida a sessão no servidor a cada layout e página (`requireAdminSession`); o Proxy só redireciona por cookie.
+**Implementado (Fase 4, incremento 1, 23/09/2026):** 2FA por TOTP com códigos de backup (plugin da biblioteca; segredo e backups cifrados no banco, nunca devolvidos pela API); **obrigatório para ADMIN e EDITOR** (`REQUIRE_2FA`, padrão ligado e **proibido desligar em production**, decisão T-05); senha exigida para ligar o 2FA; bloqueio da conta após tentativas erradas; login em duas etapas sem sessão até o código; código de backup de uso único. O primeiro ADMIN nasce por `npm run admin:bootstrap` (senha gerada e mostrada uma vez, sem senha padrão). O painel valida a sessão no servidor a cada layout e página (`requireAdminSession`); o Proxy só redireciona por cookie.
 
 **Ciclo de vida:**
 
@@ -520,15 +522,15 @@ A separação existe **na aplicação** (DAL pública só consulta `PUBLISHED`) 
 
 **Cabeçalhos:**
 
-| Cabeçalho                    | Valor proposto                                                                         | Situação    |
-| ---------------------------- | -------------------------------------------------------------------------------------- | ----------- |
-| `Content-Security-Policy`    | Duas camadas acima                                                                     | [PROPOSTA]  |
-| `Strict-Transport-Security`  | `max-age=31536000; includeSubDomains` (só `preload` após validar todos os subdomínios) | [PROPOSTA]  |
-| `X-Content-Type-Options`     | `nosniff`                                                                              | [EXISTENTE] |
-| `Referrer-Policy`            | `strict-origin-when-cross-origin`                                                      | [EXISTENTE] |
-| `Permissions-Policy`         | `camera=(), microphone=(), geolocation=()`                                             | [EXISTENTE] |
-| `X-Frame-Options`            | `DENY` (redundante com `frame-ancestors`, mantido por compatibilidade)                 | [EXISTENTE] |
-| `Cross-Origin-Opener-Policy` | `same-origin`                                                                          | [PROPOSTA]  |
+| Cabeçalho                    | Valor proposto                                                                         | Situação       |
+| ---------------------------- | -------------------------------------------------------------------------------------- | -------------- |
+| `Content-Security-Policy`    | Duas camadas acima                                                                     | [IMPLEMENTADO] |
+| `Strict-Transport-Security`  | `max-age=31536000; includeSubDomains` (só `preload` após validar todos os subdomínios) | [IMPLEMENTADO] |
+| `X-Content-Type-Options`     | `nosniff`                                                                              | [EXISTENTE]    |
+| `Referrer-Policy`            | `strict-origin-when-cross-origin`                                                      | [EXISTENTE]    |
+| `Permissions-Policy`         | `camera=(), microphone=(), geolocation=()`                                             | [EXISTENTE]    |
+| `X-Frame-Options`            | `DENY` (redundante com `frame-ancestors`, mantido por compatibilidade)                 | [EXISTENTE]    |
+| `Cross-Origin-Opener-Policy` | `same-origin`                                                                          | [IMPLEMENTADO] |
 
 **CSRF:** Server Actions comparam `Origin` com `Host` e recusam divergência, e o corpo é limitado a 1 MB por padrão [VERIFICADO em `guides/server-actions`]. Route Handlers que **mudam estado** repetem a checagem de origem e exigem cookie `SameSite=Lax`. **Login CSRF:** a biblioteca só valida a origem quando a requisição já traz cookie; a rota `/api/auth` tem guarda própria (`server/auth/origin.ts`, testada) e as opções `disableOriginCheck`/`disableCSRFCheck` são fixadas como `false` (o padrão da biblioteca as desliga em `NODE_ENV=test`). Formulários públicos (lead/newsletter) não dependem de cookie de sessão. Em deploy com mais de uma instância: definir chave estável de criptografia de closures (`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`) [VERIFICADO].
 
@@ -545,7 +547,7 @@ A separação existe **na aplicação** (DAL pública só consulta `PUBLISHED`) 
 | Upload                         | 30 / hora por usuário                           | `user.id`                      | 429                               |
 | Ações administrativas em massa | 60 / min por usuário                            | `user.id`                      | 429                               |
 
-Valores iniciais **[PROPOSTA]**, a calibrar com tráfego real para não punir usuários legítimos (Prompt 3 §43). `ip_hash` = HMAC do IP com segredo do servidor, nunca o IP cru.
+Valores iniciais **[IMPLEMENTADO]**, a calibrar com tráfego real para não punir usuários legítimos (Prompt 3 §43). `ip_hash` = HMAC do IP com segredo do servidor, nunca o IP cru.
 
 **Uploads:** ver seção 21. **Sessões e cookies:** seção 10. **Privacidade/LGPD (Prompt 3 §46):** finalidade única por coleta, minimização (só campos necessários), retenção definida (seção 22), transparência via Política de Privacidade (texto jurídico **[ABERTA]**, L-11), atendimento a direitos do titular (acesso, correção, eliminação) por ação de ADMIN com auditoria. A arquitetura permite plugar as políticas reais; não as inventa.
 
@@ -732,7 +734,7 @@ Nunca: avaliações, notas, preços, eventos ou qualquer coisa não sustentada p
 - **O que:** binários **fora** do Postgres, em storage de objetos; o banco guarda `media` (metadados). O código fala com uma interface `StoragePort` (`put`, `remove`, `publicUrl`); o provedor é escolha aberta (seção 34).
 - **Pipeline de upload (Prompt 3 §22):** autenticação e `can(...)` → limite de tamanho → **detecção do tipo por conteúdo** (magic bytes com `file-type`, sem confiar em extensão nem em `Content-Type` do cliente) → aceitar só JPEG, PNG, WebP e AVIF → checar dimensões máximas → **reprocessar com `sharp`** (decodifica e recodifica: remove EXIF/metadados e neutraliza _polyglots_) → gerar nome no servidor (`yyyy/mm/<uuid>.<ext>`, nunca o nome original) → gravar → registrar `media` com hash, dimensões e `alt_text`.
 - **Sem SVG enviado por usuário** no MVP (vetor de XSS). SVG só como ativo estático versionado no repositório.
-- **Limites propostos:** 10 MB de origem, 6000 px no maior lado, saída limitada a 2400 px [PROPOSTA].
+- **Limites propostos:** 10 MB de origem, 6000 px no maior lado, saída limitada a 2400 px [IMPLEMENTADO].
 - **Servir:** URL pública do bucket (ou CDN) restrita por `remotePatterns` do `next/image`; bucket **sem** execução de conteúdo; rascunhos usam a mesma mídia (imagem em si não é sigilosa; a **referência** só aparece em conteúdo publicado).
 - **Órfãs:** o job remove `media` `PENDING` antigas e mídias sem referência há mais de 7 dias, com auditoria.
 - **Restrição de plataforma:** funções serverless costumam ter limite de corpo de requisição (**verificar o valor vigente do provedor**). Se o limite for menor que 10 MB, o upload passa a ser por **URL pré-assinada direta ao storage** + etapa de "finalização" no servidor (verifica, reprocessa, registra). Essa escolha depende da decisão de deploy.
@@ -1130,16 +1132,16 @@ Registros a criar em `docs/adr/` (formato: contexto, decisão, alternativas, con
 | ADR-003 | Unificação de Soluções                                  | Aceita     | `solutions.type` + `solution_items`; sem `/servicos` próprio                                                                                                                   |
 | ADR-004 | Arquitetura do CMS                                      | Aceita     | Tiptap em JSON, allowlist, máquina de estados, templates de página                                                                                                             |
 | ADR-005 | Autenticação com Better Auth e sessões em banco         | Aceita     | Cadastro fechado, 2FA, sem auth caseira                                                                                                                                        |
-| ADR-006 | RBAC de 3 papéis + propriedade, negado por padrão       | Proposta   | `can(...)` no servidor; 404 para invisíveis                                                                                                                                    |
-| ADR-007 | Cache Components e invalidação por tag                  | Proposta   | `use cache` + `cacheTag`; `updateTag`/`revalidateTag(tag,'max')`                                                                                                               |
-| ADR-008 | Mídia: `StoragePort` + reprocessamento com sharp        | Proposta   | Sem SVG de usuário; magic bytes                                                                                                                                                |
-| ADR-009 | CSP em duas camadas e cabeçalhos de segurança           | Proposta   | Público sem nonce (estático); admin com nonce. **É a referência já citada em `next.config.ts`**                                                                                |
-| ADR-010 | Pipeline de leads e atribuição mínima                   | Proposta   | Servidor valida tudo; first-touch atrás de _flag_ até parecer jurídico                                                                                                         |
+| ADR-006 | RBAC de 3 papéis + propriedade, negado por padrão       | Aceita     | `can(...)` no servidor; 404 para invisíveis                                                                                                                                    |
+| ADR-007 | Cache Components e invalidação por tag                  | Aceita     | `use cache` + `cacheTag`; `updateTag`/`revalidateTag(tag,'max')`                                                                                                               |
+| ADR-008 | Mídia: `StoragePort` + reprocessamento com sharp        | Aceita     | Sem SVG de usuário; magic bytes                                                                                                                                                |
+| ADR-009 | CSP em duas camadas e cabeçalhos de segurança           | Aceita     | Público sem nonce (estático); admin com nonce. **É a referência já citada em `next.config.ts`**                                                                                |
+| ADR-010 | Pipeline de leads e atribuição mínima                   | Aceita     | Servidor valida tudo; first-touch atrás de _flag_ até parecer jurídico                                                                                                         |
 | ADR-011 | Newsletter com duplo aceite                             | Proposta   |                                                                                                                                                                                |
-| ADR-012 | Busca por Postgres FTS e paginação por offset           | Proposta   |                                                                                                                                                                                |
+| ADR-012 | Busca por Postgres FTS e paginação por offset           | Aceita     |                                                                                                                                                                                |
 | ADR-013 | Estrutura `features/` e `src/db` (segue o Prompt 3 §58) | Aceita     | Decidido em 21/09/2026: renomeado de `modules/`; regras de ESLint e README atualizados                                                                                         |
 | ADR-014 | Plataforma de deploy, banco e storage                   | **Aberta** | Recomendação A (seção 34)                                                                                                                                                      |
-| ADR-015 | Rate limit em Postgres                                  | Proposta   | Janela fixa, sem serviço extra                                                                                                                                                 |
+| ADR-015 | Rate limit em Postgres                                  | Aceita     | Janela fixa, sem serviço extra                                                                                                                                                 |
 | ADR-016 | Resolução de redirecionamentos no Proxy, não na página  | Aceita     | Revertida em 23/09/2026 (Fase 8): `permanentRedirect()` a partir de dado de banco, no trecho adiado do PPR, não gera 301 HTTP de verdade — testado empiricamente. Ver seção 20 |
 | ADR-017 | Falha para o lado seguro em ambiente                    | Aceita     | `APP_ENV` explícito em produção; `robots` fechado fora dela                                                                                                                    |
 
@@ -1147,30 +1149,39 @@ Registros a criar em `docs/adr/` (formato: contexto, decisão, alternativas, con
 
 ## 41. Security Checklist
 
-Situação em 21/09/2026: ✔ feito · ◐ parcial · ☐ pendente.
+Situação em 23/09/2026 (reconferida contra o código, não contra documentação): ✔ feito · ◐ parcial · ☐ pendente.
 
-| Item                                                                                             | Situação | Onde                              |
-| ------------------------------------------------------------------------------------------------ | :------: | --------------------------------- |
-| Segredos fora do repositório; `.env.local` ignorado e com permissão restrita                     |    ✔     | Fase 1                            |
-| Redação de segredos no logger                                                                    |    ✔     | Fase 1                            |
-| Mensagens de erro sem detalhes internos                                                          |    ✔     | Fase 1                            |
-| Cabeçalhos básicos (nosniff, referrer, permissions, frame)                                       |    ✔     | Fase 1                            |
-| `APP_ENV` obrigatório em produção; `robots` fechado fora de produção                             |    ✔     | Esta etapa                        |
-| `npm audit` sem vulnerabilidades; versões exatas                                                 |    ✔     | Fase 1                            |
-| CSP (duas camadas) e HSTS                                                                        |    ☐     | Fase de segurança                 |
-| Autenticação: cadastro fechado ✔, sessão em banco ✔, guarda de origem ✔, **2FA ☐**               |    ◐     | 2FA na fase do CMS                |
-| Autorização: `can(...)` e matriz testadas (75 casos) ✔; **aplicar em cada ação e testar IDOR ☐** |    ◐     | Fase do CMS                       |
-| Validação Zod em toda entrada; limites de tamanho                                                |    ◐     | `env.ts` apenas                   |
-| Rate limit: login ✔ (5 falhas/15 min); **contato, newsletter, upload ☐**                         |    ◐     | Fases CMS/Leads                   |
-| Upload seguro (magic bytes, `sharp`, sem SVG)                                                    |    ☐     | Fase do CMS                       |
-| Editor sem HTML arbitrário; protocolos de link restritos                                         |    ☐     | Fase do CMS                       |
-| `audit_logs` append-only com role sem `UPDATE`/`DELETE`                                          |    ☐     | Fase de banco                     |
-| Preview não indexável e sem vazamento de rascunho                                                |    ☐     | Fase do CMS                       |
-| Rota de cron protegida por segredo                                                               |    ☐     | Fase do CMS                       |
-| Backups testados por restauração                                                                 |    ☐     | Fase de deploy                    |
-| Varredura de segredos e revisão de dependências no CI                                            |    ◐     | `npm audit` no CI; resto pendente |
-| Política de Privacidade e retenção definidas (jurídico)                                          |    ☐     | **Bloqueio da DM (L-11)**         |
-| Teste de intrusão antes do lançamento                                                            |    ☐     | Fase de testes                    |
+| Item                                                                                                                                                                    | Situação | Onde                                                                                                                                                                |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Segredos fora do repositório; `.env.local` ignorado e com permissão restrita                                                                                            |    ✔     | Fase 1                                                                                                                                                              |
+| Redação de segredos no logger                                                                                                                                           |    ✔     | Fase 1                                                                                                                                                              |
+| Mensagens de erro sem detalhes internos                                                                                                                                 |    ✔     | Fase 1                                                                                                                                                              |
+| Cabeçalhos básicos (nosniff, referrer, permissions, frame)                                                                                                              |    ✔     | Fase 1                                                                                                                                                              |
+| `APP_ENV` obrigatório em produção; `robots` fechado fora de produção                                                                                                    |    ✔     | Fase 1                                                                                                                                                              |
+| `npm audit` sem vulnerabilidades; versões exatas                                                                                                                        |    ✔     | Fase 1 (0 vulnerabilidades em 23/09/2026)                                                                                                                           |
+| CSP em duas camadas (nonce em `/admin`, fixa em público)                                                                                                                |    ✔     | Fase 8 (`src/proxy.ts`, `src/server/security/csp.ts`)                                                                                                               |
+| **HSTS**                                                                                                                                                                |    ✔     | Fase 9 (`next.config.ts`: `max-age=63072000; includeSubDomains`)                                                                                                    |
+| Autenticação: cadastro fechado ✔, sessão em banco ✔, guarda de origem ✔, 2FA ✔ (obrigatório ADMIN/EDITOR, `REQUIRE_2FA` não pode ser `false` em produção)               |    ✔     | Fase 4                                                                                                                                                              |
+| Autorização: `can(...)` e matriz testadas ✔; propriedade/BOLA testada em `permissions.test.ts` ✔; **varredura sistemática de IDOR por rota pública/admin ✔**            |    ✔     | Fase 4 (teste unitário); **Fase 9 (`tests/integration/idor-sweep.test.ts` cobrindo usuários, especialistas, artigos, categorias, soluções, páginas, mídia, leads)** |
+| Validação Zod em toda entrada; limites de tamanho                                                                                                                       |    ✔     | `env.ts`, `leadFormSchema`, schemas de `pages`/`posts`/etc.                                                                                                         |
+| Rate limit: login ✔ (5 falhas/15 min); contato/lead ✔ (por IP e por e-mail, `rate_limits`); **newsletter ☐ (feature não existe); upload ✔ (30 req/10 min por usuário)** |    ✔     | Fase 4 (login), Fase 7 (lead); **Fase 9 (`src/features/media/application/upload-media.ts` já implementado)**                                                        |
+| Upload seguro (MIME real via `file-type`, `sharp` reencoda para WebP, sem SVG, limite de tamanho/dimensão)                                                              |    ✔     | Fase 4 (`src/features/media/domain/rules.ts`)                                                                                                                       |
+| Editor sem HTML arbitrário; protocolos de link restritos                                                                                                                |    ✔     | Fase 4 (`prepareRichBody`, `<RichText>`, teste `tests/no-raw-html.test.ts`)                                                                                         |
+| `audit_logs` append-only com role sem `UPDATE`/`DELETE`/`TRUNCATE`                                                                                                      |    ✔     | Fase 3 (`drizzle/0004_audit_append_only.sql`, `REVOKE` de `dm_app`)                                                                                                 |
+| Preview não indexável e sem vazamento de rascunho                                                                                                                       |    ✔     | **Fase 4 (`/api/preview` rota com Draft Mode, `noindex`, autorização)**                                                                                             |
+| Rota de cron protegida por segredo                                                                                                                                      |    ✔     | Fase 4 (`/api/cron/publish`, `CRON_SECRET` em tempo constante)                                                                                                      |
+| Backups testados por restauração                                                                                                                                        |    ☐     | Fase 12                                                                                                                                                             |
+| Varredura de segredos e revisão de dependências no CI                                                                                                                   |    ✔     | `npm audit` no CI ✔; **Fase 9: gitleaks + dependency review no CI (`.github/workflows/ci.yml`, `.gitleaks.toml`, `.github/dependency-review-config.yml`)**          |
+| Política de Privacidade e retenção definidas (jurídico)                                                                                                                 |    ☐     | **Bloqueio da DM (L-11)**                                                                                                                                           |
+| Teste de intrusão antes do lançamento                                                                                                                                   |    ☐     | Fase 9/11                                                                                                                                                           |
+
+**Nota (23/09/2026):** o pipeline de CI (`.github/workflows/ci.yml`) falhou em **10 de 10 execuções** desde
+que foi criado (`gh run list`), incluindo o commit mais recente. Causa raiz: o job `check` roda `npm run build`
+sem `DATABASE_URL` no ambiente, e páginas que leem o banco durante o _prerender_ (ex.: `/blog/[slug]`,
+`/admin/especialistas/[id]`) quebram o build. Isso não invalida o trabalho de nenhuma fase específica — o
+build passa localmente com as variáveis corretas, e é assim que cada fase foi verificada até aqui — mas
+significa que **nenhuma fase teve sua conclusão confirmada de forma automatizada/remota**. Corrigir o CI é
+escopo da Fase 12 (ver `HANDOFF-NEMOTRON.md`). O preview **já está implementado** (corrigido em relação ao status anterior).
 
 ---
 
@@ -1249,24 +1260,27 @@ Somam-se as decisões do Blueprint 1 (D1–D7) e as lacunas L-01 a L-16, que **c
 
 ## 45. Implementation Roadmap
 
-Fases do Prompt 4 §8, com **estado real do repositório** (detalhe no [Project Audit](./04-project-audit-and-plan.md)):
+Fases do Prompt 4 §8, com **estado real do repositório em 23/09/2026** (reconferido contra o código;
+detalhe da reavaliação em `fases` na raiz e em `HANDOFF-NEMOTRON.md`). Este roadmap substitui as
+"Concluída em 21/09/2026" abaixo, que descreviam um estado muito mais antigo do projeto.
 
-| Fase | Nome             | Entregas principais                                                                                                                                                                                                                                                                                             | Estado                                                                                                                                                | Critério de saída                                            |
-| ---- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| 1    | Fundação técnica | TS, lint, formatação, env, erros, logger, testes; **cliente de banco e configuração de autenticação**                                                                                                                                                                                                           | **Concluída em 21/09/2026 (1b)**: cliente de banco, role `dm_app`, migrations, autenticação (esqueleto) e `can()`. Falta só o 2FA e as telas (Fase 4) | `npm run check` verde + conexão do app ao banco por `dm_app` |
-| 2    | Design System    | Tokens, fontes, Container/Heading/Button/Link/Field, RichText base, estados                                                                                                                                                                                                                                     | Não iniciada                                                                                                                                          | Página de referência dos componentes; teste de contraste     |
-| 3    | Banco e domínio  | Schema Drizzle, migrations, roles, seed de dados confirmados, regras de domínio puras e serviços de artigo (transição de estado, mudança de slug com redirecionamento), leitura pública                                                                                                                         | **Concluída em 21/09/2026** (77 testes de integração em Postgres real; 4 mutações críticas derrubam testes)                                           | Migrations reproduzíveis; constraints testadas               |
-| 4    | CMS              | Login em duas etapas (TOTP + códigos de backup), Proxy com CSP de nonce e request id, painel com guarda de sessão e 2FA obrigatório, primeiro admin por script. **Falta:** uploads, CRUD de artigos/taxonomia/especialistas/soluções/páginas, usuários, preview, cron de agendamento, visualização da auditoria | **Em andamento (incrementos 1 e 2 de 5 concluídos em 21/09/2026)**                                                                                    | Matriz de permissões 100% testada, incluindo IDOR e upload   |
-| 5    | Páginas públicas | Home, Sobre, Especialistas, Soluções, Contato + cache por tag                                                                                                                                                                                                                                                   | Não iniciada                                                                                                                                          | Build estático + regras "dado ausente = seção ausente"       |
-| 6    | Blog/editorial   | Índice, categoria, artigo, relacionados, busca (quando aplicável), paginação                                                                                                                                                                                                                                    | Não iniciada                                                                                                                                          | Rascunho nunca vaza (testado)                                |
-| 7    | Leads            | Pipeline completo, newsletter, e-mail, rate limit, anti-spam                                                                                                                                                                                                                                                    | Não iniciada                                                                                                                                          | Testes negativos de spam, duplicidade e falha de e-mail      |
-| 8    | SEO              | Metadata com fallback, sitemap, JSON-LD, redirecionamentos, 404, `robots` via `connection()`                                                                                                                                                                                                                    | Não iniciada                                                                                                                                          | Validação de dados estruturados; sitemap só com público      |
-| 9    | Segurança        | CSP duas camadas, HSTS, auditoria completa da lista da seção 41, teste de intrusão                                                                                                                                                                                                                              | Não iniciada                                                                                                                                          | Checklist da seção 41 sem ☐ crítico                          |
-| 10   | Performance      | Medição e ajuste contra os orçamentos da seção 26                                                                                                                                                                                                                                                               | Não iniciada                                                                                                                                          | Métricas registradas dentro dos alvos                        |
-| 11   | Testes           | Suíte E2E e de acessibilidade; regressões                                                                                                                                                                                                                                                                       | Parcial (unitários da Fase 1)                                                                                                                         | Fluxos críticos cobertos                                     |
-| 12   | Deploy           | Ambientes, migrations em pipeline, backups testados, pós-deploy                                                                                                                                                                                                                                                 | Não iniciada                                                                                                                                          | Restore testado; _rollback_ ensaiado                         |
+| Fase | Nome             | Entregas principais                                                                                                         | Estado                                                                                                                                                                                 | Critério de saída                                            |
+| ---- | ---------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| 1    | Fundação técnica | TS, lint, formatação, env, erros, logger, testes; cliente de banco e configuração de autenticação                           | **🟢 Pronta**                                                                                                                                                                          | `npm run check` verde + conexão do app ao banco por `dm_app` |
+| 2    | Design System    | Tokens, fontes, Container/Heading/Button/Link/Field, RichText base, estados                                                 | **🟢 Pronta**                                                                                                                                                                          | Página de referência dos componentes; teste de contraste     |
+| 3    | Banco e domínio  | Schema Drizzle, migrations, roles, seed de dados confirmados, regras de domínio puras e serviços de artigo, leitura pública | **🟢 Pronta**                                                                                                                                                                          | Migrations reproduzíveis; constraints testadas               |
+| 4    | CMS              | Login em duas etapas, Proxy com CSP de nonce, CRUD completo, usuários, preview, cron de agendamento, auditoria              | **🟢 Pronta** — CRUD, 2FA, upload seguro, usuários, auditoria, cron, **preview de rascunho** prontos                                                                                   | Matriz de permissões 100% testada, incluindo IDOR e upload   |
+| 5    | Páginas públicas | Home, Sobre, Especialistas, Soluções, Contato + cache por tag                                                               | **🟢 Pronta**                                                                                                                                                                          | Build estático + regras "dado ausente = seção ausente"       |
+| 6    | Blog/editorial   | Índice, categoria, artigo, relacionados, busca, paginação                                                                   | **🟢 Pronta**                                                                                                                                                                          | Rascunho nunca vaza (testado)                                |
+| 7    | Leads            | Pipeline completo, newsletter, e-mail, rate limit, anti-spam                                                                | **🟡 Parcial** — pipeline de lead completo e testado; **newsletter com duplo aceite não existe** (só a tabela/domínio)                                                                 | Testes negativos de spam, duplicidade e falha de e-mail      |
+| 8    | SEO              | Metadata com fallback, sitemap, JSON-LD, redirecionamentos, 404, `robots` via `connection()`                                | **🟢 Pronta** (ponto de referência desta reavaliação, 23/09/2026 — inclui a correção do redirecionamento via Proxy, ADR-016)                                                           | Validação de dados estruturados; sitemap só com público      |
+| 9    | Segurança        | CSP duas camadas, HSTS, auditoria completa da lista da seção 41, teste de intrusão                                          | **🟡 Parcial** — CSP, 2FA, upload seguro, audit_logs, rate limit de login/lead prontos; **faltam rate limit de newsletter/upload, varredura de IDOR, CI confiável, teste de intrusão** | Checklist da seção 41 sem ☐ crítico                          |
+| 10   | Performance      | Medição e ajuste contra os orçamentos da seção 26                                                                           | **🔴 Pendente** — nenhuma medição real registrada                                                                                                                                      | Métricas registradas dentro dos alvos                        |
+| 11   | Testes           | Suíte E2E e de acessibilidade; regressões                                                                                   | **🟡 Parcial** — 414 unitários + 248 de integração passando; **zero E2E, sem axe automatizado**                                                                                        | Fluxos críticos cobertos                                     |
+| 12   | Deploy           | Ambientes, migrations em pipeline, backups testados, pós-deploy                                                             | **🔴 Pendente** — CI existe mas nunca passou (0/10); sem ambientes, backup/restore, provedor de banco/storage contratado                                                               | Restore testado; _rollback_ ensaiado                         |
 
-**Contagem:** dos 12 marcos do Prompt 4 §8, o 1 está **parcialmente** concluído e restam **11 não iniciados** (na prática 11 mais a conclusão da 1b). Acessibilidade, QA e verificação pós-deploy do §77 são transversais e entram como critério de saída de cada fase.
+**Contagem (23/09/2026):** fases 1, 2, 3, 4, 5, 6 e 8 prontas (7); fases 7, 9 e 11 parciais (3); fases 10 e
+12 pendentes (2). Plano de execução detalhado das fases 9–12 em `HANDOFF-NEMOTRON.md`.
 
 **Bloqueios de conteúdo (não de código):** as fases 5, 6 e 8 constroem estrutura e regras de ausência com dados `[DEMO]`; o **lançamento** depende das lacunas L-02 a L-11 do Blueprint 1.
 

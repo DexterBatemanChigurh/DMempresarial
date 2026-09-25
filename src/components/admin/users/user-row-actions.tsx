@@ -14,6 +14,7 @@ type Props = {
   isSelf: boolean;
   setRoleAction: RowAction;
   setDisabledAction: RowAction;
+  deleteAction: RowAction;
 };
 
 export function UserRowActions({
@@ -23,6 +24,7 @@ export function UserRowActions({
   isSelf,
   setRoleAction,
   setDisabledAction,
+  deleteAction,
 }: Props) {
   const [roleState, roleFormAction, rolePending] = useActionState<RowResult | null, FormData>(
     setRoleAction,
@@ -32,6 +34,10 @@ export function UserRowActions({
     RowResult | null,
     FormData
   >(setDisabledAction, null);
+  const [deleteState, deleteFormAction, deletePending] = useActionState<RowResult | null, FormData>(
+    deleteAction,
+    null,
+  );
 
   if (isSelf) {
     return <span>(você)</span>;
@@ -63,11 +69,30 @@ export function UserRowActions({
           {disabled ? "Reativar" : "Desativar"}
         </Button>
       </form>
+      <form
+        action={deleteFormAction}
+        onSubmit={(e) => {
+          if (!confirm("Excluir este usuário? A ação é irreversível.")) e.preventDefault();
+        }}
+      >
+        <input type="hidden" name="userId" value={userId} />
+        <Button
+          type="submit"
+          variant="secondary"
+          loading={deletePending}
+          className="text-error hover:bg-error/10"
+        >
+          Excluir
+        </Button>
+      </form>
       {roleState && !roleState.ok ? (
         <FormMessage tone="error">{roleState.error.message}</FormMessage>
       ) : null}
       {disabledState && !disabledState.ok ? (
         <FormMessage tone="error">{disabledState.error.message}</FormMessage>
+      ) : null}
+      {deleteState && !deleteState.ok ? (
+        <FormMessage tone="error">{deleteState.error.message}</FormMessage>
       ) : null}
     </div>
   );

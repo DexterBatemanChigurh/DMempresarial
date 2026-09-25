@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { draftMode } from "next/headers";
 import { RichText } from "@/components/content/rich-text";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import {
   getPublicPostBySlugForRoute,
+  getPostBySlugForPreviewRoute,
   listPublicPostsForRoute,
 } from "@/features/content/application/public-posts";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
@@ -19,7 +21,10 @@ export const instant = false;
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPublicPostBySlugForRoute(slug);
+  const isDraft = (await draftMode()).isEnabled;
+  const post = isDraft
+    ? await getPostBySlugForPreviewRoute(slug)
+    : await getPublicPostBySlugForRoute(slug);
   if (!post) return { title: "Artigo não encontrado" };
   return publicMetadata({
     title: post.seoTitle ?? post.title,
@@ -31,7 +36,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function BlogPostPage({ params }: Params) {
   const { slug } = await params;
-  const post = await getPublicPostBySlugForRoute(slug);
+  const isDraft = (await draftMode()).isEnabled;
+  const post = isDraft
+    ? await getPostBySlugForPreviewRoute(slug)
+    : await getPublicPostBySlugForRoute(slug);
   // Slug trocado (docs/03 §20): o redirecionamento de verdade (301, com Location de HTTP) é
   // resolvido no Proxy (src/proxy.ts), antes desta página renderizar — um `permanentRedirect()`
   // daqui, que depende de dado de banco, cai no trecho adiado do PPR e vira só uma navegação por
@@ -54,7 +62,7 @@ export default async function BlogPostPage({ params }: Params) {
           "@context": "https://schema.org",
           "@type": "Article",
           headline: post.title,
-          datePublished: post.publishedAt.toISOString(),
+          datePublished: post.publishedAt?.toISOString() ?? "",
           dateModified: post.updatedAt.toISOString(),
           author: { "@type": "Person", name: post.authorName },
           url: `${env().SITE_URL}/blog/${post.slug}`,
@@ -88,7 +96,7 @@ export default async function BlogPostPage({ params }: Params) {
             <Text size="metadata">{post.authorName}</Text>
             <Text size="metadata">·</Text>
             <Text size="metadata">
-              {post.publishedAt.toLocaleDateString("pt-BR", {
+              {post.publishedAt?.toLocaleDateString("pt-BR", {
                 day: "2-digit",
                 month: "long",
                 year: "numeric",

@@ -1,0 +1,41 @@
+# Fases do DM Empresarial — estado atualizado (25/09/2026)
+
+Reavaliação orientada pelas 12 fases do roadmap (`docs/03-engineering-architecture-blueprint.md`,
+seção 45). Fase 8 foi o ponto de referência desta reavaliação — as demais foram reconferidas
+contra o estado real do repositório, não contra documentação antiga.
+
+Legenda: 🟢 pronta · 🟡 parcial · 🔴 pendente · ⚪ não confirmada
+
+## Estado por fase
+
+| # | Fase             | Estado | O que já existe (evidência)                                                                                                                                        | O que falta |
+|---|------------------|:------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
+| 1 | Fundação técnica | 🟢 | TS estrito, lint, formatação, `env.ts`, erros/logger, cliente de banco, role `dm_app` sem DDL, migrations, Better Auth, `can()`, 2FA TOTP | — |
+| 2 | Design System    | 🟢 | Tokens, fontes, 15+ componentes, `/design-system`, `src/lib/color.test.ts` (contraste), Header/Footer, menu mobile em `<dialog>` | — |
+| 3 | Banco e domínio  | 🟢 | 23 tabelas, migrations 0000–0006, `audit_logs` append-only (REVOKE UPDATE/DELETE/TRUNCATE de `dm_app`, `drizzle/0004_audit_append_only.sql`), máquinas de estado, leitura pública só `PUBLISHED` | — |
+| 4 | CMS              | 🟢 | CRUD completo (artigos, categorias, especialistas, soluções, páginas, configurações), 2FA obrigatório (`REQUIRE_2FA` padrão `true`, proibido `false` em produção), upload seguro (MIME real via `file-type`, sem SVG, `sharp` reencoda pra WebP, limites de tamanho/dimensão — `src/features/media/domain/rules.ts`), `/admin/usuarios`, `/admin/auditoria`, cron de publicação protegido por segredo, **preview de rascunho via Draft Mode** (`/api/preview`, rota com autorização e `noindex`) | — |
+| 5 | Páginas públicas | 🟢 | Home, `/sobre`, `/sobre/especialistas` (+ perfil), `/solucoes` (+ detalhe), `/contato`, `/[key]` (legais), `not-found`/`error` | — |
+| 6 | Blog/editorial   | 🟢 | `/blog`, `/blog/categoria/[slug]`, `/blog/[slug]`, busca (`searchPublicPostsForRoute`), paginação, relacionados por categoria | — |
+| 7 | Leads            | 🟡 | Pipeline de lead completo e testado (honeypot, token de tempo mínimo, rate limit por IP e e-mail, dedupe, heurística de spam por link, e-mail best-effort, auditoria sem PII) — `src/features/conversion/` | **Newsletter com duplo aceite não existe**: a tabela `newsletter_subscribers` e as regras de transição (`SUBSCRIBER_STATUSES`) estão no domínio, mas não há Server Action, rota nem formulário público |
+| 8 | SEO              | 🟢 | Metadata com fallback em cascata, `sitemap.xml`, `robots.txt` (via `connection()`), canonical + Open Graph, JSON-LD (Organization/Article/Service/Person), **redirecionamento de slug trocado resolvido no Proxy** (301 HTTP real, ADR-016), 404 própria | — |
+| 9 | Segurança        | 🟡 | CSP em duas camadas (nonce em `/admin`, fixa em público), HSTS ✔ (`next.config.ts`), `audit_logs` append-only ✔, 2FA obrigatório ✔, upload seguro ✔, rate limit em login e em lead (IP+e-mail) ✔ | rate limit em newsletter (feature não existe) e em upload de mídia; varredura sistemática de IDOR por rota; varredura de segredos e revisão de dependências no CI; teste de intrusão formal |
+| 10 | Performance     | 🔴 | Orçamentos definidos em `docs/03` §26 (LCP/INP/CLS), técnicas já em uso (Server Components, `next/image`/`next/font` onde aplicável) | Nenhuma medição real (Lighthouse/Web Vitals) registrada; orçamento de JS inicial ainda "a definir após medição" |
+| 11 | Testes          | 🟡 | 415 testes unitários + 268 de integração (Postgres real) passando localmente; teste de contraste automatizado | **Zero testes E2E** (sem Playwright/config); sem verificação automática de acessibilidade por página (axe); catálogo de testes negativos de `docs/03` §31 não roda como suíte dedicada |
+| 12 | Deploy          | 🔴 | `.github/workflows/ci.yml` existe; scripts `db:setup:remote`, credenciais Neon em `.env.neon` (local, não versionado) | **CI nunca passou**: 10/10 execuções falharam desde a criação (o job `check` não define `DATABASE_URL`); nenhum ambiente de staging/produção configurado; provedor de banco/storage não contratado (T-02/T-03 abertas); backup/restore nunca testado; domínio, DNS, SPF/DKIM/DMARC pendentes; cron de publicação não agendado externamente |
+
+## Nota importante — CI
+
+O pipeline remoto (`gh run list`) falhou em **100% das execuções (10 de 10)** desde que foi criado.
+Causa raiz: o job `check` roda `npm run build` sem `DATABASE_URL` no ambiente, então qualquer página
+que lê o banco durante o *prerender* (ex.: `/blog/[slug]`, `/admin/especialistas/[id]`) quebra o build.
+Isso já derrubava commits desde a Fase 4/5. **Nenhuma fase teve sua conclusão confirmada de forma
+automatizada/remota até hoje, só localmente.** Corrigir isso é trabalho de Fase 12 (CI/CD).
+
+## Números atuais (25/09/2026)
+
+- **415 testes unitários** e **268 de integração** passando localmente
+- `npm audit`: 0 vulnerabilidades
+- `lint`, `typecheck`, `build`, `db:verify` → verdes
+- CI remoto: 0/10 execuções verdes (ver nota acima)
+- Fases 1–8: **7 prontas, 1 parcial** (Fase 7 – newsletter)
+- Fases 9–12: parcial/pendente — plano detalhado no HANDOFF-NEMOTRON.md

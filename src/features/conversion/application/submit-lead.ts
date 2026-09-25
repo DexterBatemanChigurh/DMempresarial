@@ -6,7 +6,7 @@ import { getPublicSettings } from "@/features/settings/application/settings-crud
 import { getEmail } from "@/server/email";
 import { hashIpForToday } from "@/server/security/ip-hash";
 import { verifyFormToken } from "@/server/security/form-token";
-import { consumeRateLimit, windowedKey } from "../infrastructure/rate-limit-repository";
+import { consumeRateLimit, windowedKey } from "@/server/security/rate-limit";
 import {
   countLinks,
   findRecentDuplicateLead,

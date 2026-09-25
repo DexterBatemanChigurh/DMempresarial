@@ -1,14 +1,5 @@
+import "server-only";
 import { AppError } from "@/lib/errors";
-
-/**
- * Autorização do CMS (docs/03, partes 11 e 12): RBAC de 3 papéis + regra de propriedade,
- * NEGADO POR PADRÃO. Este módulo é a única fonte de resposta para "este usuário pode fazer
- * isto?". Puro (sem I/O), para ser testado exaustivamente. Ele decide QUEM pode; se o estado
- * atual permite a transição (máquina de estados) é regra de domínio, verificada à parte.
- *
- * Esconder botão na UI NÃO é autorização: toda Server Action e Route Handler administrativa
- * chama `assertCan` no servidor, com o recurso carregado do banco (nunca do cliente).
- */
 
 export const ROLES = ["ADMIN", "EDITOR", "AUTHOR"] as const;
 export type Role = (typeof ROLES)[number];

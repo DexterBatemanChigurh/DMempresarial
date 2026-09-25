@@ -17,6 +17,9 @@ import {
   setUserRole,
   type UserSummary,
 } from "../infrastructure/user-repository";
+import { specialists } from "@/db/schema/people";
+import { users } from "@/db/schema/auth";
+import { eq } from "drizzle-orm";
 
 /**
  * Gestão de usuários (docs/03, parte 45 / HANDOFF incremento 5): só ADMIN. Nunca apaga — desativa
@@ -172,6 +175,50 @@ export async function setDisabled({ db }: Deps, input: SetUserDisabledInput): Pr
   });
 }
 
+export type DeleteUserInput = {
+  actor: Actor | null | undefined;
+  userId: string;
+  requestId?: string;
+};
+
+export async function deleteUser({ db }: Deps, input: DeleteUserInput): Promise<void> {
+  const actor = input.actor;
+  if (!actor) throw new AppError("UNAUTHENTICATED", "Sem sessão válida.");
+  assertCan(actor, "user:manage");
+
+  const target = await findUserById(db, input.userId);
+  if (!target) throw new AppError("NOT_FOUND", "Usuário inexistente.");
+
+  // Não pode excluir a si mesmo
+  if (target.id === actor.id) {
+    throw new AppError("DOMAIN_RULE", "Você não pode excluir a própria conta.");
+  }
+
+  // Precisa manter pelo menos um ADMIN ativo
+  if (target.role === "ADMIN" && target.disabledAt === null) {
+    const activeAdminCount = await countActiveAdmins(db);
+    if (activeAdminCount <= 1) {
+      throw new AppError("DOMAIN_RULE", "Precisa sobrar pelo menos um ADMIN ativo.");
+    }
+  }
+
+  await db.transaction(async (tx) => {
+    // Remove sessões, contas, 2FA (já tem cascade no banco)
+    // Remove especialista vinculado se existir (userId = set null no banco, mas apagamos aqui)
+    await tx.delete(specialists).where(eq(specialists.userId, target.id));
+    // Remove o usuário (cascade remove sessions, accounts, two_factors)
+    await tx.delete(users).where(eq(users.id, target.id));
+    await recordAudit(tx, {
+      actorId: actor.id,
+      action: "user.deleted",
+      entityType: "user",
+      entityId: target.id,
+      metadata: { email: target.email, role: target.role },
+      requestId: input.requestId,
+    });
+  });
+}
+
 export async function listUsersForAdmin(
   { db }: Deps,
   actor: Actor | null | undefined,
@@ -190,3 +237,9 @@ export const setDisabledForRoute = (input: SetUserDisabledInput) =>
   setDisabled({ db: getDb() }, input);
 export const listUsersForAdminForRoute = (actor: Actor | null | undefined) =>
   listUsersForAdmin({ db: getDb() }, actor);
+
+export const deleteUserForRoute = (input: {
+  actor: Actor | null | undefined;
+  userId: string;
+  requestId?: string;
+}) => deleteUser({ db: getDb() }, input);

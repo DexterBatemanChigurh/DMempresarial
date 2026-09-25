@@ -12,6 +12,9 @@ import {
 } from "@/db/schema";
 import type { PostStatus } from "../domain/post-status";
 
+/** Página de resultados paginados. */
+export type Page<T> = { items: T[]; total: number; page: number; pageSize: number };
+
 /** Artigo carregado para uma transição de estado, já com o que as regras de publicação exigem. */
 export type PostForTransition = {
   post: typeof posts.$inferSelect;
@@ -180,7 +183,7 @@ export type PublicPostSummary = {
   title: string;
   subtitle: string | null;
   excerpt: string | null;
-  publishedAt: Date;
+  publishedAt: Date | null;
   readingMinutes: number;
   authorName: string;
   primaryCategorySlug: string | null;
@@ -193,6 +196,9 @@ export type PublicPost = PublicPostSummary & {
   updatedAt: Date;
   coverMediaId: string | null;
   primaryCategorySlug: string | null;
+  publishedAt: Date | null;
+  status: string;
+  scheduledFor: Date | null;
 };
 
 const isPublished = eq(posts.status, "PUBLISHED");
@@ -235,6 +241,8 @@ export async function findPublishedPostBySlug(
       updatedAt: posts.updatedAt,
       coverMediaId: posts.coverMediaId,
       primaryCategorySlug: categories.slug,
+      status: posts.status,
+      scheduledFor: posts.scheduledFor,
     })
     .from(posts)
     .innerJoin(specialists, eq(specialists.id, posts.authorId))
@@ -254,11 +262,57 @@ export async function findPublishedPostBySlug(
         updatedAt: row.updatedAt,
         coverMediaId: row.coverMediaId,
         primaryCategorySlug: row.primaryCategorySlug,
+        status: row.status,
+        scheduledFor: row.scheduledFor,
       }
     : null;
 }
 
-export type Page<T> = { items: T[]; total: number; page: number; pageSize: number };
+/**
+ * Busca um post por slug independentemente do status (para preview/Draft Mode).
+ * Retorna o post completo com corpo rico, mesmo se for DRAFT/REVIEW/SCHEDULED.
+ */
+export async function findPostBySlugForPreview(
+  executor: Executor,
+  slug: string,
+): Promise<PublicPost | null> {
+  const [row] = await executor
+    .select({
+      ...summaryColumns,
+      body: posts.body,
+      seoTitle: posts.seoTitle,
+      seoDescription: posts.seoDescription,
+      updatedAt: posts.updatedAt,
+      coverMediaId: posts.coverMediaId,
+      primaryCategorySlug: categories.slug,
+      status: posts.status,
+      publishedAt: posts.publishedAt,
+      scheduledFor: posts.scheduledFor,
+    })
+    .from(posts)
+    .innerJoin(specialists, eq(specialists.id, posts.authorId))
+    .leftJoin(
+      postCategories,
+      and(eq(postCategories.postId, posts.id), eq(postCategories.isPrimary, true)),
+    )
+    .leftJoin(categories, eq(categories.id, postCategories.categoryId))
+    .where(eq(posts.slug, slug))
+    .limit(1);
+  return row
+    ? {
+        ...toSummary(row),
+        body: row.body,
+        seoTitle: row.seoTitle,
+        seoDescription: row.seoDescription,
+        updatedAt: row.updatedAt,
+        coverMediaId: row.coverMediaId,
+        primaryCategorySlug: row.primaryCategorySlug,
+        status: row.status,
+        publishedAt: row.publishedAt,
+        scheduledFor: row.scheduledFor,
+      }
+    : null;
+}
 
 /** Tamanho de página com teto: parâmetro do cliente nunca decide quanto é lido do banco. */
 export function boundedPaging(page: number, pageSize: number) {

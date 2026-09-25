@@ -45,8 +45,8 @@ export function createAuth({ db, secret, baseURL }: AuthDeps) {
       enabled: true,
       // Sem cadastro público: contas nascem por convite de ADMIN.
       disableSignUp: true,
-      minPasswordLength: 12,
-      maxPasswordLength: 128,
+      minPasswordLength: 6,
+      maxPasswordLength: 12,
       autoSignIn: false,
       revokeSessionsOnPasswordReset: true,
     },

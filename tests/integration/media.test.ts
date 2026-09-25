@@ -242,6 +242,18 @@ describe("upload: validação de texto alternativo e legenda", () => {
   });
 });
 
+describe("upload: limite de taxa", () => {
+  it("o 31º upload do MESMO usuário na janela é recusado com RATE_LIMITED", async () => {
+    const limited = { id: author2.id, role: "AUTHOR" } as Actor;
+    for (let i = 0; i < 30; i++) {
+      await uploadMedia(deps, { actor: limited, bytes: await jpeg(10, 10) });
+    }
+    await expect(
+      uploadMedia(deps, { actor: limited, bytes: await jpeg(10, 10) }),
+    ).rejects.toMatchObject({ code: "RATE_LIMITED" });
+  });
+});
+
 describe("permissões", () => {
   it("sem ator autenticado, a ação lança FORBIDDEN/UNAUTHENTICATED e nada é gravado", async () => {
     const before = await storedFileCount();
