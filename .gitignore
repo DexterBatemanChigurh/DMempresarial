@@ -10,6 +10,8 @@ next-env.d.ts
 .env
 .env.*
 !.env.example
+# credenciais de bootstrap (URL do dono do banco + senha do primeiro admin)
+.bootstrap.env
 
 # testes e ferramentas
 playwright-report/

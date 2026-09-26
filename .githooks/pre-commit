@@ -3,7 +3,8 @@
 set -e
 
 # Bloqueia arquivos de ambiente com segredos (só .env.example é permitido).
-if git diff --cached --name-only | grep -E '(^|/)\.env(\..+)?$' | grep -vE '(^|/)\.env\.example$'; then
+# Pega também nomes como `.bootstrap.env` e `.env.neon`.
+if git diff --cached --name-only --diff-filter=ACMR | grep -E -e '(^|/)\.env(\..+)?$' -e '\.env$' | grep -vE '(^|/)\.env\.example$'; then
   echo "pre-commit: arquivo .env staged. Remova com: git restore --staged <arquivo>" >&2
   exit 1
 fi
