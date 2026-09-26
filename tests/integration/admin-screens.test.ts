@@ -1,13 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDatabase } from "@/db/client";
 import {
-  createTestimonial,
-  deleteTestimonial,
-  transitionTestimonial,
-  updateTestimonial,
-} from "@/features/proof/application/testimonial-crud";
-import { listPublicTestimonials } from "@/features/proof/application/public-proof";
-import {
   eraseLead,
   eraseSubscriber,
   exportActiveSubscribersCsv,
@@ -28,8 +21,8 @@ import { createFixtures, EMAIL_DOMAIN, PREFIX, uniq } from "./fixtures";
 import { testAppUrl } from "./helpers";
 
 /**
- * Telas novas do painel (depoimentos, leads, newsletter, redirecionamentos) contra Postgres real,
- * pelo role de aplicação: permissão por papel, regras de estado, auditoria e exclusão LGPD.
+ * Telas novas do painel (leads, newsletter, redirecionamentos) contra Postgres real, pelo role
+ * de aplicação: permissão por papel, regras de estado, auditoria e exclusão LGPD.
  */
 const fx = createFixtures();
 const handle = createDatabase(testAppUrl(), { max: 6 });
@@ -75,78 +68,6 @@ async function lead(over: { message?: string; status?: string } = {}): Promise<s
   );
   return row!.id;
 }
-
-const testimonialInput = (over: Partial<Parameters<typeof createTestimonial>[1]> = {}) => ({
-  actor: editor,
-  authorName: uniq("autor-"),
-  authorDetail: null,
-  quote: "Trabalho sério e bem acompanhado.",
-  rating: 5,
-  source: "MANUAL" as const,
-  givenAt: "2026-08-10",
-  position: 0,
-  ...over,
-});
-
-describe("depoimentos", () => {
-  it("EDITOR cria, publica, edita, oculta e exclui; o público só vê enquanto publicado", async () => {
-    const { id } = await createTestimonial(deps, testimonialInput());
-    const isPublic = async () => (await listPublicTestimonials(deps)).some((t) => t.id === id);
-    expect(await isPublic()).toBe(false);
-
-    const published = await transitionTestimonial(deps, {
-      actor: editor,
-      id,
-      to: "PUBLISHED",
-      expectedVersion: 1,
-    });
-    expect(published.status).toBe("PUBLISHED");
-    expect(await isPublic()).toBe(true);
-
-    const edited = await updateTestimonial(deps, {
-      ...testimonialInput({ quote: "Texto corrigido." }),
-      id,
-      expectedVersion: published.version,
-    });
-    const hidden = await transitionTestimonial(deps, {
-      actor: editor,
-      id,
-      to: "ARCHIVED",
-      expectedVersion: edited.version,
-    });
-    expect(hidden.status).toBe("ARCHIVED");
-    expect(await isPublic()).toBe(false);
-
-    await deleteTestimonial(deps, { actor: editor, id });
-    expect(await auditCount("testimonial.deleted", id)).toBe(1);
-  });
-
-  it("AUTHOR não gerencia depoimentos", async () => {
-    await expect(
-      createTestimonial(deps, testimonialInput({ actor: author })),
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
-  });
-
-  it("versão desatualizada → CONFLICT; transição inválida → DOMAIN_RULE; campo inválido → VALIDATION", async () => {
-    const { id } = await createTestimonial(deps, testimonialInput());
-    await expect(
-      updateTestimonial(deps, { ...testimonialInput(), id, expectedVersion: 99 }),
-    ).rejects.toMatchObject({ code: "CONFLICT" });
-    await expect(
-      transitionTestimonial(deps, { actor: editor, id, to: "ARCHIVED", expectedVersion: 1 }),
-    ).rejects.toMatchObject({ code: "DOMAIN_RULE" });
-    await expect(
-      createTestimonial(deps, testimonialInput({ rating: 7, quote: " " })),
-    ).rejects.toMatchObject({ code: "VALIDATION", fieldErrors: { rating: expect.any(Array) } });
-  });
-
-  it("o seed trouxe as avaliações reais do Google publicadas", async () => {
-    const rows = await q(
-      "select 1 from testimonials where source = 'GOOGLE' and status = 'PUBLISHED'",
-    );
-    expect(rows.length).toBeGreaterThanOrEqual(10);
-  });
-});
 
 describe("leads (só ADMIN)", () => {
   it("EDITOR e AUTHOR não listam, não abrem, não exportam, não alteram, não excluem", async () => {

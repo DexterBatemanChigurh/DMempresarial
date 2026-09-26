@@ -25,7 +25,6 @@ export const ACTIONS = [
   "lead:erase",
   "subscriber:view",
   "subscriber:erase",
-  "testimonial:manage",
   "user:manage",
   "settings:manage",
   "redirect:manage",
@@ -80,8 +79,6 @@ const POLICY: Record<Role, Partial<Record<Action, Rule>>> = {
     "media:manage": always,
     "media:delete": always,
     "redirect:manage": always,
-    // Depoimentos são conteúdo institucional publicado, como soluções e páginas.
-    "testimonial:manage": always,
   },
   AUTHOR: {
     "post:create": always,

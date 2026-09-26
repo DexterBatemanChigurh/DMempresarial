@@ -7,8 +7,7 @@ import { listPublicPostsForRoute } from "@/features/content/application/public-p
 import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
 import { homeDataSchema } from "@/features/pages/domain/page-schemas";
 import { listPublicSpecialistsForRoute } from "@/features/people/application/public-specialists";
-import { listPublicTestimonialsForRoute } from "@/features/proof/application/public-proof";
-import { TestimonialList } from "@/components/site/testimonial-list";
+import { listPublicDepoimentosForRoute } from "@/features/proof/application/public-proof";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { env } from "@/server/env";
@@ -31,13 +30,13 @@ function mediaUrl(storageKey: string): string {
 }
 
 export default async function HomePage() {
-  const [homePage, solutions, specialists, postsPage, settings, testimonials] = await Promise.all([
+  const [homePage, solutions, specialists, postsPage, settings, depoimentos] = await Promise.all([
     getPublishedPageForRoute("home"),
     listPublicSolutionsForRoute(),
     listPublicSpecialistsForRoute(),
     listPublicPostsForRoute({ pageSize: 4 }),
     getPublicSettingsForRoute(),
-    listPublicTestimonialsForRoute(),
+    listPublicDepoimentosForRoute(),
   ]);
 
   const parsed = homePage ? homeDataSchema.safeParse(homePage.data) : null;
@@ -263,7 +262,7 @@ export default async function HomePage() {
         </Section>
       ) : null}
 
-      {/* 6 CONTEÚDO */}
+      {/* 6 CONTEÚDO — a seção 7 (Prova) não é modelada e é pulada. */}
       {firstPost ? (
         <Section spacing="loose" aria-labelledby="home-conteudo">
           <Container>
@@ -336,24 +335,45 @@ export default async function HomePage() {
         </Section>
       ) : null}
 
-      {/* 7 PROVA — só depoimentos reais publicados; sem nenhum, a seção some. */}
-      {testimonials.length > 0 ? (
+      {/* 7 PROVA — Depoimentos reais. Só aparece se houver depoimentos visíveis. */}
+      {depoimentos.length > 0 ? (
         <Section tone="muted" spacing="loose" aria-labelledby="home-prova">
           <Container>
             <SectionLabel>Prova</SectionLabel>
             <Heading as="h2" variant="h2" id="home-prova" className="mt-md">
-              O que dizem os clientes
+              O que dizem nossos clientes
             </Heading>
-            <div className="mt-xl">
-              <TestimonialList items={testimonials.slice(0, 3)} />
-            </div>
-            {testimonials.length > 3 ? (
-              <Text className="mt-xl">
-                <Link href="/depoimentos" className="text-link underline underline-offset-4">
-                  Ver todos os depoimentos
-                </Link>
-              </Text>
-            ) : null}
+            <ul className="mt-xl grid grid-cols-1 gap-xl md:grid-cols-2 lg:grid-cols-3">
+              {depoimentos.map((depoimento) => (
+                <li
+                  key={depoimento.autor}
+                  className="border-t border-border pt-lg bg-surface-raised rounded-control p-lg"
+                >
+                  <div className="flex gap-sm mb-sm">
+                    {[...Array(depoimento.estrelas)].map((_, i) => (
+                      <span key={i} aria-hidden="true">
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <blockquote className="font-serif text-article text-text italic">
+                    &ldquo;{depoimento.texto}&rdquo;
+                  </blockquote>
+                  <footer className="mt-sm flex items-center gap-sm text-text-secondary">
+                    <cite className="font-sans not-italic text-body-sm">{depoimento.autor}</cite>
+                    {depoimento.data && (
+                      <time dateTime={depoimento.data} className="text-caption text-text-muted">
+                        {new Date(depoimento.data).toLocaleDateString("pt-BR", {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </time>
+                    )}
+                  </footer>
+                </li>
+              ))}
+            </ul>
           </Container>
         </Section>
       ) : null}

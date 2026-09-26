@@ -12,9 +12,9 @@ Legenda: 🟢 pronta · 🟡 parcial · 🔴 pendente
 |---|------------------|:------:|--------------------------|-------------|
 | 1 | Fundação técnica | 🟢 | TS estrito, lint, env validado (falha rápida), logger com redação, role `dm_app` sem DDL, Better Auth, `can()`, 2FA | — |
 | 2 | Design System    | 🟢 | Tokens, fontes (Newsreader + Instrument Sans), componentes, contraste testado. **Cor de ação = azul da marca `#5c6c9d`** (revisão registrada em `docs/02` §09) | — |
-| 3 | Banco e domínio  | 🟢 | Migrations 0000–0007 (0007: `testimonials`), auditoria append-only, máquinas de estado | Aplicar a 0007 no Neon (`npm run db:setup:remote`) |
-| 4 | CMS              | 🟢 | Artigos, categorias, especialistas, soluções, páginas, configurações, mídia, usuários, auditoria, preview, cron. **Novas telas:** Depoimentos, Leads, Newsletter, Redirecionamentos | — |
-| 5 | Páginas públicas | 🟢 | Home, Sobre, Especialistas, Soluções, **Serviços** (visão filtrada, D1), Depoimentos, Contato, legais, 404. Menu do Prompt 1 §6 | — |
+| 3 | Banco e domínio  | 🟢 | Migrations 0000–0006, auditoria append-only, máquinas de estado | — |
+| 4 | CMS              | 🟢 | Artigos, categorias, especialistas, soluções, páginas, configurações, mídia, usuários, auditoria, preview, cron. **Novas telas:** Leads, Newsletter, Redirecionamentos | — |
+| 5 | Páginas públicas | 🟢 | Home, Sobre, Especialistas, Soluções, **Serviços** (visão filtrada, D1), Depoimentos (dados fixos, seção 20 do Prompt 1), Contato, legais, 404. Menu do Prompt 1 §6 | — |
 | 6 | Blog/editorial   | 🟢 | Índice, categoria, artigo, busca, relacionados, **bloco de newsletter** | — |
 | 7 | Leads/newsletter | 🟢 | Pipeline de lead; newsletter com duplo aceite **funcionando** (antes nenhuma inscrição podia ser confirmada); aviso de lead para `LEAD_NOTIFY_TO` | Atribuição de origem (UTM) segue desligada até decisão jurídica |
 | 8 | SEO              | 🟢 | Metadata, sitemap (inclui /servicos e /depoimentos), JSON-LD, redirecionamentos 301 em blog/soluções/especialistas | — |
