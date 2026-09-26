@@ -95,10 +95,10 @@ async function Content({
         {msg.text}
       </Text>
       <div className="mt-xl flex flex-wrap gap-md">
-        <Button href="/blog" size="lg">
+        <Button href="/blog" variant="secondary" size="lg">
           Ler o blog
         </Button>
-        <Button href="/" variant="secondary" size="lg">
+        <Button href="/" variant="tertiary" size="lg">
           Voltar para a Home
         </Button>
       </div>
