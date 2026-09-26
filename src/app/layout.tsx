@@ -40,7 +40,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" className={`${newsreader.variable} ${instrumentSans.variable}`}>
       <body>
         <SkipLink />
-        <main id="conteudo">{children}</main>
+        {/* O <main id="conteudo"> fica em cada área (site, painel, login): assim cabeçalho e
+            rodapé ficam FORA dele e o link "Ir para o conteúdo" pula de fato a navegação. */}
+        {children}
       </body>
     </html>
   );

@@ -18,7 +18,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <Suspense fallback={null}>
         <Header />
       </Suspense>
-      {children}
+      <main id="conteudo" tabIndex={-1} className="outline-none">
+        {children}
+      </main>
       <Footer
         year={year}
         settings={

@@ -52,11 +52,11 @@ export function AdminShell({
           </div>
         </Container>
       </header>
-      <div className="bg-surface">
+      <main id="conteudo" tabIndex={-1} className="bg-surface outline-none">
         <Container size="wide" className="py-2xl">
           {children}
         </Container>
-      </div>
+      </main>
     </div>
   );
 }

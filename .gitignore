@@ -16,6 +16,7 @@ next-env.d.ts
 # testes e ferramentas
 playwright-report/
 test-results/
+.playwright-mcp/
 .vercel/
 
 # storage local de arquivos

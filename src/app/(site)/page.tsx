@@ -13,12 +13,18 @@ import { getPublicSettingsForRoute } from "@/features/settings/application/setti
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { env } from "@/server/env";
 
-export const metadata: Metadata = publicMetadata({
+const homeMetadata = publicMetadata({
   title: "DM Empresarial — Consultoria empresarial em Frutal/MG",
   description:
     "Consultoria empresarial em Frutal/MG. Método, acompanhamento e gente de verdade por trás de cada decisão.",
   path: "/",
 });
+
+// O título da Home já traz a marca: `absolute` evita o sufixo " · DM Empresarial" do template.
+export const metadata: Metadata = {
+  ...homeMetadata,
+  title: { absolute: "DM Empresarial — Consultoria empresarial em Frutal/MG" },
+};
 
 function mediaUrl(storageKey: string): string {
   return `/media/${storageKey}`;
