@@ -2,7 +2,7 @@ import "server-only";
 import type { Database } from "@/db/client";
 import { extractMediaIds, type MediaResolver, type RichDoc } from "@/lib/rich-text";
 import { getStorage } from "@/server/storage";
-import { findManyMediaByIds } from "../infrastructure/media-repository";
+import { findManyMediaByIds, findMediaById } from "../infrastructure/media-repository";
 
 /**
  * `<RichText resolveMedia>` exige uma função SÍNCRONA (a renderização em si não pode esperar por
@@ -32,4 +32,14 @@ import { getDb } from "@/db/client";
 
 export function buildMediaResolverForRoute(doc: RichDoc): Promise<MediaResolver> {
   return buildMediaResolver(getDb(), doc);
+}
+
+/** URL e texto alternativo de uma mídia avulsa, para pré-visualização em formulários de admin
+ * (capa de artigo, foto do hero da home...). */
+export async function getMediaPreviewForRoute(
+  mediaId: string,
+): Promise<{ url: string; alt: string } | null> {
+  const row = await findMediaById(getDb(), mediaId);
+  if (!row) return null;
+  return { url: getStorage().publicUrl(row.storageKey), alt: row.altText ?? "" };
 }

@@ -45,6 +45,7 @@ function readData(formData: FormData, template: PageTemplate): Record<string, un
         headline: str(formData, "headline"),
         description: json(formData, "description"),
         howWeThink: json(formData, "howWeThink"),
+        heroImageId: optionalStr(formData, "heroImageId"),
       };
     case "ABOUT": {
       const names = formData.getAll("valueName");

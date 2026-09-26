@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { Button, FormMessage, SelectField, TextField, TextareaField } from "@/components/ui";
 import { RichTextEditor } from "@/components/admin/rich-text/rich-text-editor";
+import { MediaPicker, type PickedImage } from "@/components/admin/media/media-picker";
 import { ValuesField } from "./values-field";
 import { EMPTY_DOC } from "@/lib/rich-text";
 import {
@@ -41,6 +42,19 @@ function text(data: Record<string, unknown>, field: string): string {
   const value = data[field];
   return typeof value === "string" ? value : "";
 }
+function heroImage(
+  data: Record<string, unknown>,
+): { mediaId: string; url: string; alt: string } | null {
+  const id = data.heroImageId;
+  const url = data.heroImageUrl;
+  const alt = data.heroImageAlt;
+  if (typeof id !== "string" || id === "") return null;
+  return {
+    mediaId: id,
+    url: typeof url === "string" ? url : "",
+    alt: typeof alt === "string" ? alt : "",
+  };
+}
 function values(data: Record<string, unknown>): { name: string; practice: string }[] {
   const raw = data.values;
   if (!Array.isArray(raw)) return [];
@@ -54,6 +68,7 @@ function values(data: Record<string, unknown>): { name: string; practice: string
 
 export function PageForm({ mode, action, initial, pageId, version, onSaved }: Props) {
   const [template, setTemplate] = useState<PageTemplate>(initial.template);
+  const [hero, setHero] = useState<PickedImage | null>(heroImage(initial.data));
   const [currentVersion, setCurrentVersion] = useState(version);
   const [state, formAction, pending] = useActionState<ActionResult<PageMutated> | null, FormData>(
     async (prevState, formData) => {
@@ -133,6 +148,31 @@ export function PageForm({ mode, action, initial, pageId, version, onSaved }: Pr
             name="howWeThink"
             initialValue={rich(data, "howWeThink")}
           />
+
+          <fieldset className="space-y-sm">
+            <legend className="mb-xs font-sans text-sm font-semibold text-text">
+              Foto do hero
+            </legend>
+            {hero ? (
+              <div className="flex items-start gap-md">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={hero.url}
+                  alt={hero.alt}
+                  className="h-24 w-32 border border-border object-cover"
+                />
+                <Button type="button" variant="tertiary" size="sm" onClick={() => setHero(null)}>
+                  Remover foto
+                </Button>
+              </div>
+            ) : (
+              <p className="font-sans text-caption text-text-secondary">
+                Nenhuma foto ainda: a home mostra um espaço reservado até você escolher uma.
+              </p>
+            )}
+            <MediaPicker onPick={(image) => setHero(image)} />
+            <input type="hidden" name="heroImageId" value={hero?.mediaId ?? ""} />
+          </fieldset>
         </>
       ) : null}
 

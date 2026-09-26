@@ -4,10 +4,12 @@ import { RichText } from "@/components/content/rich-text";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { listPublicSolutionsForRoute } from "@/features/catalog/application/public-solutions";
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
+import { buildMediaResolverForRoute } from "@/features/media/application/resolve";
 import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
 import { homeDataSchema } from "@/features/pages/domain/page-schemas";
 import { listPublicSpecialistsForRoute } from "@/features/people/application/public-specialists";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
+import type { RichDoc } from "@/lib/rich-text";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { env } from "@/server/env";
 
@@ -28,6 +30,16 @@ function mediaUrl(storageKey: string): string {
   return `/media/${storageKey}`;
 }
 
+/**
+ * Números reais confirmados pela DM (27/09/2026): nunca inventar prova social (Prompt 1 §20).
+ * Aparecem na faixa de autoridade e, resumidos, logo abaixo do CTA do hero.
+ */
+const AUTHORITY_STATS = [
+  { value: "+300", label: "Empresas atendidas", shortLabel: "empresas atendidas" },
+  { value: "14 anos", label: "No mercado", shortLabel: "no mercado" },
+  { value: "+R$ 2 Bi", label: "Administrados para nossos clientes", shortLabel: "administrados" },
+] as const;
+
 export default async function HomePage() {
   const [homePage, solutions, specialists, postsPage, settings] = await Promise.all([
     getPublishedPageForRoute("home"),
@@ -44,9 +56,15 @@ export default async function HomePage() {
   const posts = postsPage.items;
   const [firstPost, ...morePosts] = posts;
 
-  const headline = homeData?.headline ?? "DM Empresarial";
   const description = homeData?.description ?? null;
   const howWeThink = homeData?.howWeThink ?? null;
+
+  // Foto do hero (docs/03, parte 21): sem uma escolhida em /admin/paginas ainda, a home mostra um
+  // estado vazio (nunca um "headshot corporativo genérico", Prompt 2 §18).
+  const heroImageDoc: RichDoc | null = homeData?.heroImageId
+    ? { type: "doc", content: [{ type: "image", attrs: { mediaId: homeData.heroImageId } }] }
+    : null;
+  const heroResolver = heroImageDoc ? await buildMediaResolverForRoute(heroImageDoc) : null;
 
   return (
     <>
@@ -75,30 +93,86 @@ export default async function HomePage() {
 
       {/* 1 HERO */}
       <Section spacing="loose">
-        <Container>
-          <Text size="metadata" tone="secondary">
-            DM Empresarial · Consultoria empresarial · Frutal/MG
-          </Text>
-          <Heading as="h1" variant="display-xl" className="mt-md">
-            {headline}
-          </Heading>
-          {description ? (
-            <div className="mt-lg max-w-reading">
-              <RichText value={description} />
+        <Container size="wide">
+          <div className="grid grid-cols-1 items-center gap-2xl lg:grid-cols-2">
+            <div className="min-w-0">
+              <SectionLabel>Consultoria empresarial · Frutal, MG</SectionLabel>
+              {homeData?.headline ? (
+                <Heading as="h1" variant="display-l" className="mt-md">
+                  {homeData.headline}
+                </Heading>
+              ) : (
+                <Heading as="h1" variant="display-l" className="mt-md">
+                  Consultoria empresarial com{" "}
+                  <span className="text-action">método, acompanhamento e gente de verdade</span>.
+                </Heading>
+              )}
+              {description ? (
+                <div className="mt-lg max-w-reading">
+                  <RichText value={description} />
+                </div>
+              ) : (
+                <Text size="lg" tone="secondary" className="mt-lg max-w-reading">
+                  Diagnóstico claro, plano prático e alguém acompanhando de perto — da decisão até o
+                  resultado.
+                </Text>
+              )}
+              <div className="mt-xl flex flex-wrap gap-md">
+                <Button href="/contato" size="lg">
+                  Fale com a DM →
+                </Button>
+                <Button href="/solucoes" variant="secondary" size="lg">
+                  Conheça nossas soluções
+                </Button>
+              </div>
+              <ul className="mt-xl flex flex-wrap items-baseline gap-x-sm gap-y-xs">
+                {AUTHORITY_STATS.map((stat, index) => (
+                  <li key={stat.label} className="flex items-baseline gap-sm">
+                    {index > 0 ? (
+                      <span aria-hidden="true" className="text-border-strong">
+                        ·
+                      </span>
+                    ) : null}
+                    <Text size="sm" tone="secondary">
+                      <span className="font-semibold text-text">{stat.value}</span>{" "}
+                      {stat.shortLabel}
+                    </Text>
+                  </li>
+                ))}
+              </ul>
             </div>
-          ) : (
-            <Text size="lg" tone="secondary" className="mt-lg max-w-reading">
-              Consultoria empresarial em Frutal/MG.
-            </Text>
-          )}
-          <div className="mt-xl flex flex-wrap gap-md">
-            <Button href="/contato" size="lg">
-              Fale com a DM
-            </Button>
-            <Button href="/solucoes" variant="secondary" size="lg">
-              Conheça nossas soluções
-            </Button>
+
+            <div className="overflow-hidden rounded-control border border-border bg-surface-muted">
+              {heroImageDoc && heroResolver ? (
+                <RichText value={heroImageDoc} resolveMedia={heroResolver} />
+              ) : (
+                <div className="flex aspect-[4/3] items-center justify-center p-xl text-center">
+                  <Text size="sm" tone="secondary">
+                    A foto da equipe da DM aparece aqui assim que for publicada em Configurações.
+                  </Text>
+                </div>
+              )}
+            </div>
           </div>
+        </Container>
+      </Section>
+
+      {/* FAIXA DE AUTORIDADE */}
+      <Section tone="dark" spacing="default" aria-labelledby="home-autoridade">
+        <h2 id="home-autoridade" className="sr-only">
+          Números da DM
+        </h2>
+        <Container size="wide">
+          <dl className="grid grid-cols-1 gap-xl text-center sm:grid-cols-3">
+            {AUTHORITY_STATS.map((stat) => (
+              <div key={stat.label}>
+                <dd className="font-serif text-display-m text-text">{stat.value}</dd>
+                <dt className="mt-xs font-sans text-label font-semibold tracking-[0.04em] text-text-secondary uppercase">
+                  {stat.label}
+                </dt>
+              </div>
+            ))}
+          </dl>
         </Container>
       </Section>
 

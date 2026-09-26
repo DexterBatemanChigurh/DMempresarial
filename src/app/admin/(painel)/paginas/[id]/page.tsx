@@ -4,6 +4,7 @@ import { Heading, FormMessage } from "@/components/ui";
 import { PageForm } from "@/components/admin/pages/page-form";
 import { PageStatusPanel } from "@/components/admin/pages/page-status-panel";
 import { getPageForEditForRoute } from "@/features/pages/application/page-crud";
+import { getMediaPreviewForRoute } from "@/features/media/application/resolve";
 import {
   availablePageTransitions,
   type PageStatus,
@@ -44,6 +45,15 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
   const targets = availablePageTransitions(actor, status, page.key);
   const canDelete = can(actor, "page:manage") && status === "DRAFT" && page.publishedAt === null;
 
+  // Pré-visualização da foto do hero (só existe no template HOME): resolvida aqui porque o
+  // formulário recebe `data` bruto do banco, sem URL nenhuma (docs/03, parte 21).
+  const rawData = (page.data ?? {}) as Record<string, unknown>;
+  const heroImageId = typeof rawData.heroImageId === "string" ? rawData.heroImageId : null;
+  const heroPreview = heroImageId ? await getMediaPreviewForRoute(heroImageId) : null;
+  const data = heroPreview
+    ? { ...rawData, heroImageUrl: heroPreview.url, heroImageAlt: heroPreview.alt }
+    : rawData;
+
   return (
     <>
       <Heading as="h1" variant="h1">
@@ -61,7 +71,7 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
             initial={{
               template: page.template as PageTemplate,
               title: page.title,
-              data: (page.data ?? {}) as Record<string, unknown>,
+              data,
               seoTitle: page.seoTitle ?? "",
               seoDescription: page.seoDescription ?? "",
             }}

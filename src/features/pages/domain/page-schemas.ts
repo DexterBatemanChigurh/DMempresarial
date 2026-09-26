@@ -24,6 +24,10 @@ export const homeDataSchema = z.object({
   description: z.unknown(),
   howWeThink: z.unknown(),
   problems: z.unknown(),
+  // Foto do hero (biblioteca de mídia). Sem foto real ainda: fica nulo e a home mostra um
+  // estado vazio pronto para quando a DM subir uma foto de verdade (Prompt 2 §18: nunca
+  // "headshot corporativo genérico").
+  heroImageId: z.string().nullable().optional(),
 });
 export const aboutDataSchema = z.object({
   whoWeAre: z.unknown(),
