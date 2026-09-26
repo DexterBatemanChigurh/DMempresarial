@@ -24,6 +24,21 @@ const rawSchema = z.object({
   REQUIRE_2FA: z.enum(["true", "false"]).default("true"),
   // Diretório local para o adaptador de storage (usado em desenvolvimento).
   STORAGE_LOCAL_DIR: z.string().default(".storage"),
+  // Adaptador de arquivos. Ausente: `s3` se houver qualquer STORAGE_* de bucket, senão `local`.
+  // Em production `local` só vale explicitamente (hospedagem com disco persistente; na Vercel o
+  // disco é efêmero e os uploads sumiriam).
+  STORAGE_DRIVER: z.enum(["local", "s3"]).optional(),
+  STORAGE_ENDPOINT: z.url().optional(),
+  STORAGE_BUCKET: z.string().min(1).optional(),
+  STORAGE_ACCESS_KEY_ID: z.string().min(1).optional(),
+  STORAGE_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  // R2 usa "auto"; AWS, a região do bucket (ex.: us-east-1).
+  STORAGE_REGION: z.string().min(1).default("auto"),
+  // E-mail transacional (Resend). Sem os dois, o adaptador de log só registra (desenvolvimento).
+  RESEND_API_KEY: z.string().min(1).optional(),
+  EMAIL_FROM: z.string().min(3).optional(),
+  // Quem recebe o aviso de lead novo. Ausente: o e-mail público de Configurações.
+  LEAD_NOTIFY_TO: z.email().optional(),
   // Segredo do cron de publicação agendada (`/api/cron/publish`). Obrigatório em production.
   CRON_SECRET: z.string().min(32).optional(),
   // Segredo para tokens assinados (confirmação newsletter, descadastro). Mínimo 32 chars.
@@ -40,9 +55,25 @@ export type Env = {
   BETTER_AUTH_URL: string;
   REQUIRE_2FA: boolean;
   STORAGE_LOCAL_DIR: string;
+  STORAGE: StorageEnv;
+  EMAIL: EmailEnv;
+  LEAD_NOTIFY_TO: string | undefined;
   CRON_SECRET: string | undefined;
   SIGNED_TOKEN_SECRET: string;
 };
+
+export type StorageEnv =
+  | { driver: "local"; dir: string }
+  | {
+      driver: "s3";
+      endpoint: string;
+      bucket: string;
+      accessKeyId: string;
+      secretAccessKey: string;
+      region: string;
+    };
+
+export type EmailEnv = { driver: "log" } | { driver: "resend"; apiKey: string; from: string };
 
 export class EnvError extends Error {
   constructor(readonly problems: string[]) {
@@ -73,6 +104,25 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     ]);
   }
 
+  const S3_VARS = [
+    "STORAGE_ENDPOINT",
+    "STORAGE_BUCKET",
+    "STORAGE_ACCESS_KEY_ID",
+    "STORAGE_SECRET_ACCESS_KEY",
+  ] as const;
+  const storageDriver =
+    value.STORAGE_DRIVER ?? (S3_VARS.some((name) => value[name] !== undefined) ? "s3" : "local");
+  const configProblems: string[] = [];
+  if (storageDriver === "s3") {
+    for (const name of S3_VARS) {
+      if (value[name] === undefined) configProblems.push(`${name}: obrigatório com storage s3`);
+    }
+  }
+  if ((value.RESEND_API_KEY === undefined) !== (value.EMAIL_FROM === undefined)) {
+    configProblems.push("RESEND_API_KEY/EMAIL_FROM: defina os dois (ou nenhum)");
+  }
+  if (configProblems.length > 0) throw new EnvError(configProblems);
+
   if (value.APP_ENV === "production") {
     const problems: string[] = [];
     if (!value.SITE_URL) problems.push("SITE_URL: obrigatório em production");
@@ -85,6 +135,12 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
       problems.push("REQUIRE_2FA: não pode ser false em production");
     if (!value.CRON_SECRET) problems.push("CRON_SECRET: obrigatório em production");
     if (!value.SIGNED_TOKEN_SECRET) problems.push("SIGNED_TOKEN_SECRET: obrigatório em production");
+    if (value.STORAGE_DRIVER === undefined && storageDriver === "local")
+      problems.push(
+        "STORAGE_DRIVER: em production configure o bucket (s3) ou declare local explicitamente",
+      );
+    if (!value.RESEND_API_KEY)
+      problems.push("RESEND_API_KEY/EMAIL_FROM: obrigatórios em production (avisos de lead)");
     if (problems.length > 0) throw new EnvError(problems);
   }
 
@@ -100,6 +156,22 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     BETTER_AUTH_URL: (value.BETTER_AUTH_URL ?? siteUrl).replace(/\/+$/, ""),
     REQUIRE_2FA: value.REQUIRE_2FA === "true",
     STORAGE_LOCAL_DIR: value.STORAGE_LOCAL_DIR,
+    STORAGE:
+      storageDriver === "s3"
+        ? {
+            driver: "s3",
+            endpoint: value.STORAGE_ENDPOINT!,
+            bucket: value.STORAGE_BUCKET!,
+            accessKeyId: value.STORAGE_ACCESS_KEY_ID!,
+            secretAccessKey: value.STORAGE_SECRET_ACCESS_KEY!,
+            region: value.STORAGE_REGION,
+          }
+        : { driver: "local", dir: value.STORAGE_LOCAL_DIR },
+    EMAIL:
+      value.RESEND_API_KEY && value.EMAIL_FROM
+        ? { driver: "resend", apiKey: value.RESEND_API_KEY, from: value.EMAIL_FROM }
+        : { driver: "log" },
+    LEAD_NOTIFY_TO: value.LEAD_NOTIFY_TO,
     CRON_SECRET: value.CRON_SECRET,
     SIGNED_TOKEN_SECRET: value.SIGNED_TOKEN_SECRET ?? "",
   };

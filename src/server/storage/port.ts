@@ -1,13 +1,15 @@
 /**
  * Interface de storage de arquivos (docs/03, parte 21). O binário nunca fica no Postgres; o
- * banco guarda só os metadados (tabela `media`). Hoje só existe o adaptador de disco local; um
- * adaptador S3-compatível entra quando houver um bucket real para testar contra ele.
+ * banco guarda só os metadados (tabela `media`). Adaptadores: disco local (`local.ts`) e
+ * S3-compatível (`s3.ts`); a escolha vem da configuração (`storage/index.ts`).
  */
 export type StoragePort = {
   /** Grava os bytes sob `key`. A chave já vem pronta (gerada pelo chamador); nunca aceita `../`. */
   put(key: string, bytes: Buffer, contentType: string): Promise<void>;
   /** Remove o arquivo. Idempotente: arquivo já ausente não é erro. */
   remove(key: string): Promise<void>;
+  /** Lê os bytes (a rota `/media/[...key]` serve a partir daqui). Lança se não existir. */
+  read(key: string): Promise<Buffer>;
   /** Caminho público (relativo) pelo qual o arquivo é servido. */
   publicUrl(key: string): string;
 };

@@ -969,17 +969,17 @@ Pull Request → format → lint → typecheck → testes unitários → testes 
 
 **Variáveis (Prompt 3 §41) — nomes apenas, sem valores:**
 
-| Grupo        | Variável                                                              | Observação                                                                             |
-| ------------ | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Aplicação    | `APP_ENV`, `SITE_URL`, `LOG_LEVEL`                                    | [EXISTENTES], validadas por `env.ts`                                                   |
-| Banco        | `DATABASE_URL` (role `dm_app`)                                        | Runtime, sem DDL. **A criar**                                                          |
-|              | `DATABASE_URL_ADMIN` (role `dm_owner`)                                | Só migrations/bootstrap. [EXISTENTE]                                                   |
-| Autenticação | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`                               | Nomes da biblioteca (o Prompt 3 os chama de `AUTH_SECRET`); confirmar na implementação |
-| Segurança    | `IP_HASH_SECRET`, `CRON_SECRET`, `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Segredos distintos; a última só para multi-instância                                   |
-| Storage      | `STORAGE_*` (endpoint, bucket, chaves, URL pública)                   | Conforme provedor                                                                      |
-| E-mail       | `EMAIL_FROM`, `RESEND_API_KEY`, `LEAD_NOTIFY_TO`                      | Só servidor                                                                            |
-| Analytics    | `ANALYTICS_*`                                                         | Só se houver ferramenta                                                                |
-| Recursos     | `ATTRIBUTION_ENABLED`                                                 | Desligado por padrão                                                                   |
+| Grupo        | Variável                                                                   | Observação                                                                             |
+| ------------ | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Aplicação    | `APP_ENV`, `SITE_URL`, `LOG_LEVEL`                                         | [EXISTENTES], validadas por `env.ts`                                                   |
+| Banco        | `DATABASE_URL` (role `dm_app`)                                             | Runtime, sem DDL. **A criar**                                                          |
+|              | `DATABASE_URL_ADMIN` (role `dm_owner`)                                     | Só migrations/bootstrap. [EXISTENTE]                                                   |
+| Autenticação | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`                                    | Nomes da biblioteca (o Prompt 3 os chama de `AUTH_SECRET`); confirmar na implementação |
+| Segurança    | `CRON_SECRET`, `SIGNED_TOKEN_SECRET`, `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Segredos distintos; a última só para multi-instância                                   |
+| Storage      | `STORAGE_*` (endpoint, bucket, chaves, URL pública)                        | Conforme provedor                                                                      |
+| E-mail       | `EMAIL_FROM`, `RESEND_API_KEY`, `LEAD_NOTIFY_TO`                           | Só servidor                                                                            |
+| Analytics    | `ANALYTICS_*`                                                              | Só se houver ferramenta                                                                |
+| Recursos     | `ATTRIBUTION_ENABLED`                                                      | Desligado por padrão                                                                   |
 
 `.env.example` só com _placeholders_ [EXISTENTE, a ampliar]. `env.ts` valida por grupo, com exigências crescentes em production e **mensagens que citam só o nome da variável** [EXISTENTE].
 

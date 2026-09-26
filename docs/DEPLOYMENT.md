@@ -22,29 +22,30 @@ Versão 1 · 25/09/2026
 
 Preencha **todas** no painel da Vercel (Settings → Environment Variables). Use `.env.example` como guia.
 
-| Variável                             | Exemplo                                             | Obrigatória?      |
-| ------------------------------------ | --------------------------------------------------- | ----------------- |
-| `APP_ENV`                            | `production`                                        | ✅                |
-| `SITE_URL`                           | `https://dm.empresarial.com`                        | ✅                |
-| `LOG_LEVEL`                          | `info`                                              | ✅                |
-| `DATABASE_URL`                       | `postgresql://dm_app:...@host/db?sslmode=require`   | ✅                |
-| `DATABASE_URL_ADMIN`                 | `postgresql://dm_owner:...@host/db?sslmode=require` | ✅                |
-| `BETTER_AUTH_SECRET`                 | `openssl rand -base64 48`                           | ✅                |
-| `BETTER_AUTH_URL`                    | `https://dm.empresarial.com`                        | ✅                |
-| `REQUIRE_2FA`                        | `true`                                              | ✅                |
-| `IP_HASH_SECRET`                     | `openssl rand -base64 48`                           | ✅                |
-| `CRON_SECRET`                        | `openssl rand -base64 48`                           | ✅                |
-| `SIGNED_TOKEN_SECRET`                | `openssl rand -base64 48`                           | ✅                |
-| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | `openssl rand -base64 32`                           | (multi-instância) |
-| `STORAGE_ENDPOINT`                   | `https://s3.us-east-1.amazonaws.com`                | ✅                |
-| `STORAGE_BUCKET`                     | `dm-empresarial-media`                              | ✅                |
-| `STORAGE_ACCESS_KEY_ID`              | `...`                                               | ✅                |
-| `STORAGE_SECRET_ACCESS_KEY`          | `...`                                               | ✅                |
-| `STORAGE_PUBLIC_URL`                 | `https://cdn.dm.empresarial.com`                    | ✅                |
-| `EMAIL_FROM`                         | `DM Empresarial <contato@dm.empresarial.com>`       | ✅                |
-| `RESEND_API_KEY`                     | `re_...`                                            | ✅                |
-| `LEAD_NOTIFY_TO`                     | `comercial@dm.empresarial.com`                      | ✅                |
-| `ATTRIBUTION_ENABLED`                | `false`                                             | ✅                |
+| Variável                             | Exemplo                                               | Obrigatória?                                     |
+| ------------------------------------ | ----------------------------------------------------- | ------------------------------------------------ |
+| `APP_ENV`                            | `production`                                          | ✅                                               |
+| `SITE_URL`                           | `https://dm.empresarial.com`                          | ✅ (https)                                       |
+| `LOG_LEVEL`                          | `info`                                                | —                                                |
+| `DATABASE_URL`                       | `postgresql://dm_app:...@host/db?sslmode=verify-full` | ✅ (role `dm_app`, sem DDL)                      |
+| `DATABASE_URL_ADMIN`                 | `postgresql://dm_owner:...@host/db`                   | ❌ **Nunca na Vercel** — só no passo de migração |
+| `BETTER_AUTH_SECRET`                 | `openssl rand -base64 48`                             | ✅                                               |
+| `BETTER_AUTH_URL`                    | `https://dm.empresarial.com`                          | — (cai em `SITE_URL`)                            |
+| `REQUIRE_2FA`                        | `true`                                                | — (padrão `true`; `false` é recusado)            |
+| `CRON_SECRET`                        | `openssl rand -base64 48`                             | ✅                                               |
+| `SIGNED_TOKEN_SECRET`                | `openssl rand -base64 48`                             | ✅                                               |
+| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | `openssl rand -base64 32`                             | (multi-instância)                                |
+| `STORAGE_DRIVER`                     | `s3`                                                  | ✅ (ou os `STORAGE_*` abaixo)                    |
+| `STORAGE_ENDPOINT`                   | `https://<conta>.r2.cloudflarestorage.com`            | ✅ com s3                                        |
+| `STORAGE_BUCKET`                     | `dm-empresarial-media` (pode ser privado)             | ✅ com s3                                        |
+| `STORAGE_ACCESS_KEY_ID`              | `...`                                                 | ✅ com s3                                        |
+| `STORAGE_SECRET_ACCESS_KEY`          | `...`                                                 | ✅ com s3                                        |
+| `STORAGE_REGION`                     | `auto` (R2) / `us-east-1` (AWS)                       | —                                                |
+| `EMAIL_FROM`                         | `DM Empresarial <contato@dm.empresarial.com>`         | ✅                                               |
+| `RESEND_API_KEY`                     | `re_...`                                              | ✅                                               |
+| `LEAD_NOTIFY_TO`                     | `comercial@dm.empresarial.com`                        | — (cai no e-mail de Configurações)               |
+
+O `env.ts` recusa subir em production sem os itens ✅ (falha rápida, mensagem só com o nome da variável). O IP dos formulários é guardado apenas como HMAC diário assinado com `BETTER_AUTH_SECRET`.
 
 ---
 
@@ -188,7 +189,6 @@ Após **cada** deploy em production:
 | `BETTER_AUTH_SECRET`                  | 90 dias           | Novo valor na Vercel → redeploy                           |
 | `CRON_SECRET`                         | 90 dias           | Novo valor na Vercel → redeploy                           |
 | `SIGNED_TOKEN_SECRET`                 | 90 dias           | Novo valor na Vercel → redeploy (invalida tokens antigos) |
-| `IP_HASH_SECRET`                      | 90 dias           | Novo valor na Vercel → redeploy                           |
 | `RESEND_API_KEY`                      | Conforme Resend   | Novo key no Resend → atualiza na Vercel                   |
 | `STORAGE_SECRET_ACCESS_KEY`           | Conforme provedor | Novo key no provedor → atualiza na Vercel                 |
 | `DATABASE_URL` / `DATABASE_URL_ADMIN` | Conforme provedor | Nova senha no provedor → atualiza na Vercel               |

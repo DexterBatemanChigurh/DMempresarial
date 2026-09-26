@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createLocalStoragePort, readLocalStorageFile } from "./local";
+import { createLocalStoragePort } from "./local";
 
 const VALID_KEY = "2026/09/0f3c5a1e-8b2d-4c6f-9a17-2d4e6f8a0b1c.webp";
 
@@ -15,14 +15,14 @@ afterEach(async () => {
 });
 
 describe("createLocalStoragePort: caminho feliz", () => {
-  it("grava, lê de volta (via readLocalStorageFile) e remove", async () => {
+  it("grava, lê de volta e remove", async () => {
     const storage = createLocalStoragePort(dir);
     const bytes = Buffer.from("conteúdo de teste");
     await storage.put(VALID_KEY, bytes, "image/webp");
 
-    expect(await readLocalStorageFile(dir, VALID_KEY)).toEqual(bytes);
+    expect(await storage.read(VALID_KEY)).toEqual(bytes);
     await storage.remove(VALID_KEY);
-    await expect(readLocalStorageFile(dir, VALID_KEY)).rejects.toThrow();
+    await expect(storage.read(VALID_KEY)).rejects.toThrow();
   });
 
   it("cria os subdiretórios de ano/mês automaticamente", async () => {
@@ -72,8 +72,8 @@ describe("createLocalStoragePort: chaves recusadas (nunca tocam o disco fora de 
       await expect(storage().remove(key)).rejects.toThrow(/inválida/);
     });
 
-    it(`readLocalStorageFile recusa a mesma chave: ${JSON.stringify(key)}`, async () => {
-      await expect(readLocalStorageFile(dir, key)).rejects.toThrow(/inválida/);
+    it(`recusa read() com chave: ${JSON.stringify(key)}`, async () => {
+      await expect(storage().read(key)).rejects.toThrow(/inválida/);
     });
   }
 

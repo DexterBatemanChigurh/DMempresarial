@@ -1,12 +1,15 @@
 /**
- * Interface de envio de e-mail (docs/03, parte 22-23). O provedor é decisão aberta (seção 34);
- * hoje só existe o adaptador de log, que nunca envia nada de verdade — mesmo desenho do
- * `StoragePort` (interface primeiro, adaptador local/nulo antes de escolher provedor externo).
+ * Interface de envio de e-mail (docs/03, parte 42). Adaptadores: log (desenvolvimento, nunca
+ * envia) e Resend (`resend-adapter.ts`); a escolha vem da configuração (`email/index.ts`).
  */
 export type EmailMessage = {
   to: string;
   subject: string;
   text: string;
+  /** Resposta vai para outro endereço (ex.: o e-mail de quem mandou o lead). */
+  replyTo?: string;
+  /** Cabeçalhos extras (ex.: `List-Unsubscribe`). */
+  headers?: Record<string, string>;
 };
 
 export type EmailPort = {

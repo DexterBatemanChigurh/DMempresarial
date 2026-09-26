@@ -2,6 +2,12 @@ import { describe, expect, it } from "vitest";
 import { EnvError, parseEnv } from "./env";
 
 const SECRET = "s".repeat(32);
+// Storage e e-mail definidos: o que production também exige (testado em separado abaixo).
+const PROD_SERVICES = {
+  STORAGE_DRIVER: "local",
+  RESEND_API_KEY: "re_teste",
+  EMAIL_FROM: "DM Empresarial <site@exemplo.test>",
+};
 
 describe("parseEnv", () => {
   it("usa padrões seguros em desenvolvimento", () => {
@@ -32,6 +38,7 @@ describe("parseEnv", () => {
     expect(
       parseEnv({
         APP_ENV: "production",
+        ...PROD_SERVICES,
         SITE_URL: "https://exemplo.test",
         DATABASE_URL: "x",
         BETTER_AUTH_SECRET: SECRET,
@@ -44,6 +51,7 @@ describe("parseEnv", () => {
   it("em production exige a URL do role de aplicação, não a do dono do banco", () => {
     const base = {
       APP_ENV: "production",
+      ...PROD_SERVICES,
       SITE_URL: "https://exemplo.test",
       BETTER_AUTH_SECRET: SECRET,
       CRON_SECRET: SECRET,
@@ -66,6 +74,7 @@ describe("parseEnv", () => {
   it("em production exige o segredo de sessão, com pelo menos 32 caracteres", () => {
     const base = {
       APP_ENV: "production",
+      ...PROD_SERVICES,
       SITE_URL: "https://exemplo.test",
       DATABASE_URL: "x",
       CRON_SECRET: SECRET,
@@ -79,6 +88,7 @@ describe("parseEnv", () => {
   it("em production exige CRON_SECRET, com pelo menos 32 caracteres", () => {
     const base = {
       APP_ENV: "production",
+      ...PROD_SERVICES,
       SITE_URL: "https://exemplo.test",
       DATABASE_URL: "x",
       BETTER_AUTH_SECRET: SECRET,
@@ -114,6 +124,7 @@ describe("parseEnv", () => {
 
     const production = {
       APP_ENV: "production",
+      ...PROD_SERVICES,
       SITE_URL: "https://exemplo.test",
       DATABASE_URL: "x",
       BETTER_AUTH_SECRET: SECRET,
@@ -135,6 +146,7 @@ describe("parseEnv", () => {
     try {
       parseEnv({
         APP_ENV: "production",
+        ...PROD_SERVICES,
         SITE_URL: "isto-nao-e-url",
         DATABASE_URL: secretUrl,
       });
@@ -144,5 +156,50 @@ describe("parseEnv", () => {
     expect(message).toContain("SITE_URL");
     expect(message).not.toContain("senha-super-secreta");
     expect(message).not.toContain("isto-nao-e-url");
+  });
+
+  it("storage: local por padrão, s3 quando há bucket, e configuração incompleta é erro", () => {
+    expect(parseEnv({}).STORAGE).toEqual({ driver: "local", dir: ".storage" });
+    const s3 = {
+      STORAGE_ENDPOINT: "https://conta.r2.cloudflarestorage.com",
+      STORAGE_BUCKET: "dm-midia",
+      STORAGE_ACCESS_KEY_ID: "id",
+      STORAGE_SECRET_ACCESS_KEY: "segredo",
+    };
+    expect(parseEnv(s3).STORAGE).toMatchObject({
+      driver: "s3",
+      bucket: "dm-midia",
+      region: "auto",
+    });
+    expect(() => parseEnv({ STORAGE_BUCKET: "dm-midia" })).toThrow(/STORAGE_ENDPOINT/);
+    expect(() => parseEnv({ STORAGE_DRIVER: "s3" })).toThrow(/STORAGE_BUCKET/);
+  });
+
+  it("e-mail: log sem chave, Resend com chave + remetente, um sem o outro é erro", () => {
+    expect(parseEnv({}).EMAIL).toEqual({ driver: "log" });
+    expect(parseEnv({ RESEND_API_KEY: "re_x", EMAIL_FROM: "a@b.test" }).EMAIL).toEqual({
+      driver: "resend",
+      apiKey: "re_x",
+      from: "a@b.test",
+    });
+    expect(() => parseEnv({ RESEND_API_KEY: "re_x" })).toThrow(/EMAIL_FROM/);
+    expect(() => parseEnv({ LEAD_NOTIFY_TO: "nao-e-email" })).toThrow(/LEAD_NOTIFY_TO/);
+  });
+
+  it("em production exige e-mail real e storage escolhido de propósito", () => {
+    const base = {
+      APP_ENV: "production",
+      SITE_URL: "https://exemplo.test",
+      DATABASE_URL: "x",
+      BETTER_AUTH_SECRET: SECRET,
+      CRON_SECRET: SECRET,
+      SIGNED_TOKEN_SECRET: SECRET,
+    };
+    expect(() => parseEnv({ ...base, STORAGE_DRIVER: "local" })).toThrow(/RESEND_API_KEY/);
+    // Disco local implícito em production é recusado (na Vercel os uploads sumiriam).
+    expect(() => parseEnv({ ...base, RESEND_API_KEY: "re_x", EMAIL_FROM: "a@b.test" })).toThrow(
+      /STORAGE_DRIVER/,
+    );
+    expect(parseEnv({ ...base, ...PROD_SERVICES }).EMAIL.driver).toBe("resend");
   });
 });

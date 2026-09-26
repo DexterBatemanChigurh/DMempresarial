@@ -3,7 +3,8 @@ import type { Database } from "@/db/client";
 import { AppError } from "@/lib/errors";
 import { recordAudit } from "@/features/platform/infrastructure/audit";
 import { getPublicSettings } from "@/features/settings/application/settings-crud";
-import { getEmail } from "@/server/email";
+import { getEmail, type EmailPort } from "@/server/email";
+import { env } from "@/server/env";
 import { hashIpForToday } from "@/server/security/ip-hash";
 import { verifyFormToken } from "@/server/security/form-token";
 import { consumeRateLimit, windowedKey } from "@/server/security/rate-limit";
@@ -22,7 +23,8 @@ import { LEAD_CONSENT_VERSION, leadFormSchema, type LeadFormInput } from "../dom
  * resposta, e-mail de notificação (melhor esforço; falha não desfaz o lead, só deixa
  * `notified_at` nulo para uma tentativa futura — reenvio por cron ainda não implementado).
  */
-type Deps = { db: Database };
+/** `email` é injetável para testes; em produção vem de `getEmail()`. */
+type Deps = { db: Database; email?: EmailPort };
 
 const MIN_SUBMIT_MS = 2_500; // ninguém preenche nome+e-mail+mensagem em menos de 2,5s
 const MAX_SUBMIT_MS = 60 * 60 * 1000; // 1h: depois disso, formulário "velho", pede recarregar
@@ -44,7 +46,10 @@ export type SubmitLeadInput = Omit<LeadFormInput, "consent"> & {
   ip: string | null;
 };
 
-export async function submitLead({ db }: Deps, input: SubmitLeadInput): Promise<{ ok: true }> {
+export async function submitLead(
+  { db, email }: Deps,
+  input: SubmitLeadInput,
+): Promise<{ ok: true }> {
   // Honeypot: finge sucesso (não entrega ao bot que foi detectado) e não grava nada.
   if (input.honeypot.trim() !== "") {
     return { ok: true };
@@ -121,13 +126,15 @@ export async function submitLead({ db }: Deps, input: SubmitLeadInput): Promise<
     return created;
   });
 
-  // Lead marcado como spam (heurística) nunca notifica (docs/03 §22). Sem e-mail interno
-  // configurado em Configurações, não há para quem notificar — fica para quando houver.
-  const settings = await getPublicSettings({ db });
-  if (!isLikelySpam && settings?.email) {
+  // Lead marcado como spam (heurística) nunca notifica (docs/03 §22). Destino: LEAD_NOTIFY_TO
+  // (caixa interna) ou, na falta dela, o e-mail público de Configurações; sem nenhum dos dois não
+  // há para quem notificar.
+  const notifyTo = env().LEAD_NOTIFY_TO ?? (await getPublicSettings({ db }))?.email;
+  if (!isLikelySpam && notifyTo) {
     try {
-      await getEmail().send({
-        to: settings.email,
+      await (email ?? getEmail()).send({
+        to: notifyTo,
+        replyTo: data.email,
         subject: `Novo contato pelo site: ${data.name}`,
         text: `Nome: ${data.name}\nE-mail: ${data.email}\nMensagem:\n${data.message}`,
       });

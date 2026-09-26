@@ -17,6 +17,9 @@ async function robotsFor(appEnv: string) {
     vi.stubEnv("BETTER_AUTH_SECRET", "s".repeat(32));
     vi.stubEnv("CRON_SECRET", "s".repeat(32));
     vi.stubEnv("SIGNED_TOKEN_SECRET", "s".repeat(32));
+    vi.stubEnv("STORAGE_DRIVER", "local");
+    vi.stubEnv("RESEND_API_KEY", "re_teste");
+    vi.stubEnv("EMAIL_FROM", "site@exemplo.test");
   }
   const mod = await import("./robots");
   return mod.default();

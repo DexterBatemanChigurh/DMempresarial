@@ -30,19 +30,11 @@ export function createLocalStoragePort(baseDir: string): StoragePort {
     async remove(key) {
       await rm(resolveWithin(root, key), { force: true });
     },
+    async read(key) {
+      return readFile(resolveWithin(root, key));
+    },
     publicUrl(key) {
       return `/media/${key}`;
     },
   };
-}
-
-/**
- * Leitura direta, para o Route Handler que serve `/media/[...key]`. Fora do `StoragePort` porque
- * a interface pública não precisa de leitura (o servidor lê para responder à requisição, não
- * para reenviar bytes a outra camada da aplicação).
- */
-export async function readLocalStorageFile(baseDir: string, key: string): Promise<Buffer> {
-  // `async` é essencial aqui: sem ele, uma chave inválida lançaria de forma SÍNCRONA em vez de
-  // devolver uma promise rejeitada, e o chamador (Route Handler) precisa poder usar `await`/`catch`.
-  return readFile(resolveWithin(resolve(baseDir), key));
 }
