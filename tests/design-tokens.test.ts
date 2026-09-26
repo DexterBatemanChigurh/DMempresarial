@@ -32,6 +32,10 @@ describe("paleta: valores da tabela de contraste do Blueprint 2 (seção 10)", (
     ["areia", "verde-tinta", 9.26],
     ["papel", "terracota", 5.19],
     ["papel", "terracota-escura", 6.68],
+    ["papel", "azul-marca", 4.6],
+    ["papel", "azul-marca-escuro", 6.34],
+    ["azul-marca-escuro", "areia", 5.4],
+    ["azul-marca-claro", "verde-tinta", 4.65],
     ["erro", "papel", 6.85],
     ["borda-campo", "papel", 3.61],
   ];
@@ -63,6 +67,12 @@ describe("paleta: mínimos WCAG dos usos previstos", () => {
       ["papel", "terracota"],
       ["terracota", "papel"],
       ["papel", "terracota-escura"],
+      ["papel", "azul-marca"],
+      ["azul-marca", "papel"],
+      ["azul-marca", "papel-elevado"],
+      ["papel", "azul-marca-escuro"],
+      ["azul-marca-escuro", "areia"],
+      ["azul-marca-claro", "verde-tinta"],
       ["sucesso", "papel"],
       ["aviso", "papel"],
       ["erro", "papel"],
@@ -85,6 +95,10 @@ describe("paleta: mínimos WCAG dos usos previstos", () => {
     expect(ratio("tinta-suave", "areia")).toBeLessThan(WCAG.aaText);
     // Terracota sobre verde-tinta (2,09): nunca como texto/linha em faixa escura.
     expect(ratio("terracota", "verde-tinta")).toBeLessThan(WCAG.aaLargeOrUi);
+    // Azul (cor de ação) sobre areia (3,92): em faixa areia o link usa o azul-escuro.
+    expect(ratio("azul-marca", "areia")).toBeLessThan(WCAG.aaText);
+    // Papel sobre azul-claro (2,33): o azul-claro nunca é fundo de botão.
+    expect(ratio("papel", "azul-marca-claro")).toBeLessThan(WCAG.aaText);
   });
 });
 
@@ -130,6 +144,9 @@ describe("faixas de tom: as variáveis semânticas mantêm contraste em cada uma
           WCAG.aaLargeOrUi,
         );
         expect(ratio(token("action-contrast"), token("action"))).toBeGreaterThanOrEqual(
+          WCAG.aaText,
+        );
+        expect(ratio(token("action-contrast"), token("action-hover"))).toBeGreaterThanOrEqual(
           WCAG.aaText,
         );
       });

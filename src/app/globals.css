@@ -25,6 +25,9 @@
   --color-tinta-secundaria: #46514b;
   --color-tinta-suave: #66706a;
   --color-verde-tinta: #1f3b33;
+  --color-azul-marca: #5c6c9d;
+  --color-azul-marca-escuro: #4a5780;
+  --color-azul-marca-claro: #8aa0d4;
   --color-terracota: #a8482a;
   --color-terracota-escura: #8f3b20;
   --color-linha: #d8cfbd;
@@ -141,11 +144,11 @@
   --text: var(--color-tinta);
   --text-secondary: var(--color-tinta-secundaria);
   --text-muted: var(--color-tinta-suave);
-  --action: var(--color-terracota);
-  --action-hover: var(--color-terracota-escura);
+  --action: var(--color-azul-marca);
+  --action-hover: var(--color-azul-marca-escuro);
   --action-contrast: var(--color-papel);
-  --link: var(--color-verde-tinta);
-  --focus: var(--color-verde-tinta);
+  --link: var(--color-azul-marca);
+  --focus: var(--color-azul-marca);
   --border: var(--color-linha);
   --border-strong: var(--color-tinta);
   --field-border: var(--color-borda-campo);
@@ -161,10 +164,13 @@
   --surface: var(--color-areia);
   --surface-raised: var(--color-papel-elevado);
   --text-muted: var(--color-tinta-secundaria);
+  --link: var(--color-azul-marca-escuro);
+  --focus: var(--color-azul-marca-escuro);
 }
 
-/* Faixa escura (Verde-tinta). A terracota NUNCA é texto ou linha aqui (2,09:1); o botão de ação
-   mantém rótulo Papel sobre Terracota (5,19:1). */
+/* Faixa escura (Verde-tinta). A terracota NUNCA é texto ou linha aqui (2,09:1). O botão de ação
+   mantém rótulo Papel sobre Azul (4,60:1) e escurece no hover (6,34:1); o azul-claro é só
+   link/foco (4,65:1 sobre o verde) — como fundo de botão ele reprova com Papel (2,33:1). */
 [data-tone="dark"] {
   --surface: var(--color-verde-tinta);
   --surface-raised: var(--color-verde-tinta);
@@ -172,8 +178,11 @@
   --text: var(--color-papel);
   --text-secondary: var(--color-areia);
   --text-muted: var(--color-areia);
-  --link: var(--color-papel);
-  --focus: var(--color-papel);
+  --action: var(--color-azul-marca);
+  --action-hover: var(--color-azul-marca-escuro);
+  --action-contrast: var(--color-papel);
+  --link: var(--color-azul-marca-claro);
+  --focus: var(--color-azul-marca-claro);
   --border: rgb(246 242 234 / 0.28);
   --border-strong: var(--color-papel);
 }

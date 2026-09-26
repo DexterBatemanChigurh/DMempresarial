@@ -208,6 +208,18 @@ Regras: mínimo de 16 px em texto corrido no mobile (exceto Caption/Label/Metada
 
 **Estados interativos:** hover do CTA = Terracota escura; hover de link = sublinhado mais espesso; foco = anel de 2 px em Verde-tinta (em fundo escuro, Papel) com 2 px de afastamento; ativo = cor do hover; desabilitado = Areia com texto Tinta secundária, sem sombra.
 
+### REVISÃO (26/09/2026) — azul da marca como cor de ação
+
+**Decisão do cliente:** a cor de ação, link e foco passa a ser o **Azul da marca** (`#5C6C9D`), que substitui a Terracota nesses papéis. A tipografia segue a da seção 07 (Newsreader + Instrument Sans). A Terracota continua no arquivo de tokens, sem uso semântico.
+
+| Token             | Hex       | Papel                                                      |
+| ----------------- | --------- | ---------------------------------------------------------- |
+| **Azul da marca** | `#5C6C9D` | CTA ("Fale com a DM"), link e foco no fundo Papel          |
+| **Azul escuro**   | `#4A5780` | Hover do CTA (todas as faixas); link e foco na faixa Areia |
+| **Azul claro**    | `#8AA0D4` | Link e foco na faixa escura. **Nunca** como fundo de botão |
+
+**[MEDIDO]:** Papel sobre Azul 4,60:1 (AA); Papel sobre Azul escuro 6,34:1; Azul escuro sobre Areia 5,40:1; Azul claro sobre Verde-tinta 4,65:1. **Proibidos:** Azul sobre Areia (3,92:1) como texto; Papel sobre Azul claro (2,33:1). Os pares ficam protegidos em `tests/design-tokens.test.ts`.
+
 ## 10. Contraste
 
 **[MEDIDO]** — razão de contraste WCAG 2.x calculada sobre os valores acima.

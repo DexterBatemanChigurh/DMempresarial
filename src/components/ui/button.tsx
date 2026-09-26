@@ -4,7 +4,7 @@ import { cn } from "@/lib/cn";
 import { ArrowRightIcon, SpinnerIcon } from "./icons";
 
 /**
- * Botões (Blueprint 2, seção 13). `primary` (terracota) é o botão de CONVERSÃO: no máximo um por
+ * Botões (Blueprint 2, seção 13). `primary` (azul da marca, docs/02 §09 revisão) é o botão de CONVERSÃO: no máximo um por
  * tela ("Fale com a DM"). `secondary` é a ação alternativa; `tertiary` navega/continua leitura.
  * Alturas 40/48/56 px: o padrão de 48 px respeita o alvo de toque mínimo de 44 px.
  */
