@@ -50,6 +50,13 @@
       "when": 1790184215402,
       "tag": "0006_fuzzy_goblin_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790442334168,
+      "tag": "0007_testimonials",
+      "breakpoints": true
     }
   ]
 }

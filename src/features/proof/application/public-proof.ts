@@ -1,19 +1,28 @@
 import "server-only";
 import type { Database } from "@/db/client";
-import { listPublishedDepoimentos, type Depoimento } from "../infrastructure/proof-repository";
+import {
+  listPublishedTestimonials,
+  type PublicTestimonial,
+} from "../infrastructure/proof-repository";
 
-/** Leitura pública de depoimentos: só `visivel: true`, sem sessão. */
-export async function listPublicDepoimentos({ db }: { db: Database }): Promise<Depoimento[]> {
-  return listPublishedDepoimentos(db);
+export type { PublicTestimonial } from "../infrastructure/proof-repository";
+
+/** Leitura pública de depoimentos: só `PUBLISHED`, sem sessão. */
+export async function listPublicTestimonials({
+  db,
+}: {
+  db: Database;
+}): Promise<PublicTestimonial[]> {
+  return listPublishedTestimonials(db);
 }
 
 // -----------------------------------------------------------------------------------------------
 import { getDb } from "@/db/client";
 import { cacheLife, cacheTag } from "next/cache";
 
-export async function listPublicDepoimentosForRoute() {
+export async function listPublicTestimonialsForRoute() {
   "use cache";
-  cacheTag("depoimentos");
+  cacheTag("testimonials");
   cacheLife("days");
-  return listPublicDepoimentos({ db: getDb() });
+  return listPublicTestimonials({ db: getDb() });
 }

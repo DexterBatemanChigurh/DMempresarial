@@ -9,3 +9,4 @@ export * from "./content";
 export * from "./pages";
 export * from "./conversion";
 export * from "./platform";
+export * from "./proof";

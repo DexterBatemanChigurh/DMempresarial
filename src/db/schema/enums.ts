@@ -41,3 +41,6 @@ export const subscriberStatus = pgEnum("subscriber_status", [
   "BOUNCED",
 ]);
 export const redirectOrigin = pgEnum("redirect_origin", ["AUTO", "MANUAL"]);
+
+/** Origem de um depoimento: avaliação pública no Google ou enviado à DM com autorização. */
+export const testimonialSource = pgEnum("testimonial_source", ["GOOGLE", "MANUAL"]);

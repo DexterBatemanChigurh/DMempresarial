@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Heading, Text } from "@/components/ui";
 import { getPostCounts } from "@/features/content/application/dashboard";
+import { countLeadsForDashboardForRoute } from "@/features/conversion/application/conversion-admin";
+import { can } from "@/server/permissions";
 import { requireAdminSession } from "@/server/auth/admin-guard";
 
 export const metadata: Metadata = { title: "Início" };
@@ -16,7 +19,10 @@ const LABELS = [
 export default async function DashboardPage() {
   // A autorização é revalidada aqui (não só no layout): cada página decide por si.
   const { actor, user } = await requireAdminSession();
-  const counts = await getPostCounts(actor);
+  const [counts, leadCounts] = await Promise.all([
+    getPostCounts(actor),
+    can(actor, "lead:view") ? countLeadsForDashboardForRoute(actor) : Promise.resolve(null),
+  ]);
 
   return (
     <>
@@ -38,6 +44,28 @@ export default async function DashboardPage() {
           </div>
         ))}
       </dl>
+
+      {leadCounts ? (
+        <section aria-labelledby="painel-leads" className="mt-3xl">
+          <Heading as="h2" variant="h3" id="painel-leads">
+            Contatos pelo site
+          </Heading>
+          <p className="mt-sm font-sans text-body text-text">
+            {leadCounts.NEW === 0 ? (
+              "Nenhum lead novo para responder."
+            ) : (
+              <Link
+                href="/admin/leads?estado=NEW"
+                className="text-link underline underline-offset-4"
+              >
+                {leadCounts.NEW === 1
+                  ? "1 lead novo para responder"
+                  : `${leadCounts.NEW} leads novos para responder`}
+              </Link>
+            )}
+          </p>
+        </section>
+      ) : null}
     </>
   );
 }

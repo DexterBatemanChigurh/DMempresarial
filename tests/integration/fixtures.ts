@@ -165,6 +165,7 @@ export function createFixtures() {
       await q("delete from redirects where from_path like $1 or to_path like $1", [
         `/blog/${PREFIX}%`,
       ]);
+      await q("delete from testimonials where author_name like $1", [`${PREFIX}%`]);
       await q("delete from leads where email like $1", [`%${EMAIL_DOMAIN}`]);
       await q("delete from newsletter_subscribers where email like $1", [`%${EMAIL_DOMAIN}`]);
       // Contador de rate limit dos formulários públicos e do upload de mídia: sem dado sensível,
