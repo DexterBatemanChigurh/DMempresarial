@@ -18,6 +18,7 @@ export type FooterSettings = {
 const NAV = [
   { href: "/sobre", label: "Sobre" },
   { href: "/solucoes", label: "Soluções" },
+  { href: "/servicos", label: "Serviços" },
   { href: "/blog", label: "Blog" },
   { href: "/contato", label: "Contato" },
 ];

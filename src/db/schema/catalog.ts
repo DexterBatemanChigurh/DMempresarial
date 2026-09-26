@@ -6,7 +6,7 @@ import { editorial, publishStatusCheck, seoChecks, seoColumns } from "./seo";
 
 /**
  * Soluções: consultorias e serviços numa só entidade (docs/03, parte 6 e ADR-003). O `type`
- * distingue; não existe `/servicos` próprio. Não há campo de "resultado": a DM não promete
+ * distingue; `/servicos` é só uma visão filtrada (docs/01, D1). Não há campo de "resultado": a DM não promete
  * resultado; objetivos vivem em `solution_items` (kind GOAL).
  */
 export const solutions = pgTable(

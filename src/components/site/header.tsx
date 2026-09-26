@@ -8,13 +8,16 @@ import { CloseIcon, MenuIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 
 /**
- * Cabeçalho público (Blueprint 2, seção 16). Sem mega-menu: "Soluções" leva direto ao índice.
+ * Cabeçalho público (Blueprint 2, seção 16; itens do Prompt 1 §6). Sem mega-menu: "Soluções"
+ * leva direto ao índice e "Serviços" à visão filtrada.
  * O CTA é o único elemento de destaque e some do topo só para reaparecer fixo no painel mobile.
  */
 const NAV = [
   { href: "/sobre", label: "Sobre" },
   { href: "/solucoes", label: "Soluções" },
+  { href: "/servicos", label: "Serviços" },
   { href: "/blog", label: "Blog" },
+  { href: "/contato", label: "Contato" },
 ];
 
 function useScrolled(threshold = 80) {
