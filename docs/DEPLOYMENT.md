@@ -73,7 +73,9 @@ Executa em **todo PR e push em `main`**:
 
 - **Branch `main`** → Deploy de **production** automático após CI verde.
 - **Branches `feat/*`, `fix/*`** → Preview deploy (URL temporária).
-- Vercel roda `npm run build` (já validado no CI).
+- Vercel roda `npm run build` (já validado no CI). O build **lê o banco** (páginas públicas com `"use cache"` são pré-renderizadas): `DATABASE_URL` precisa estar disponível também no ambiente de build.
+- Cabeçalhos de segurança só em `next.config.ts` e CSP só em `src/proxy.ts`; o `vercel.json` não repete nenhum (um CSP duplicado ali somaria restrições e quebraria o painel).
+- **Cron de publicação agendada** (`vercel.json` → `crons`): a Vercel chama `GET /api/cron/publish` com `Authorization: Bearer $CRON_SECRET`. O padrão é **1×/dia (09:00 UTC)**, o único intervalo aceito no plano Hobby; no plano Pro, troque para `*/15 * * * *` para os artigos agendados saírem no horário.
 
 ### 3.3 Migrações (Passo Separado e Explícito)
 

@@ -15,6 +15,7 @@ describe("next.config", () => {
       "X-Content-Type-Options": "nosniff",
       "X-Frame-Options": "DENY",
       "Referrer-Policy": "strict-origin-when-cross-origin",
+      "Cross-Origin-Opener-Policy": "same-origin",
     });
     expect(headers["Permissions-Policy"]).toContain("camera=()");
   });
