@@ -2,30 +2,28 @@ import { redirect } from "next/navigation";
 import { unsubscribeNewsletterForRoute } from "@/features/conversion/application/newsletter";
 
 /**
- * GET /api/newsletter/unsubscribe?token=<token>
- * Descadastra o e-mail da newsletter via token assinado.
- * Token vem no link do rodapé do e-mail (List-Unsubscribe).
- * Se válido, redireciona para página de sucesso.
- * Se inválido, redireciona para página de erro.
+ * GET /api/newsletter/unsubscribe?token=<token> — leva à página de descadastro, que pede o
+ * clique (um GET nunca muda estado).
  */
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const token = searchParams.get("token");
+export function GET(request: Request) {
+  const token = new URL(request.url).searchParams.get("token");
+  if (!token) redirect("/newsletter/descadastro?status=invalido");
+  redirect(`/newsletter/descadastro?token=${encodeURIComponent(token)}`);
+}
 
-  if (!token) {
-    redirect("/newsletter/descadastro?status=invalido");
-  }
-
+/**
+ * POST /api/newsletter/unsubscribe?token=<token> — descadastro de um clique (RFC 8058,
+ * cabeçalhos `List-Unsubscribe` + `List-Unsubscribe-Post`), feito pelo próprio cliente de e-mail.
+ * Resposta sem corpo: quem chama é o provedor, não uma pessoa.
+ */
+export async function POST(request: Request) {
+  const token = new URL(request.url).searchParams.get("token");
+  if (!token) return new Response(null, { status: 400 });
   try {
     await unsubscribeNewsletterForRoute(token);
-    redirect("/newsletter/descadastro?status=sucesso");
-  } catch (error) {
-    if (error instanceof Error && error.name === "AppError") {
-      const code = (error as { code?: string }).code;
-      if (code === "NOT_FOUND" || code === "VALIDATION" || code === "DOMAIN_RULE") {
-        redirect("/newsletter/descadastro?status=erro");
-      }
-    }
-    redirect("/newsletter/descadastro?status=erro");
+    return new Response(null, { status: 204 });
+  } catch {
+    // Token inválido ou inscrição já cancelada: o resultado não revela qual dos dois.
+    return new Response(null, { status: 400 });
   }
 }

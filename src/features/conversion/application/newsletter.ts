@@ -2,11 +2,16 @@ import "server-only";
 import type { Database } from "@/db/client";
 import { AppError } from "@/lib/errors";
 import { recordAudit } from "@/features/platform/infrastructure/audit";
-import { getEmail } from "@/server/email";
+import { getEmail, type EmailPort } from "@/server/email";
+import { env } from "@/server/env";
 import { hashIpForToday } from "@/server/security/ip-hash";
 import { verifyFormToken } from "@/server/security/form-token";
 import { consumeRateLimit, windowedKey } from "@/server/security/rate-limit";
-import { verifyToken } from "@/server/security/signed-token";
+import {
+  createNewsletterConfirmToken,
+  createNewsletterUnsubscribeToken,
+  verifyToken,
+} from "@/server/security/signed-token";
 import { eq } from "drizzle-orm";
 import { newsletterSubscribers } from "@/db/schema";
 import {
@@ -23,9 +28,13 @@ import { LEAD_CONSENT_VERSION, normalizeEmail } from "../domain/lead";
 /**
  * Newsletter double-opt-in (docs/03, parte 23):
  * 1. Cadastro cria PENDING + token de confirmação (hash no banco, token no e-mail)
- * 2. E-mail traz link para `/api/newsletter/confirm?token=...`
+ * 2. E-mail traz link para `/newsletter/confirmacao?token=...` — a página pede um clique (POST):
+ *    um GET nunca muda estado, senão o antivírus/pré-visualizador de e-mail que "abre" o link
+ *    confirmaria a inscrição no lugar da pessoa
  * 3. Confirmação marca ACTIVE + confirmedAt
- * 4. Descadastro imediato via token assinado + List-Unsubscribe
+ * 4. Descadastro por token assinado (`/newsletter/descadastro?token=...`, também por POST)
+ *
+ * O token de confirmação é ASSINADO (HMAC, com validade) e só o hash dele fica no banco.
  */
 
 const EMAIL_FORMAT = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -42,7 +51,8 @@ const RATE_LIMITS = {
 const TOKEN_PURPOSE_CONFIRM = "newsletter:confirm";
 const TOKEN_PURPOSE_UNSUBSCRIBE = "newsletter:unsubscribe";
 
-type Deps = { db: Database };
+/** `email` é injetável para testes; em produção vem de `getEmail()`. */
+type Deps = { db: Database; email?: EmailPort };
 
 // Entrada BRUTA do formulário público
 export type SubscribeNewsletterInput = {
@@ -56,7 +66,7 @@ export type SubscribeNewsletterInput = {
 };
 
 export async function subscribeNewsletter(
-  { db }: Deps,
+  { db, email: emailPort }: Deps,
   input: SubscribeNewsletterInput,
 ): Promise<{ ok: true }> {
   // Honeypot
@@ -146,7 +156,7 @@ export async function subscribeNewsletter(
   }
 
   // Gera token de confirmação
-  const confirmToken = crypto.randomUUID(); // token opaco
+  const confirmToken = await createNewsletterConfirmToken(email);
   const confirmTokenHash = await hashToken(confirmToken);
   const confirmExpiresAt = new Date(Date.now() + CONFIRM_TOKEN_TTL_MS);
 
@@ -191,8 +201,8 @@ export async function subscribeNewsletter(
 
   // Envia e-mail de confirmação (best effort; falha deixa o assinante em PENDING para retry posterior)
   try {
-    const confirmUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/newsletter/confirm?token=${confirmToken}`;
-    await getEmail().send({
+    const confirmUrl = `${env().SITE_URL}/newsletter/confirmacao?token=${encodeURIComponent(confirmToken)}`;
+    await (emailPort ?? getEmail()).send({
       to: email,
       subject: "Confirme sua inscrição na newsletter DM Empresarial",
       text: `Olá,\n\nClique no link abaixo para confirmar sua inscrição:\n${confirmUrl}\n\nO link expira em 48 horas.\n\nSe não foi você, ignore este e-mail.`,
@@ -259,6 +269,12 @@ export async function unsubscribeNewsletter({ db }: Deps, token: string): Promis
   });
 
   return { ok: true };
+}
+
+/** Link de descadastro para o rodapé de toda edição enviada (e para o List-Unsubscribe). */
+export async function newsletterUnsubscribeUrl(email: string): Promise<string> {
+  const token = await createNewsletterUnsubscribeToken(normalizeEmail(email));
+  return `${env().SITE_URL}/newsletter/descadastro?token=${encodeURIComponent(token)}`;
 }
 
 // Hash do token (SHA-256 hex) — nunca guarda token em claro

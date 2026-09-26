@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { draftMode } from "next/headers";
 import { RichText } from "@/components/content/rich-text";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
@@ -10,6 +11,7 @@ import {
   listPublicPostsForRoute,
 } from "@/features/content/application/public-posts";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
+import { NewsletterSignup } from "@/app/(site)/newsletter/newsletter-signup";
 import { env } from "@/server/env";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -178,6 +180,14 @@ export default async function BlogPostPage({ params }: Params) {
               Fale com a DM
             </Button>
           </div>
+        </Container>
+      </Section>
+
+      <Section tone="muted" spacing="loose">
+        <Container>
+          <Suspense fallback={null}>
+            <NewsletterSignup source="artigo" />
+          </Suspense>
         </Container>
       </Section>
     </>

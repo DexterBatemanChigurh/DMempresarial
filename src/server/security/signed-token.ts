@@ -5,6 +5,9 @@ const ALGO = { name: "HMAC", hash: "SHA-256" };
 
 async function getKey(purpose: string): Promise<CryptoKey> {
   const secret = env().SIGNED_TOKEN_SECRET;
+  // Falha fechada: com segredo vazio qualquer pessoa assinaria um token válido (ex.: descadastrar
+  // o e-mail de outra pessoa). Em production o `env.ts` já exige a variável.
+  if (secret.length < 32) throw new Error("SIGNED_TOKEN_SECRET ausente ou curto (mínimo 32).");
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret + ":" + purpose),

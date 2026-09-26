@@ -6,25 +6,40 @@ import {
   unsubscribeNewsletter,
   type SubscribeNewsletterInput,
 } from "@/features/conversion/application/newsletter";
+import type { EmailMessage } from "@/server/email";
 import { mintFormToken } from "@/server/security/form-token";
+import {
+  createNewsletterConfirmToken,
+  createNewsletterUnsubscribeToken,
+} from "@/server/security/signed-token";
 import { createFixtures, uniq } from "./fixtures";
 import { testAppUrl } from "./helpers";
 
 /**
  * Newsletter double-opt-in (docs/03, parte 23):
  * - Cadastro cria PENDING + token de confirmação (hash no banco, token no e-mail)
- * - Confirmação via rota GET /api/newsletter/confirm?token=...
- * - Descadastro via rota GET /api/newsletter/unsubscribe?token=...
+ * - Confirmação pelo link do e-mail (`/newsletter/confirmacao?token=...`, depois um POST)
+ * - Descadastro por token assinado (`/newsletter/descadastro?token=...`)
  */
 const fx = createFixtures();
 const handle = createDatabase(testAppUrl(), { max: 6 });
-const deps = { db: handle.db };
+// Porta de e-mail que guarda as mensagens: o token de confirmação só existe no e-mail.
+const sent: EmailMessage[] = [];
+const deps = {
+  db: handle.db,
+  email: {
+    async send(message: EmailMessage) {
+      sent.push(message);
+    },
+  },
+};
 const { q } = fx;
 
 beforeAll(async () => {
   await fx.cleanup();
 });
 afterEach(async () => {
+  sent.length = 0;
   await q("delete from newsletter_subscribers where email like $1", ["%@dom-it.example.test"]);
   await q("delete from rate_limits where key like 'newsletter:%'");
 });
@@ -208,74 +223,104 @@ describe("subscribeNewsletter", () => {
   });
 });
 
+/** Assina e devolve o token que chegou no e-mail de confirmação para `email`. */
+async function subscribeAndGetToken(email: string): Promise<string> {
+  await subscribeNewsletter(deps, input({ email }));
+  const message = sent.findLast((m) => m.to === email);
+  const url = message?.text.match(/https?:\/\/\S+/)?.[0];
+  expect(url, "o e-mail de confirmação deve trazer o link").toBeTruthy();
+  const parsed = new URL(url!);
+  expect(parsed.pathname).toBe("/newsletter/confirmacao");
+  return parsed.searchParams.get("token")!;
+}
+
 describe("confirmNewsletter", () => {
+  it("fluxo completo: o link do e-mail confirma a inscrição (PENDING → ACTIVE)", async () => {
+    const email = `${uniq("news-")}@dom-it.example.test`;
+    const token = await subscribeAndGetToken(email);
+    await expect(confirmNewsletter(deps, token)).resolves.toEqual({ ok: true });
+    const sub = await getSubscriber(email);
+    expect(sub?.status).toBe("ACTIVE");
+    expect(sub?.confirm_token_hash).toBeNull();
+  });
+
+  it("o mesmo link não confirma duas vezes (uso único)", async () => {
+    const email = `${uniq("news-")}@dom-it.example.test`;
+    const token = await subscribeAndGetToken(email);
+    await confirmNewsletter(deps, token);
+    await expect(confirmNewsletter(deps, token)).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
   it("token inválido → VALIDATION", async () => {
     await expect(confirmNewsletter(deps, "token-invalido")).rejects.toMatchObject({
       code: "VALIDATION",
     });
   });
 
-  it("token de assinante inexistente → NOT_FOUND", async () => {
-    const token = await import("@/server/security/signed-token").then((m) =>
-      m.createNewsletterConfirmToken("naoexiste@teste.test"),
-    );
-    await expect(confirmNewsletter(deps, token)).rejects.toMatchObject({ code: "NOT_FOUND" });
+  it("token assinado mas que não é o do e-mail → NOT_FOUND", async () => {
+    const email = `${uniq("news-")}@dom-it.example.test`;
+    await subscribeAndGetToken(email);
+    // Assinatura válida, mas o hash não é o gravado para este assinante.
+    const forged = await createNewsletterConfirmToken(email);
+    await expect(confirmNewsletter(deps, forged)).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
-  it("token expirado → VALIDATION", async () => {
-    const data = input();
-    await subscribeNewsletter(deps, data);
-    // Força expiração do token no banco
+  it("token de descadastro não serve para confirmar (propósito diferente) → VALIDATION", async () => {
+    const email = `${uniq("news-")}@dom-it.example.test`;
+    await subscribeAndGetToken(email);
+    const wrongPurpose = await createNewsletterUnsubscribeToken(email);
+    await expect(confirmNewsletter(deps, wrongPurpose)).rejects.toMatchObject({
+      code: "VALIDATION",
+    });
+  });
+
+  it("prazo vencido no banco → VALIDATION", async () => {
+    const email = `${uniq("news-")}@dom-it.example.test`;
+    const token = await subscribeAndGetToken(email);
     await q(
       "update newsletter_subscribers set confirm_expires_at = now() - interval '1 hour' where email = $1",
-      [data.email],
+      [email],
     );
-    const sub = await getSubscriber(data.email);
-    expect(sub).not.toBeNull();
-    // Não temos o token original aqui, mas o teste de integração real usaria o token do e-mail
-    // Este teste valida que a lógica de expiração funciona via banco
-  });
-
-  it("assinante não PENDING → DOMAIN_RULE", async () => {
-    const data = input();
-    await subscribeNewsletter(deps, data);
-    // Simula confirmação direta no banco
-    await q(
-      "update newsletter_subscribers set status = 'ACTIVE', confirmed_at = now(), confirm_token_hash = null, confirm_expires_at = null where email = $1",
-      [data.email],
-    );
-    const sub = await getSubscriber(data.email);
-    expect(sub).not.toBeNull();
-    // O token original não está mais disponível (hash foi limpo), então testamos que a regra impede
-    // Tentativa de confirmar com token inexistente falharia antes
+    await expect(confirmNewsletter(deps, token)).rejects.toMatchObject({ code: "VALIDATION" });
+    expect((await getSubscriber(email))?.status).toBe("PENDING");
   });
 });
 
 describe("unsubscribeNewsletter", () => {
+  it("assinante ativo sai da lista (ACTIVE → UNSUBSCRIBED)", async () => {
+    const email = `${uniq("news-")}@dom-it.example.test`;
+    await confirmNewsletter(deps, await subscribeAndGetToken(email));
+    const token = await createNewsletterUnsubscribeToken(email);
+    await expect(unsubscribeNewsletter(deps, token)).resolves.toEqual({ ok: true });
+    expect((await getSubscriber(email))?.status).toBe("UNSUBSCRIBED");
+  });
+
   it("token inválido → VALIDATION", async () => {
     await expect(unsubscribeNewsletter(deps, "token-invalido")).rejects.toMatchObject({
       code: "VALIDATION",
     });
   });
 
+  it("token de confirmação não serve para descadastrar → VALIDATION", async () => {
+    const email = `${uniq("news-")}@dom-it.example.test`;
+    const confirmToken = await subscribeAndGetToken(email);
+    await expect(unsubscribeNewsletter(deps, confirmToken)).rejects.toMatchObject({
+      code: "VALIDATION",
+    });
+  });
+
   it("token de assinante inexistente → NOT_FOUND", async () => {
-    const token = await import("@/server/security/signed-token").then((m) =>
-      m.createNewsletterUnsubscribeToken("naoexiste@teste.test"),
-    );
+    const token = await createNewsletterUnsubscribeToken("naoexiste@teste.test");
     await expect(unsubscribeNewsletter(deps, token)).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
-  it("assinante não pode ser descadastrado (ex: já UNSUBSCRIBED) → DOMAIN_RULE", async () => {
-    const data = input();
-    await subscribeNewsletter(deps, data);
-    // Simula descadastro
-    await q(
-      "update newsletter_subscribers set status = 'UNSUBSCRIBED', unsubscribed_at = now() where email = $1",
-      [data.email],
-    );
-    const sub = await getSubscriber(data.email);
-    expect(sub?.status).toBe("UNSUBSCRIBED");
-    // Tentar descadastrar de novo falharia na regra de transição
-    // Como não temos o token original, testamos indiretamente
+  it("já descadastrado → DOMAIN_RULE", async () => {
+    const email = `${uniq("news-")}@dom-it.example.test`;
+    await confirmNewsletter(deps, await subscribeAndGetToken(email));
+    const token = await createNewsletterUnsubscribeToken(email);
+    await unsubscribeNewsletter(deps, token);
+    await expect(unsubscribeNewsletter(deps, token)).rejects.toMatchObject({
+      code: "DOMAIN_RULE",
+    });
   });
 });
