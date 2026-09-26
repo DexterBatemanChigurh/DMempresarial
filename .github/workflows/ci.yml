@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -16,13 +15,13 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     services:
       postgres:
         image: postgres:17-alpine
         env:
           POSTGRES_USER: dm_owner
-          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_PASSWORD: ci-only-owner-password
           POSTGRES_DB: dm_empresarial
         ports:
           - 5432:5432
@@ -31,53 +30,54 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 10
+    # Valores descartáveis, só deste job. O build precisa de um banco migrado: as páginas públicas
+    # com "use cache" leem o conteúdo durante o prerender (a Vercel também builda com DATABASE_URL).
     env:
       APP_ENV: test
+      SITE_URL: http://localhost:3000
+      DATABASE_URL_ADMIN: postgres://dm_owner:ci-only-owner-password@127.0.0.1:5432/dm_empresarial
+      DM_APP_DB_PASSWORD: ci-only-app-password
+      DATABASE_URL: postgres://dm_app:ci-only-app-password@127.0.0.1:5432/dm_empresarial
+      BETTER_AUTH_SECRET: ci-only-auth-secret-with-32-characters
+      CRON_SECRET: ci-only-cron-secret-with-32-characters
+      SIGNED_TOKEN_SECRET: ci-only-signed-token-secret-32-characters
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run format:check
-      - run: npm run check
+      # Cria o role dm_app, aplica as migrations e o seed base (mesmo caminho do ambiente local).
+      - run: npm run db:setup
       - run: npm run db:verify
-      - name: Setup database roles
-        run: |
-          psql "postgres://dm_owner:ci-only-password@127.0.0.1:5432/dm_empresarial" -c "CREATE ROLE dm_app WITH LOGIN PASSWORD 'ci-only-app-password-0123456789'; GRANT USAGE ON SCHEMA public TO dm_app; GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO dm_app; ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO dm_app;"
-        env:
-          PGPASSWORD: ci-only-password
+      - run: npm run check
       - run: npm run test:integration
-        env:
-          APP_ENV: test
-          DATABASE_URL: postgres://dm_app:ci-only-app-password-0123456789@127.0.0.1:5432/dm_empresarial
-          DATABASE_URL_ADMIN: postgres://dm_owner:ci-only-password@127.0.0.1:5432/dm_empresarial
-          DM_APP_DB_PASSWORD: ci-only-app-password-0123456789
-          BETTER_AUTH_SECRET: ci-only-secret-32-characters-minimum
-          CRON_SECRET: ci-only-cron-secret-32-characters-min
-          SIGNED_TOKEN_SECRET: ci-only-signed-token-secret-32-char
-          BETTER_AUTH_URL: http://localhost:3000
-          SITE_URL: http://localhost:3000
-          REQUIRE_2FA: "true"
       - run: npm audit --omit=dev --audit-level=high
 
-  security:
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      # Regras padrão do gitleaks + as de .gitleaks.toml.
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: read
-      security-events: write
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-      # Gitleaks - detecção de segredos no código/histórico
-      - uses: gitleaks/gitleaks-action@v2
-        with:
-          config: .gitleaks.toml
-          args: --verbose
-      # Dependency review - análise de vulnerabilidades em PRs
+      - uses: actions/checkout@v5
       - uses: actions/dependency-review-action@v4
         with:
-          config-file: .github/dependency-review-config.yml
-      # npm audit adicional (redundante mas explícito)
-      - run: npm ci && npm audit --omit=dev --audit-level=high
+          config-file: ./.github/dependency-review-config.yml
