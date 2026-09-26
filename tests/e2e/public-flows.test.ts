@@ -45,12 +45,6 @@ test.describe("Navegação pública", () => {
     await expect(page).toHaveURL(/.*contato/);
     await expect(page.locator("h1")).toContainText(/contato/i);
   });
-
-  test("Menu navega para Depoimentos", async ({ page }) => {
-    await page.getByRole("link", { name: /depoimentos/i }).click();
-    await expect(page).toHaveURL(/.*depoimentos/);
-    await expect(page.locator("h1")).toContainText(/depoimentos/i);
-  });
 });
 
 test.describe("Acessibilidade (WCAG 2.2 AA)", () => {
@@ -76,11 +70,6 @@ test.describe("Acessibilidade (WCAG 2.2 AA)", () => {
 
   test("Contato passa no axe-core", async ({ page }) => {
     await page.goto("/contato");
-    await checkA11y(page);
-  });
-
-  test("Depoimentos passa no axe-core", async ({ page }) => {
-    await page.goto("/depoimentos");
     await checkA11y(page);
   });
 });
