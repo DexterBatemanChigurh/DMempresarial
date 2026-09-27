@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { RichText } from "@/components/content/rich-text";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
-import { ChartIcon, ClockIcon, LayersIcon, UsersIcon } from "@/components/ui/icons";
+import { ArrowRightIcon, ChartIcon, ClockIcon, UsersIcon } from "@/components/ui/icons";
 
 /** Colunas do grid do blog por quantidade real de artigos: menos de 4 nunca deixa um card
  * solitário boiando num grid de 4 (docs/02 §04, grid consistente). */
@@ -16,7 +16,7 @@ import { listPublicSolutionsForRoute } from "@/features/catalog/application/publ
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
 import { buildMediaResolverForRoute } from "@/features/media/application/resolve";
 import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
-import { aboutDataSchema, homeDataSchema } from "@/features/pages/domain/page-schemas";
+import { homeDataSchema } from "@/features/pages/domain/page-schemas";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
 import type { RichDoc } from "@/lib/rich-text";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
@@ -40,14 +40,9 @@ export const metadata: Metadata = {
  * Aparecem resumidos sob o CTA do hero e ampliados na faixa de autoridade.
  */
 const AUTHORITY_STATS = [
-  { value: "+300", label: "Empresas atendidas", shortLabel: "empresas atendidas", Icon: UsersIcon },
-  { value: "14 anos", label: "No mercado", shortLabel: "no mercado", Icon: ClockIcon },
-  {
-    value: "+R$ 2 Bi",
-    label: "Administrados para nossos clientes",
-    shortLabel: "administrados",
-    Icon: ChartIcon,
-  },
+  { value: "+300", label: "empresas atendidas", Icon: UsersIcon },
+  { value: "14 anos", label: "no mercado", Icon: ClockIcon },
+  { value: "+R$ 2 Bi", label: "administrados para nossos clientes", Icon: ChartIcon },
 ] as const;
 
 // As duas únicas cores usadas no gráfico de soluções — tons já existentes da paleta da DM
@@ -62,9 +57,8 @@ const SOLUTION_TYPE_LABEL: Record<"CONSULTORIA" | "SERVICO", string> = {
 };
 
 export default async function HomePage() {
-  const [homePage, aboutPage, solutions, postsPage, settings] = await Promise.all([
+  const [homePage, solutions, postsPage, settings] = await Promise.all([
     getPublishedPageForRoute("home"),
-    getPublishedPageForRoute("about"),
     listPublicSolutionsForRoute(),
     listPublicPostsForRoute({ pageSize: 4 }),
     getPublicSettingsForRoute(),
@@ -72,9 +66,6 @@ export default async function HomePage() {
 
   const parsed = homePage ? homeDataSchema.safeParse(homePage.data) : null;
   const homeData = parsed?.success ? parsed.data : null;
-
-  const aboutParsed = aboutPage ? aboutDataSchema.safeParse(aboutPage.data) : null;
-  const whoWeAre = aboutParsed?.success ? aboutParsed.data.whoWeAre : null;
 
   const description = homeData?.description ?? null;
   const posts = postsPage.items;
@@ -139,9 +130,8 @@ export default async function HomePage() {
 
       {/* 1 HERO — geometria de uma referência do usuário (proporções, posições, espaçamentos);
           cores e fontes continuam as da DM (docs/02), nunca as da referência. Topo mais justo de
-          propósito (o cabeçalho já separa visualmente); embaixo, o mesmo ritmo espaçoso das
-          demais seções, para a transição para a faixa escura não ficar apertada. */}
-      <Section spacing="none" className="pt-lg pb-4xl md:pt-xl md:pb-5xl">
+          propósito (o cabeçalho já separa visualmente). */}
+      <Section spacing="none" className="pt-lg pb-3xl md:pt-xl md:pb-4xl">
         <Container size="wide">
           <div className="grid grid-cols-1 items-start gap-2xl lg:grid-cols-[5fr_4fr] lg:gap-x-[120px]">
             <div className="min-w-0">
@@ -174,17 +164,6 @@ export default async function HomePage() {
                   Conheça nossas soluções
                 </Button>
               </div>
-              <ul className="mt-xl flex flex-wrap items-center gap-x-lg gap-y-xs">
-                {AUTHORITY_STATS.map((stat) => (
-                  <li key={stat.label} className="flex items-center gap-xs">
-                    <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-action" />
-                    <Text size="sm" tone="secondary">
-                      <span className="font-semibold text-text">{stat.value}</span>{" "}
-                      {stat.shortLabel}
-                    </Text>
-                  </li>
-                ))}
-              </ul>
             </div>
 
             <div className="overflow-hidden rounded-[16px] border border-border bg-surface-muted lg:mt-[3px]">
@@ -203,21 +182,28 @@ export default async function HomePage() {
         </Container>
       </Section>
 
-      {/* 2 FAIXA DE AUTORIDADE — mesmo ritmo espaçoso das demais seções (docs/02 §06). */}
-      <Section tone="dark" spacing="loose" aria-labelledby="home-autoridade">
+      {/* 2 FAIXA DE AUTORIDADE — faixa fina: número e rótulo lado a lado, não empilhados. */}
+      <Section
+        tone="dark"
+        spacing="none"
+        className="py-xl md:py-2xl"
+        aria-labelledby="home-autoridade"
+      >
         <h2 id="home-autoridade" className="sr-only">
           Números da DM
         </h2>
         <Container>
-          <dl className="grid grid-cols-1 gap-2xl sm:grid-cols-3">
+          <ul className="flex flex-wrap items-center justify-center gap-x-3xl gap-y-sm">
             {AUTHORITY_STATS.map((stat) => (
-              <div key={stat.label} className="flex flex-col items-start text-left">
-                <stat.Icon aria-hidden="true" className="mb-md size-7 text-action-contrast" />
-                <dd className="font-serif text-display-m text-text">{stat.value}</dd>
-                <dt className="mt-xs font-sans text-body text-text-secondary">{stat.label}</dt>
-              </div>
+              <li key={stat.label} className="flex items-center gap-sm">
+                <stat.Icon aria-hidden="true" className="size-6 shrink-0 text-action-contrast" />
+                <span className="font-sans text-body-sm text-text-secondary">
+                  <span className="font-serif text-h4 font-medium text-text">{stat.value}</span>{" "}
+                  {stat.label}
+                </span>
+              </li>
             ))}
-          </dl>
+          </ul>
         </Container>
       </Section>
 
@@ -290,45 +276,7 @@ export default async function HomePage() {
         </Section>
       ) : null}
 
-      {/* 4 SOBRE NÓS — texto real de /sobre quando publicado; sem isso, só o link (nunca um
-          texto de preenchimento no lugar do "quem somos" real da DM). */}
-      <Section spacing="loose" aria-labelledby="home-sobre">
-        <Container>
-          <div className="grid grid-cols-1 items-center gap-2xl lg:grid-cols-2">
-            <div>
-              <SectionLabel>Sobre nós</SectionLabel>
-              <Heading as="h2" variant="h2" id="home-sobre" className="mt-md">
-                Quem está por trás da DM
-              </Heading>
-              {whoWeAre ? (
-                <div className="mt-lg max-w-reading">
-                  <RichText value={whoWeAre} />
-                </div>
-              ) : (
-                <Text tone="secondary" className="mt-lg max-w-reading">
-                  A apresentação completa da DM está sendo escrita.
-                </Text>
-              )}
-              <div className="mt-xl">
-                <Button href="/sobre" variant="secondary">
-                  Conheça a DM
-                </Button>
-              </div>
-            </div>
-            <div className="flex items-center justify-center">
-              <div
-                data-tone="dark"
-                aria-hidden="true"
-                className="flex aspect-square w-full max-w-[280px] items-center justify-center rounded-full bg-surface"
-              >
-                <LayersIcon className="size-12 text-text" />
-              </div>
-            </div>
-          </div>
-        </Container>
-      </Section>
-
-      {/* 5 SOLUÇÕES — soluções reais, agrupadas por tipo num gráfico simples (nunca fatias
+      {/* 4 SOLUÇÕES — soluções reais, agrupadas por tipo num gráfico simples (nunca fatias
           decorativas sem significado: cada fatia é uma solução publicada de verdade). */}
       {solutions.length > 0 ? (
         <Section tone="muted" spacing="loose" aria-labelledby="home-solucoes">
@@ -414,50 +362,65 @@ export default async function HomePage() {
         </Section>
       ) : null}
 
-      {/* 6 CTA — dois blocos lado a lado, terminando em ponta arredondada (estrutura da
-          referência do usuário; cores e texto continuam os da DM). */}
+      {/* 5 CTA — geometria de uma referência do usuário: duas faixas empilhadas com pontas
+          arredondadas alternadas (a de cima abre à direita, a de baixo à esquerda), um círculo
+          reservado para foto sobrepondo a borda da primeira, e um botão circular flutuando na
+          costura da segunda. Cores, texto e o círculo (sem foto real ainda) continuam os da DM. */}
       <Section spacing="loose" aria-labelledby="home-cta">
         <h2 id="home-cta" className="sr-only">
           Fale com a DM
         </h2>
         <Container>
-          <div className="grid grid-cols-1 gap-xl lg:grid-cols-2">
+          <div className="flex flex-col gap-3xl">
+            {/* Soluções — arredonda só a ponta direita; o círculo (foto da equipe, quando houver)
+                sobrepõe essa ponta, meio dentro meio fora, como na referência. */}
             <div
               data-tone="dark"
-              className="flex flex-col justify-center gap-lg rounded-[28px] bg-surface p-2xl lg:rounded-r-[999px] lg:py-3xl lg:pr-4xl lg:pl-2xl"
+              className="relative flex flex-col justify-center gap-lg rounded-[28px] bg-surface p-2xl lg:rounded-l-[28px] lg:rounded-r-[999px] lg:py-3xl lg:pr-[200px] lg:pl-2xl"
             >
               <SectionLabel>Soluções</SectionLabel>
-              <Text size="lg" className="max-w-[26rem] text-text">
+              <Text size="lg" className="max-w-[28rem] text-text">
                 Consultoria e serviços descritos pelo problema que resolvem — sem tabela de preços,
                 cada conversa começa pelo contexto da sua empresa.
               </Text>
               <div>
-                <Button href="/solucoes" variant="secondary">
+                <Button href="/solucoes" variant="secondary" size="sm">
                   Conheça as soluções →
                 </Button>
               </div>
+
+              <div
+                aria-hidden="true"
+                className="mt-lg flex size-24 items-center justify-center self-center rounded-full border border-border bg-surface-muted lg:absolute lg:top-1/2 lg:right-0 lg:mt-0 lg:size-40 lg:translate-x-1/4 lg:-translate-y-1/2 lg:self-auto"
+              >
+                <UsersIcon className="size-8 text-text-muted lg:size-10" />
+              </div>
             </div>
 
-            <div className="relative flex flex-col justify-center gap-lg rounded-[28px] bg-action p-2xl lg:rounded-l-[999px] lg:py-3xl lg:pr-2xl lg:pl-4xl">
-              {/* `Heading`/`Text` sempre aplicam a própria cor de texto (`text-text`); nesta
-                  faixa a cor certa é a de contraste da ação, então usamos a tag crua com as
-                  MESMAS classes tipográficas dos componentes, evitando a disputa entre duas
-                  classes de cor no mesmo elemento (`cn` só concatena, não resolve prioridade). */}
-              <h3 className="max-w-[20rem] font-serif text-h2 font-medium text-action-contrast">
-                Fale com um especialista
-              </h3>
-              <p className="max-w-[24rem] font-sans text-body text-action-contrast/85">
-                Conte o contexto da sua empresa e a DM explica como pode ajudar.
-              </p>
-              <div>
-                <Button
-                  href="/contato"
-                  variant="secondary"
-                  style={{ borderColor: "var(--action-contrast)", color: "var(--action-contrast)" }}
-                >
-                  Fale com a DM →
-                </Button>
+            {/* Fale com um especialista — arredonda só a ponta esquerda; título e texto lado a
+                lado (não empilhados); botão circular flutuando na costura de baixo. */}
+            <div className="relative rounded-[28px] bg-action p-2xl pb-3xl lg:rounded-r-[28px] lg:rounded-l-[999px] lg:py-3xl lg:pr-2xl lg:pl-4xl">
+              <div className="grid grid-cols-1 gap-lg lg:grid-cols-[minmax(0,22rem)_minmax(0,24rem)] lg:items-center">
+                {/* `Heading`/`Text` sempre aplicam a própria cor de texto (`text-text`); nesta
+                    faixa a cor certa é a de contraste da ação, então usamos a tag crua com as
+                    MESMAS classes tipográficas dos componentes, evitando a disputa entre duas
+                    classes de cor no mesmo elemento (`cn` só concatena, não resolve prioridade). */}
+                <h3 className="font-serif text-h2 font-medium text-action-contrast">
+                  Fale com um especialista
+                </h3>
+                <p className="font-sans text-body text-action-contrast/85">
+                  Conte o contexto da sua empresa e a DM explica como pode ajudar.
+                </p>
               </div>
+
+              <Link
+                href="/contato"
+                aria-label="Fale com a DM"
+                data-tone="dark"
+                className="mt-lg flex size-14 items-center justify-center rounded-full bg-surface text-text transition-colors duration-150 ease-standard hover:bg-surface-muted lg:absolute lg:bottom-0 lg:left-1/2 lg:mt-0 lg:-translate-x-1/2 lg:translate-y-1/2"
+              >
+                <ArrowRightIcon className="size-6" />
+              </Link>
             </div>
           </div>
         </Container>
