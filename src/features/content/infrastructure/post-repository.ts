@@ -187,6 +187,7 @@ export type PublicPostSummary = {
   readingMinutes: number;
   authorName: string;
   primaryCategorySlug: string | null;
+  coverMediaId: string | null;
 };
 
 export type PublicPost = PublicPostSummary & {
@@ -212,6 +213,7 @@ const summaryColumns = {
   readingMinutes: posts.readingMinutes,
   authorName: specialists.name,
   primaryCategorySlug: categories.slug,
+  coverMediaId: posts.coverMediaId,
 };
 
 /** `where` para a categoria PRIMÁRIA, junto ao mesmo par de `leftJoin` usado nas consultas

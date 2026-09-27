@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { RichText } from "@/components/content/rich-text";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
+import { ChartIcon, ClockIcon, LayersIcon, UsersIcon } from "@/components/ui/icons";
 import { listPublicSolutionsForRoute } from "@/features/catalog/application/public-solutions";
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
 import { buildMediaResolverForRoute } from "@/features/media/application/resolve";
 import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
-import { homeDataSchema } from "@/features/pages/domain/page-schemas";
-import { listPublicSpecialistsForRoute } from "@/features/people/application/public-specialists";
+import { aboutDataSchema, homeDataSchema } from "@/features/pages/domain/page-schemas";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
 import type { RichDoc } from "@/lib/rich-text";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
@@ -26,45 +26,82 @@ export const metadata: Metadata = {
   title: { absolute: "DM Empresarial — Consultoria empresarial em Frutal/MG" },
 };
 
-function mediaUrl(storageKey: string): string {
-  return `/media/${storageKey}`;
-}
-
 /**
- * Números reais confirmados pela DM (27/09/2026): nunca inventar prova social (Prompt 1 §20).
- * Aparecem na faixa de autoridade e, resumidos, logo abaixo do CTA do hero.
+ * Números reais confirmados pela DM (26–27/09/2026): nunca inventar prova social (Prompt 1 §20).
+ * Aparecem resumidos sob o CTA do hero e ampliados na faixa de autoridade.
  */
 const AUTHORITY_STATS = [
-  { value: "+300", label: "Empresas atendidas", shortLabel: "empresas atendidas" },
-  { value: "14 anos", label: "No mercado", shortLabel: "no mercado" },
-  { value: "+R$ 2 Bi", label: "Administrados para nossos clientes", shortLabel: "administrados" },
+  { value: "+300", label: "Empresas atendidas", shortLabel: "empresas atendidas", Icon: UsersIcon },
+  { value: "14 anos", label: "No mercado", shortLabel: "no mercado", Icon: ClockIcon },
+  {
+    value: "+R$ 2 Bi",
+    label: "Administrados para nossos clientes",
+    shortLabel: "administrados",
+    Icon: ChartIcon,
+  },
 ] as const;
 
+// As duas únicas cores usadas no gráfico de soluções — tons já existentes da paleta da DM
+// (docs/02 §15: paleta contida, nunca cor nova só para "colorir um gráfico").
+const SOLUTION_TYPE_COLOR: Record<"CONSULTORIA" | "SERVICO", string> = {
+  CONSULTORIA: "var(--color-azul-marca)",
+  SERVICO: "var(--color-verde-tinta)",
+};
+const SOLUTION_TYPE_LABEL: Record<"CONSULTORIA" | "SERVICO", string> = {
+  CONSULTORIA: "Consultoria",
+  SERVICO: "Serviço",
+};
+
 export default async function HomePage() {
-  const [homePage, solutions, specialists, postsPage, settings] = await Promise.all([
+  const [homePage, aboutPage, solutions, postsPage, settings] = await Promise.all([
     getPublishedPageForRoute("home"),
+    getPublishedPageForRoute("about"),
     listPublicSolutionsForRoute(),
-    listPublicSpecialistsForRoute(),
     listPublicPostsForRoute({ pageSize: 4 }),
     getPublicSettingsForRoute(),
   ]);
 
   const parsed = homePage ? homeDataSchema.safeParse(homePage.data) : null;
   const homeData = parsed?.success ? parsed.data : null;
-  const featured = solutions.find((s) => s.isFeatured);
-  const rest = solutions.filter((s) => !s.isFeatured);
-  const posts = postsPage.items;
-  const [firstPost, ...morePosts] = posts;
+
+  const aboutParsed = aboutPage ? aboutDataSchema.safeParse(aboutPage.data) : null;
+  const whoWeAre = aboutParsed?.success ? aboutParsed.data.whoWeAre : null;
 
   const description = homeData?.description ?? null;
-  const howWeThink = homeData?.howWeThink ?? null;
+  const posts = postsPage.items;
 
   // Foto do hero (docs/03, parte 21): sem uma escolhida em /admin/paginas ainda, a home mostra um
   // estado vazio (nunca um "headshot corporativo genérico", Prompt 2 §18).
   const heroImageDoc: RichDoc | null = homeData?.heroImageId
     ? { type: "doc", content: [{ type: "image", attrs: { mediaId: homeData.heroImageId } }] }
     : null;
-  const heroResolver = heroImageDoc ? await buildMediaResolverForRoute(heroImageDoc) : null;
+
+  // Capas dos artigos do blog: resolvidas em lote (uma consulta), mesma técnica da foto do hero.
+  const coverIds = posts.map((p) => p.coverMediaId).filter((id): id is string => id !== null);
+  const coverDoc: RichDoc | null =
+    coverIds.length > 0
+      ? { type: "doc", content: coverIds.map((mediaId) => ({ type: "image", attrs: { mediaId } })) }
+      : null;
+  const [heroResolver, coverResolver] = await Promise.all([
+    heroImageDoc ? buildMediaResolverForRoute(heroImageDoc) : Promise.resolve(null),
+    coverDoc ? buildMediaResolverForRoute(coverDoc) : Promise.resolve(null),
+  ]);
+
+  // Gráfico de soluções: fatias iguais por solução publicada, coloridas pelo tipo (só 2 tons da
+  // paleta da DM — nunca uma cor nova só para decorar um gráfico).
+  const solutionSlices = solutions.map((s, i) => {
+    const start = (360 / solutions.length) * i;
+    const end = (360 / solutions.length) * (i + 1);
+    return { ...s, start, end };
+  });
+  const donutGradient =
+    solutions.length > 0
+      ? `conic-gradient(${solutionSlices
+          .map((s) => `${SOLUTION_TYPE_COLOR[s.type]} ${s.start}deg ${s.end}deg`)
+          .join(", ")})`
+      : undefined;
+  const consultoriaCount = solutions.filter((s) => s.type === "CONSULTORIA").length;
+  const servicoCount = solutions.filter((s) => s.type === "SERVICO").length;
 
   return (
     <>
@@ -91,33 +128,34 @@ export default async function HomePage() {
         }}
       />
 
-      {/* 1 HERO */}
-      <Section spacing="loose">
+      {/* 1 HERO — geometria de uma referência do usuário (proporções, posições, espaçamentos);
+          cores e fontes continuam as da DM (docs/02), nunca as da referência. */}
+      <Section spacing="none" className="pt-lg pb-3xl md:pt-xl md:pb-4xl">
         <Container size="wide">
-          <div className="grid grid-cols-1 items-center gap-2xl lg:grid-cols-2">
+          <div className="grid grid-cols-1 items-start gap-2xl lg:grid-cols-[5fr_4fr] lg:gap-x-[120px]">
             <div className="min-w-0">
               <SectionLabel>Consultoria empresarial · Frutal, MG</SectionLabel>
               {homeData?.headline ? (
-                <Heading as="h1" variant="display-l" className="mt-md">
+                <h1 className="mt-lg font-serif text-[2.25rem] leading-[1.05] font-bold tracking-[-0.02em] text-text sm:text-[2.75rem] lg:text-[58px] lg:leading-[1.02]">
                   {homeData.headline}
-                </Heading>
+                </h1>
               ) : (
-                <Heading as="h1" variant="display-l" className="mt-md">
+                <h1 className="mt-lg font-serif text-[2.25rem] leading-[1.05] font-bold tracking-[-0.02em] text-text sm:text-[2.75rem] lg:text-[58px] lg:leading-[1.02]">
                   Consultoria empresarial com{" "}
                   <span className="text-action">método, acompanhamento e gente de verdade</span>.
-                </Heading>
+                </h1>
               )}
               {description ? (
-                <div className="mt-lg max-w-reading">
+                <div className="mt-lg max-w-[570px]">
                   <RichText value={description} />
                 </div>
               ) : (
-                <Text size="lg" tone="secondary" className="mt-lg max-w-reading">
+                <Text size="lg" tone="secondary" className="mt-lg max-w-[570px]">
                   Diagnóstico claro, plano prático e alguém acompanhando de perto — da decisão até o
                   resultado.
                 </Text>
               )}
-              <div className="mt-xl flex flex-wrap gap-md">
+              <div className="mt-2xl flex flex-wrap gap-sm">
                 <Button href="/contato" size="lg">
                   Fale com a DM →
                 </Button>
@@ -125,14 +163,10 @@ export default async function HomePage() {
                   Conheça nossas soluções
                 </Button>
               </div>
-              <ul className="mt-xl flex flex-wrap items-baseline gap-x-sm gap-y-xs">
-                {AUTHORITY_STATS.map((stat, index) => (
-                  <li key={stat.label} className="flex items-baseline gap-sm">
-                    {index > 0 ? (
-                      <span aria-hidden="true" className="text-border-strong">
-                        ·
-                      </span>
-                    ) : null}
+              <ul className="mt-xl flex flex-wrap items-center gap-x-lg gap-y-xs">
+                {AUTHORITY_STATS.map((stat) => (
+                  <li key={stat.label} className="flex items-center gap-xs">
+                    <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-action" />
                     <Text size="sm" tone="secondary">
                       <span className="font-semibold text-text">{stat.value}</span>{" "}
                       {stat.shortLabel}
@@ -142,11 +176,11 @@ export default async function HomePage() {
               </ul>
             </div>
 
-            <div className="overflow-hidden rounded-control border border-border bg-surface-muted">
+            <div className="overflow-hidden rounded-[16px] border border-border bg-surface-muted lg:mt-[3px]">
               {heroImageDoc && heroResolver ? (
                 <RichText value={heroImageDoc} resolveMedia={heroResolver} />
               ) : (
-                <div className="flex aspect-[4/3] items-center justify-center p-xl text-center">
+                <div className="flex aspect-[467/460] items-center justify-center p-xl text-center">
                   <Text size="sm" tone="secondary">
                     A foto da equipe da DM aparece aqui assim que for publicada em Configurações.
                   </Text>
@@ -157,246 +191,81 @@ export default async function HomePage() {
         </Container>
       </Section>
 
-      {/* FAIXA DE AUTORIDADE */}
+      {/* 2 FAIXA DE AUTORIDADE */}
       <Section tone="dark" spacing="default" aria-labelledby="home-autoridade">
         <h2 id="home-autoridade" className="sr-only">
           Números da DM
         </h2>
         <Container size="wide">
-          <dl className="grid grid-cols-1 gap-xl text-center sm:grid-cols-3">
+          <dl className="grid grid-cols-1 gap-2xl sm:grid-cols-3">
             {AUTHORITY_STATS.map((stat) => (
-              <div key={stat.label}>
+              <div key={stat.label} className="flex flex-col items-start text-left">
+                <stat.Icon aria-hidden="true" className="mb-md size-7 text-action-contrast" />
                 <dd className="font-serif text-display-m text-text">{stat.value}</dd>
-                <dt className="mt-xs font-sans text-label font-semibold tracking-[0.04em] text-text-secondary uppercase">
-                  {stat.label}
-                </dt>
+                <dt className="mt-xs font-sans text-body text-text-secondary">{stat.label}</dt>
               </div>
             ))}
           </dl>
         </Container>
       </Section>
 
-      {/* 2 PROBLEMAS / CONTEXTO — Reconhecimento de situações reais. Só aparece se a página "home" tiver conteúdo. */}
-      {homeData?.problems ? (
-        <Section tone="muted" spacing="loose" aria-labelledby="home-problemas">
-          <Container>
-            <SectionLabel>Problemas & Contexto</SectionLabel>
-            <Heading as="h2" variant="h2" id="home-problemas" className="mt-md">
-              Situações que a DM resolve
-            </Heading>
-            <div className="mt-lg max-w-reading">
-              <RichText value={homeData.problems} />
-            </div>
-          </Container>
-        </Section>
-      ) : null}
-
-      {/* 3 SOLUÇÕES — a seção 2 (Reconhecimento) não existe no schema e é pulada. */}
-      {solutions.length > 0 ? (
-        <Section tone="muted" spacing="loose" aria-labelledby="home-solucoes">
-          <Container>
-            <SectionLabel>Soluções</SectionLabel>
-            <Heading as="h2" variant="h2" id="home-solucoes" className="mt-md">
-              O que fazemos
-            </Heading>
-
-            {featured ? (
-              <Link
-                href={`/solucoes/${featured.slug}`}
-                className="group mt-xl block border-t-2 border-border-strong pt-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
-              >
-                <Text size="metadata" tone="secondary">
-                  Destaque
-                </Text>
-                <Heading
-                  as="h3"
-                  variant="h2"
-                  className="mt-sm text-link group-hover:underline group-focus-visible:underline"
-                >
-                  {featured.title}
-                </Heading>
-                <Text tone="secondary" className="mt-sm max-w-reading">
-                  {featured.summary}
-                </Text>
-              </Link>
-            ) : null}
-
-            {rest.length > 0 ? (
-              <ul className="mt-2xl grid grid-cols-1 gap-xl md:grid-cols-2 lg:grid-cols-3">
-                {rest.map((item) => (
-                  <li key={item.slug} className="border-t border-border pt-lg">
-                    <Link
-                      href={`/solucoes/${item.slug}`}
-                      className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
-                    >
-                      <Heading
-                        as="h3"
-                        variant="h3"
-                        className="text-link group-hover:underline group-focus-visible:underline"
-                      >
-                        {item.title}
-                      </Heading>
-                      <Text tone="secondary" className="mt-sm">
-                        {item.summary}
-                      </Text>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-
-            <div className="mt-2xl">
-              <Button href="/solucoes" variant="secondary">
-                Ver todas as soluções
-              </Button>
-            </div>
-          </Container>
-        </Section>
-      ) : null}
-
-      {/* 4 COMO A DM PENSA */}
-      {howWeThink ? (
-        <Section spacing="loose" aria-labelledby="home-como-pensa">
-          <Container>
-            <SectionLabel>Como a DM pensa</SectionLabel>
-            <Heading as="h2" variant="h2" id="home-como-pensa" className="mt-md">
-              Como a DM pensa
-            </Heading>
-            <div className="mt-lg max-w-reading">
-              <RichText value={howWeThink} />
-            </div>
-          </Container>
-        </Section>
-      ) : null}
-
-      {/* 5 ESPECIALISTAS */}
-      {specialists.length > 0 ? (
-        <Section tone="muted" spacing="loose" aria-labelledby="home-especialistas">
-          <Container>
-            <SectionLabel>Especialistas</SectionLabel>
-            <Heading as="h2" variant="h2" id="home-especialistas" className="mt-md">
-              Quem está por trás
-            </Heading>
-            <ul className="mt-xl grid grid-cols-1 gap-2xl sm:grid-cols-2 lg:grid-cols-3">
-              {specialists.slice(0, 4).map((person) => (
-                <li key={person.slug}>
-                  <Link
-                    href={`/sobre/especialistas/${person.slug}`}
-                    className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
-                  >
-                    <div className="aspect-[4/5] w-full overflow-hidden bg-surface">
-                      {person.photoStorageKey ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={mediaUrl(person.photoStorageKey)}
-                          alt={`Foto de ${person.name}`}
-                          width={800}
-                          height={1000}
-                          loading="lazy"
-                          decoding="async"
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div
-                          aria-hidden="true"
-                          className="flex h-full w-full items-center justify-center"
-                        >
-                          <span className="font-serif text-display-m text-text-secondary">
-                            {person.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .slice(0, 2)
-                              .join("")}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <Heading
-                      as="h3"
-                      variant="h3"
-                      className="mt-md text-link group-hover:underline group-focus-visible:underline"
-                    >
-                      {person.name}
-                    </Heading>
-                    <Text size="sm" tone="secondary" className="mt-xs">
-                      {person.roleTitle}
-                    </Text>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-2xl">
-              <Button href="/sobre" variant="secondary">
-                Conheça a equipe
-              </Button>
-            </div>
-          </Container>
-        </Section>
-      ) : null}
-
-      {/* 6 CONTEÚDO — a seção 7 (Prova) não é modelada e é pulada. */}
-      {firstPost ? (
-        <Section spacing="loose" aria-labelledby="home-conteudo">
-          <Container>
-            <SectionLabel>Conteúdo</SectionLabel>
-            <Heading as="h2" variant="h2" id="home-conteudo" className="mt-md">
+      {/* 3 BLOG — artigos reais do CMS, nunca placeholder. */}
+      {posts.length > 0 ? (
+        <Section tone="muted" spacing="loose" aria-labelledby="home-blog">
+          <Container size="wide">
+            <SectionLabel>Blog</SectionLabel>
+            <Heading as="h2" variant="h2" id="home-blog" className="mt-md">
               Conhecimento para quem toma decisões
             </Heading>
 
-            <div className="mt-xl grid grid-cols-1 gap-2xl lg:grid-cols-12">
-              <article className="lg:col-span-7">
-                <Link
-                  href={`/blog/${firstPost.slug}`}
-                  className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
-                >
-                  <Text size="metadata" tone="secondary">
-                    {firstPost.authorName} ·{" "}
-                    {firstPost.publishedAt?.toLocaleDateString("pt-BR", {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
-                    })}{" "}
-                    · {firstPost.readingMinutes} min
-                  </Text>
-                  <Heading
-                    as="h3"
-                    variant="h2"
-                    className="mt-sm text-link group-hover:underline group-focus-visible:underline"
-                  >
-                    {firstPost.title}
-                  </Heading>
-                  {firstPost.excerpt ? (
-                    <Text tone="secondary" className="mt-sm max-w-reading">
-                      {firstPost.excerpt}
-                    </Text>
-                  ) : null}
-                </Link>
-              </article>
-
-              {morePosts.length > 0 ? (
-                <ul className="space-y-xl lg:col-span-5">
-                  {morePosts.map((post) => (
-                    <li key={post.slug} className="border-t border-border pt-lg">
-                      <Link
-                        href={`/blog/${post.slug}`}
-                        className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
+            <ul className="mt-2xl grid grid-cols-1 gap-xl sm:grid-cols-2 lg:grid-cols-4">
+              {posts.map((post) => {
+                const cover = post.coverMediaId ? coverResolver?.(post.coverMediaId) : null;
+                return (
+                  <li key={post.slug}>
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
+                    >
+                      <div className="relative aspect-[16/10] overflow-hidden rounded-[12px] border border-border bg-surface-muted">
+                        {cover ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={cover.url}
+                            alt={cover.alt}
+                            loading="lazy"
+                            decoding="async"
+                            className="h-full w-full object-cover transition-transform duration-base group-hover:scale-[1.03]"
+                          />
+                        ) : null}
+                        <span className="absolute bottom-sm left-sm rounded-control bg-action px-sm py-2xs font-sans text-caption font-semibold text-action-contrast">
+                          Ler artigo
+                        </span>
+                      </div>
+                      <Text size="metadata" tone="secondary" className="mt-md">
+                        {post.authorName} · {post.readingMinutes} min
+                      </Text>
+                      <Heading
+                        as="h3"
+                        variant="h4"
+                        className="mt-xs text-link group-hover:underline group-focus-visible:underline"
                       >
-                        <Text size="metadata" tone="secondary">
-                          {post.authorName} · {post.readingMinutes} min
+                        {post.title}
+                      </Heading>
+                      {post.publishedAt ? (
+                        <Text size="sm" tone="secondary" className="mt-xs">
+                          {post.publishedAt.toLocaleDateString("pt-BR", {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          })}
                         </Text>
-                        <Heading
-                          as="h3"
-                          variant="h4"
-                          className="mt-xs text-link group-hover:underline group-focus-visible:underline"
-                        >
-                          {post.title}
-                        </Heading>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
+                      ) : null}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
 
             <div className="mt-2xl">
               <Button href="/blog" variant="secondary">
@@ -407,19 +276,175 @@ export default async function HomePage() {
         </Section>
       ) : null}
 
-      {/* 8 CTA FINAL */}
-      <Section tone="dark" spacing="loose" aria-labelledby="home-cta">
-        <Container>
-          <Heading as="h2" variant="h2" id="home-cta">
-            Vamos conversar sobre a sua empresa
-          </Heading>
-          <Text size="lg" tone="secondary" className="mt-md max-w-reading">
-            Conte o contexto da sua empresa e a DM explica como pode ajudar.
-          </Text>
-          <div className="mt-xl">
-            <Button href="/contato" size="lg">
-              Fale com a DM
-            </Button>
+      {/* 4 SOBRE NÓS — texto real de /sobre quando publicado; sem isso, só o link (nunca um
+          texto de preenchimento no lugar do "quem somos" real da DM). */}
+      <Section spacing="loose" aria-labelledby="home-sobre">
+        <Container size="wide">
+          <div className="grid grid-cols-1 items-center gap-2xl lg:grid-cols-2">
+            <div>
+              <SectionLabel>Sobre nós</SectionLabel>
+              <Heading as="h2" variant="h2" id="home-sobre" className="mt-md">
+                Quem está por trás da DM
+              </Heading>
+              {whoWeAre ? (
+                <div className="mt-lg max-w-reading">
+                  <RichText value={whoWeAre} />
+                </div>
+              ) : (
+                <Text tone="secondary" className="mt-lg max-w-reading">
+                  A apresentação completa da DM está sendo escrita.
+                </Text>
+              )}
+              <div className="mt-xl">
+                <Button href="/sobre" variant="secondary">
+                  Conheça a DM
+                </Button>
+              </div>
+            </div>
+            <div className="flex items-center justify-center">
+              <div
+                data-tone="dark"
+                aria-hidden="true"
+                className="flex aspect-square w-full max-w-[280px] items-center justify-center rounded-full bg-surface"
+              >
+                <LayersIcon className="size-12 text-text" />
+              </div>
+            </div>
+          </div>
+        </Container>
+      </Section>
+
+      {/* 5 SOLUÇÕES — soluções reais, agrupadas por tipo num gráfico simples (nunca fatias
+          decorativas sem significado: cada fatia é uma solução publicada de verdade). */}
+      {solutions.length > 0 ? (
+        <Section tone="muted" spacing="loose" aria-labelledby="home-solucoes">
+          <Container size="wide">
+            <SectionLabel>Soluções</SectionLabel>
+            <Heading as="h2" variant="h2" id="home-solucoes" className="mt-md">
+              O que fazemos
+            </Heading>
+
+            <div className="mt-2xl grid grid-cols-1 items-center gap-2xl lg:grid-cols-[auto_1fr] lg:gap-x-4xl">
+              <div className="flex flex-col items-center gap-md justify-self-center">
+                <div
+                  className="relative flex size-[220px] items-center justify-center rounded-full sm:size-[280px]"
+                  style={{ background: donutGradient }}
+                >
+                  <div className="flex size-[70%] flex-col items-center justify-center rounded-full bg-surface-muted text-center">
+                    <Text as="span" size="sm" tone="secondary">
+                      soluções
+                    </Text>
+                    <Text as="span" className="font-serif text-display-m text-text">
+                      {solutions.length}
+                    </Text>
+                  </div>
+                </div>
+                <ul className="flex gap-lg">
+                  <li className="flex items-center gap-xs">
+                    <span
+                      aria-hidden="true"
+                      className="size-2.5 rounded-full"
+                      style={{ background: SOLUTION_TYPE_COLOR.CONSULTORIA }}
+                    />
+                    <Text size="sm" tone="secondary">
+                      {SOLUTION_TYPE_LABEL.CONSULTORIA} ({consultoriaCount})
+                    </Text>
+                  </li>
+                  <li className="flex items-center gap-xs">
+                    <span
+                      aria-hidden="true"
+                      className="size-2.5 rounded-full"
+                      style={{ background: SOLUTION_TYPE_COLOR.SERVICO }}
+                    />
+                    <Text size="sm" tone="secondary">
+                      {SOLUTION_TYPE_LABEL.SERVICO} ({servicoCount})
+                    </Text>
+                  </li>
+                </ul>
+              </div>
+
+              <ul className="grid min-w-0 max-w-[48rem] grid-cols-1 gap-lg sm:grid-cols-2">
+                {solutions.map((item) => (
+                  <li key={item.slug} className="relative pl-md">
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-2xs bottom-2xs left-0 w-1 rounded-full"
+                      style={{ background: SOLUTION_TYPE_COLOR[item.type] }}
+                    />
+                    <Link
+                      href={`/solucoes/${item.slug}`}
+                      className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
+                    >
+                      <Heading
+                        as="h3"
+                        variant="h4"
+                        className="text-link group-hover:underline group-focus-visible:underline"
+                      >
+                        {item.title}
+                      </Heading>
+                      <Text size="sm" tone="secondary" className="mt-2xs">
+                        {item.summary}
+                      </Text>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mt-2xl">
+              <Button href="/solucoes" variant="secondary">
+                Ver todas as soluções
+              </Button>
+            </div>
+          </Container>
+        </Section>
+      ) : null}
+
+      {/* 6 CTA — dois blocos lado a lado, terminando em ponta arredondada (estrutura da
+          referência do usuário; cores e texto continuam os da DM). */}
+      <Section spacing="loose" aria-labelledby="home-cta">
+        <h2 id="home-cta" className="sr-only">
+          Fale com a DM
+        </h2>
+        <Container size="wide">
+          <div className="grid grid-cols-1 gap-xl lg:grid-cols-2">
+            <div
+              data-tone="dark"
+              className="flex flex-col justify-center gap-lg rounded-[28px] bg-surface p-2xl lg:rounded-r-[999px] lg:py-3xl lg:pr-4xl lg:pl-2xl"
+            >
+              <SectionLabel>Soluções</SectionLabel>
+              <Text size="lg" className="max-w-[26rem] text-text">
+                Consultoria e serviços descritos pelo problema que resolvem — sem tabela de preços,
+                cada conversa começa pelo contexto da sua empresa.
+              </Text>
+              <div>
+                <Button href="/solucoes" variant="secondary">
+                  Conheça as soluções →
+                </Button>
+              </div>
+            </div>
+
+            <div className="relative flex flex-col justify-center gap-lg rounded-[28px] bg-action p-2xl lg:rounded-l-[999px] lg:py-3xl lg:pr-2xl lg:pl-4xl">
+              {/* `Heading`/`Text` sempre aplicam a própria cor de texto (`text-text`); nesta
+                  faixa a cor certa é a de contraste da ação, então usamos a tag crua com as
+                  MESMAS classes tipográficas dos componentes, evitando a disputa entre duas
+                  classes de cor no mesmo elemento (`cn` só concatena, não resolve prioridade). */}
+              <h3 className="max-w-[20rem] font-serif text-h2 font-medium text-action-contrast">
+                Fale com um especialista
+              </h3>
+              <p className="max-w-[24rem] font-sans text-body text-action-contrast/85">
+                Conte o contexto da sua empresa e a DM explica como pode ajudar.
+              </p>
+              <div>
+                <Button
+                  href="/contato"
+                  variant="secondary"
+                  style={{ borderColor: "var(--action-contrast)", color: "var(--action-contrast)" }}
+                >
+                  Fale com a DM →
+                </Button>
+              </div>
+            </div>
           </div>
         </Container>
       </Section>
