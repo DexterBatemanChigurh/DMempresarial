@@ -3,6 +3,15 @@ import Link from "next/link";
 import { RichText } from "@/components/content/rich-text";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { ChartIcon, ClockIcon, LayersIcon, UsersIcon } from "@/components/ui/icons";
+
+/** Colunas do grid do blog por quantidade real de artigos: menos de 4 nunca deixa um card
+ * solitário boiando num grid de 4 (docs/02 §04, grid consistente). */
+const BLOG_GRID_COLS: Record<1 | 2 | 3 | 4, string> = {
+  1: "grid-cols-1",
+  2: "grid-cols-1 sm:grid-cols-2",
+  3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+  4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+};
 import { listPublicSolutionsForRoute } from "@/features/catalog/application/public-solutions";
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
 import { buildMediaResolverForRoute } from "@/features/media/application/resolve";
@@ -129,8 +138,10 @@ export default async function HomePage() {
       />
 
       {/* 1 HERO — geometria de uma referência do usuário (proporções, posições, espaçamentos);
-          cores e fontes continuam as da DM (docs/02), nunca as da referência. */}
-      <Section spacing="none" className="pt-lg pb-3xl md:pt-xl md:pb-4xl">
+          cores e fontes continuam as da DM (docs/02), nunca as da referência. Topo mais justo de
+          propósito (o cabeçalho já separa visualmente); embaixo, o mesmo ritmo espaçoso das
+          demais seções, para a transição para a faixa escura não ficar apertada. */}
+      <Section spacing="none" className="pt-lg pb-4xl md:pt-xl md:pb-5xl">
         <Container size="wide">
           <div className="grid grid-cols-1 items-start gap-2xl lg:grid-cols-[5fr_4fr] lg:gap-x-[120px]">
             <div className="min-w-0">
@@ -180,8 +191,9 @@ export default async function HomePage() {
               {heroImageDoc && heroResolver ? (
                 <RichText value={heroImageDoc} resolveMedia={heroResolver} />
               ) : (
-                <div className="flex aspect-[467/460] items-center justify-center p-xl text-center">
-                  <Text size="sm" tone="secondary">
+                <div className="flex aspect-[467/460] flex-col items-center justify-center gap-md p-xl text-center">
+                  <UsersIcon aria-hidden="true" className="size-9 text-text-muted" />
+                  <Text size="sm" tone="secondary" className="max-w-[220px]">
                     A foto da equipe da DM aparece aqui assim que for publicada em Configurações.
                   </Text>
                 </div>
@@ -191,12 +203,12 @@ export default async function HomePage() {
         </Container>
       </Section>
 
-      {/* 2 FAIXA DE AUTORIDADE */}
-      <Section tone="dark" spacing="default" aria-labelledby="home-autoridade">
+      {/* 2 FAIXA DE AUTORIDADE — mesmo ritmo espaçoso das demais seções (docs/02 §06). */}
+      <Section tone="dark" spacing="loose" aria-labelledby="home-autoridade">
         <h2 id="home-autoridade" className="sr-only">
           Números da DM
         </h2>
-        <Container size="wide">
+        <Container>
           <dl className="grid grid-cols-1 gap-2xl sm:grid-cols-3">
             {AUTHORITY_STATS.map((stat) => (
               <div key={stat.label} className="flex flex-col items-start text-left">
@@ -212,13 +224,15 @@ export default async function HomePage() {
       {/* 3 BLOG — artigos reais do CMS, nunca placeholder. */}
       {posts.length > 0 ? (
         <Section tone="muted" spacing="loose" aria-labelledby="home-blog">
-          <Container size="wide">
+          <Container>
             <SectionLabel>Blog</SectionLabel>
             <Heading as="h2" variant="h2" id="home-blog" className="mt-md">
               Conhecimento para quem toma decisões
             </Heading>
 
-            <ul className="mt-2xl grid grid-cols-1 gap-xl sm:grid-cols-2 lg:grid-cols-4">
+            <ul
+              className={`mt-2xl grid gap-xl ${BLOG_GRID_COLS[Math.min(posts.length, 4) as 1 | 2 | 3 | 4]}`}
+            >
               {posts.map((post) => {
                 const cover = post.coverMediaId ? coverResolver?.(post.coverMediaId) : null;
                 return (
@@ -279,7 +293,7 @@ export default async function HomePage() {
       {/* 4 SOBRE NÓS — texto real de /sobre quando publicado; sem isso, só o link (nunca um
           texto de preenchimento no lugar do "quem somos" real da DM). */}
       <Section spacing="loose" aria-labelledby="home-sobre">
-        <Container size="wide">
+        <Container>
           <div className="grid grid-cols-1 items-center gap-2xl lg:grid-cols-2">
             <div>
               <SectionLabel>Sobre nós</SectionLabel>
@@ -318,7 +332,7 @@ export default async function HomePage() {
           decorativas sem significado: cada fatia é uma solução publicada de verdade). */}
       {solutions.length > 0 ? (
         <Section tone="muted" spacing="loose" aria-labelledby="home-solucoes">
-          <Container size="wide">
+          <Container>
             <SectionLabel>Soluções</SectionLabel>
             <Heading as="h2" variant="h2" id="home-solucoes" className="mt-md">
               O que fazemos
@@ -406,7 +420,7 @@ export default async function HomePage() {
         <h2 id="home-cta" className="sr-only">
           Fale com a DM
         </h2>
-        <Container size="wide">
+        <Container>
           <div className="grid grid-cols-1 gap-xl lg:grid-cols-2">
             <div
               data-tone="dark"
