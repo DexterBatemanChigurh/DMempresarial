@@ -286,48 +286,49 @@ export default async function HomePage() {
       ) : null}
 
       {/* SOBRE NÓS — composição de uma referência do usuário: título centralizado, texto à
-          esquerda e, à direita, os valores escritos em volta de um círculo. Conteúdo da página
-          Sobre do CMS; sem ela publicada, a seção não aparece. */}
-      {about?.whoWeAre ? (
-        <Section
-          tone="muted"
-          spacing="loose"
-          aria-labelledby="home-sobre"
-          className="relative overflow-hidden"
+          esquerda e, à direita, os valores escritos em volta de um círculo. Sempre aparece: sem a
+          página Sobre publicada, o texto vira um aviso e o círculo usa só dados reais da DM
+          (nunca valores inventados). */}
+      <Section
+        tone="muted"
+        spacing="loose"
+        aria-labelledby="home-sobre"
+        className="relative overflow-hidden"
+      >
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 260 200"
+          className="pointer-events-none absolute top-0 right-0 w-[160px] fill-none stroke-border-strong sm:w-[260px]"
         >
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 260 200"
-            className="pointer-events-none absolute top-0 right-0 w-[160px] fill-none stroke-border-strong sm:w-[260px]"
-          >
-            <path d="M 60 0 C 70 110 150 170 260 176" strokeWidth={4} strokeLinecap="round" />
-          </svg>
-          <Container>
-            <Heading as="h2" variant="display-m" id="home-sobre" className="text-center">
-              Sobre nós
-            </Heading>
-            <div
-              className={
-                about.values.length > 0
-                  ? "mt-3xl grid grid-cols-1 items-center gap-3xl lg:grid-cols-2"
-                  : "mx-auto mt-3xl max-w-reading"
-              }
-            >
-              <div className="max-w-reading">
+          <path d="M 60 0 C 70 110 150 170 260 176" strokeWidth={4} strokeLinecap="round" />
+        </svg>
+        <Container>
+          <Heading as="h2" variant="display-m" id="home-sobre" className="text-center">
+            Sobre nós
+          </Heading>
+          <div className="mt-3xl grid grid-cols-1 items-center gap-3xl lg:grid-cols-2">
+            <div className="max-w-reading">
+              {about?.whoWeAre ? (
                 <RichText value={about.whoWeAre} />
-                <div className="mt-xl">
-                  <Button href="/sobre" variant="secondary">
-                    Conheça a DM
-                  </Button>
-                </div>
+              ) : (
+                <Text tone="secondary">A apresentação completa da DM está sendo escrita.</Text>
+              )}
+              <div className="mt-xl">
+                <Button href="/sobre" variant="secondary">
+                  Conheça a DM
+                </Button>
               </div>
-              {about.values.length > 0 ? (
-                <ValuesCircle names={about.values.map((v) => v.name)} />
-              ) : null}
             </div>
-          </Container>
-        </Section>
-      ) : null}
+            <ValuesCircle
+              names={
+                about && about.values.length > 0
+                  ? about.values.map((v) => v.name)
+                  : ["DM Empresarial", "Consultoria empresarial", "Frutal, MG"]
+              }
+            />
+          </div>
+        </Container>
+      </Section>
 
       {/* 4 SOLUÇÕES — soluções reais, agrupadas por tipo num gráfico simples (nunca fatias
           decorativas sem significado: cada fatia é uma solução publicada de verdade). */}
