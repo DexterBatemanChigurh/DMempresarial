@@ -115,6 +115,43 @@ export function LayersIcon(props: IconProps) {
   );
 }
 
+export function LandmarkIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3 21h18M3 10h18M5 6l7-3 7 3M6 10v8M10 10v8M14 10v8M18 10v8" />
+    </Icon>
+  );
+}
+
+export function WalletCardsIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2M3 11h3c.8 0 1.6.3 2.1.9l1.1.9a4 4 0 0 0 5.6 0l1.1-.9c.5-.6 1.3-.9 2.1-.9H21" />
+    </Icon>
+  );
+}
+
+export function TargetIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5.5" />
+      <circle cx="12" cy="12" r="2" />
+    </Icon>
+  );
+}
+
+export function SlidersIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M20 7h-9M14 17H5" />
+      <circle cx="17" cy="17" r="3" />
+      <circle cx="7" cy="7" r="3" />
+    </Icon>
+  );
+}
+
 export function InstagramIcon(props: IconProps) {
   return (
     <Icon {...props}>

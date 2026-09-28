@@ -36,6 +36,17 @@
   --color-aviso: #7f5300;
   --color-erro: #a01e3c;
 
+  /* Seção "O que fazemos" da Home (roda de serviços): paleta própria, definida pelo usuário. */
+  --color-roda-branco: #ffffff;
+  --color-roda-marinho: #17345f;
+  --color-roda-turquesa: #13aeb0;
+  --color-roda-azul: #2287df;
+  --color-roda-texto: #60718c;
+  --color-roda-texto-card: #64748b;
+  --color-roda-linha: #dce6ef;
+  --color-roda-linha-suave: #e9eff5;
+  --color-roda-raio: #e3ebf2;
+
   /* Espaçamento: escala de base 4 px com nomes (Blueprint 2, seção 06). */
   --spacing-2xs: 0.25rem;
   --spacing-xs: 0.5rem;
@@ -57,6 +68,9 @@
   /* Sombra: uma só, para elementos sobrepostos. Profundidade vem de espaço e contraste. */
   --shadow-*: initial;
   --shadow-overlay: 0 1px 2px rgb(24 32 28 / 0.06), 0 8px 24px rgb(24 32 28 / 0.08);
+  --shadow-roda-centro: 0 20px 60px rgb(23 52 95 / 0.08);
+  --shadow-roda-icone: 0 10px 30px rgb(23 52 95 / 0.08);
+  --shadow-roda-icone-ativo: 0 15px 35px rgb(23 52 95 / 0.12);
 
   /* Larguras de container (Blueprint 2, seção 05). */
   --container-narrow: 35rem;

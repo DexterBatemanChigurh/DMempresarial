@@ -20,6 +20,7 @@ import { homeDataSchema } from "@/features/pages/domain/page-schemas";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
 import type { RichDoc } from "@/lib/rich-text";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
+import { ServicesWheel } from "@/components/site/services-wheel";
 import { env } from "@/server/env";
 
 const homeMetadata = publicMetadata({
@@ -206,6 +207,9 @@ export default async function HomePage() {
           </ul>
         </Container>
       </Section>
+
+      {/* O QUE FAZEMOS — roda com as quatro frentes (texto e paleta definidos pelo usuário). */}
+      <ServicesWheel />
 
       {/* 3 BLOG — artigos reais do CMS, nunca placeholder. */}
       {posts.length > 0 ? (
