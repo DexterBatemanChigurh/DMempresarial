@@ -7,7 +7,7 @@ import { getCurrentYear } from "@/server/current-year";
 // Cabeçalho e rodapé só nas páginas públicas — o painel (`/admin`) fica fora deste grupo de
 // rotas e não herda esta faixa de navegação. A leitura de `site_settings` é cacheada com
 // `"use cache"` + `cacheTag("site-settings")` em `settings-crud.ts`, então o dado do rodapé
-// não congela no build e ainda responde a `revalidateTag` do painel.
+// não congela no build e ainda responde ao `updateTag` do painel.
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const [settings, year] = await Promise.all([getPublicSettingsForRoute(), getCurrentYear()]);
 

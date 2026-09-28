@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { toActionError } from "@/lib/errors";
 import { fail, ok, type ActionResult } from "@/lib/result";
 import {
@@ -74,7 +74,7 @@ function readData(formData: FormData, template: PageTemplate): Record<string, un
 function invalidate(tags: string[]) {
   revalidatePath("/admin/paginas");
   revalidatePath("/admin/paginas/[id]", "page");
-  for (const tag of tags) revalidateTag(tag, "max");
+  for (const tag of tags) updateTag(tag);
 }
 
 export async function createPageAction(

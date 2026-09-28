@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { toActionError } from "@/lib/errors";
 import { fail, ok, type ActionResult } from "@/lib/result";
 import { updateSettingsForRoute } from "@/features/settings/application/settings-crud";
@@ -40,7 +40,7 @@ export async function updateSettingsAction(
       social: readSocial(formData),
     });
     revalidatePath("/admin/configuracoes");
-    revalidateTag("site-settings", "max");
+    updateTag("site-settings");
     return ok({ id: row.id });
   } catch (error) {
     return fail(toActionError(error));

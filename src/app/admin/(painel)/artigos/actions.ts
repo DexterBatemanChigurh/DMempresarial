@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { toActionError } from "@/lib/errors";
 import { fail, ok, type ActionResult } from "@/lib/result";
 import {
@@ -76,7 +76,7 @@ function readPostForm(formData: FormData) {
 function invalidate(tags: string[]) {
   revalidatePath("/admin/artigos");
   revalidatePath("/admin/artigos/[id]", "page");
-  for (const tag of tags) revalidateTag(tag, "max");
+  for (const tag of tags) updateTag(tag);
 }
 
 export async function createPostAction(
