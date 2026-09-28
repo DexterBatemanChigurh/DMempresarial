@@ -393,7 +393,7 @@ export default async function HomePage() {
 
               <div
                 aria-hidden="true"
-                className="mt-lg flex size-24 items-center justify-center self-center rounded-full border border-border bg-surface-muted lg:absolute lg:top-1/2 lg:right-0 lg:mt-0 lg:size-40 lg:translate-x-3/5 lg:-translate-y-1/2 lg:self-auto"
+                className="mt-lg flex size-24 items-center justify-center self-center rounded-full border border-border bg-surface-muted lg:absolute lg:top-1/2 lg:right-0 lg:mt-0 lg:size-40 lg:translate-x-1/4 min-[1360px]:translate-x-3/5 lg:-translate-y-1/2 lg:self-auto"
               >
                 <UsersIcon className="size-8 text-text-muted lg:size-10" />
               </div>

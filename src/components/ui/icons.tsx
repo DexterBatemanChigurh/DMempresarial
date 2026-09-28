@@ -115,52 +115,38 @@ export function LayersIcon(props: IconProps) {
   );
 }
 
-export function MapPinIcon(props: IconProps) {
+export function InstagramIcon(props: IconProps) {
   return (
     <Icon {...props}>
-      <path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z" />
-      <circle cx="12" cy="9" r="2.5" />
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M17.2 6.8h.01" />
     </Icon>
   );
 }
 
-export function PhoneIcon(props: IconProps) {
+export function LinkedInIcon(props: IconProps) {
   return (
     <Icon {...props}>
-      <path d="M5 4h3.5l1.7 4.3-2.2 1.5a11 11 0 0 0 6.2 6.2l1.5-2.2L20 15.5V19a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1z" />
+      <rect x="3.5" y="3.5" width="17" height="17" rx="3" />
+      <path d="M8 10.5V16M8 7.8h.01M11.5 16v-5.5M11.5 13a2.5 2.5 0 0 1 5 0v3" />
     </Icon>
   );
 }
 
-export function MailIcon(props: IconProps) {
+export function FacebookIcon(props: IconProps) {
   return (
     <Icon {...props}>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M3.5 6.5 12 13l8.5-6.5" />
+      <path d="M14.5 21v-8h2.7l.4-3.2h-3.1V7.9c0-.9.3-1.6 1.6-1.6h1.6V3.4A20 20 0 0 0 15.4 3c-2.4 0-4 1.4-4 4.1v2.7H8.7V13h2.7v8" />
     </Icon>
   );
 }
 
-export function ChatIcon(props: IconProps) {
+export function WhatsAppIcon(props: IconProps) {
   return (
     <Icon {...props}>
       <path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.3L4 20z" />
-    </Icon>
-  );
-}
-
-export function ArrowUpRightIcon(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <path d="M7 17 17 7M8 7h9v9" />
-    </Icon>
-  );
-}
-
-export function ArrowUpIcon(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <path d="M12 20V4M6 10l6-6 6 6" />
+      <path d="M9.2 8.6c.3-.4.7-.4 1-.1l.8 1.4c.2.3.1.6-.1.8l-.4.4a5.5 5.5 0 0 0 2.4 2.4l.4-.4c.2-.2.5-.3.8-.1l1.4.8c.3.3.3.7-.1 1a2.3 2.3 0 0 1-2.4.6 7 7 0 0 1-4.4-4.4 2.3 2.3 0 0 1 .6-2.4z" />
     </Icon>
   );
 }
