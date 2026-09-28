@@ -16,11 +16,12 @@ import { listPublicSolutionsForRoute } from "@/features/catalog/application/publ
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
 import { buildMediaResolverForRoute } from "@/features/media/application/resolve";
 import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
-import { homeDataSchema } from "@/features/pages/domain/page-schemas";
+import { aboutDataSchema, homeDataSchema } from "@/features/pages/domain/page-schemas";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
 import type { RichDoc } from "@/lib/rich-text";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { ServicesWheel } from "@/components/site/services-wheel";
+import { ValuesCircle } from "@/components/site/values-circle";
 import { env } from "@/server/env";
 
 const homeMetadata = publicMetadata({
@@ -58,14 +59,18 @@ const SOLUTION_TYPE_LABEL: Record<"CONSULTORIA" | "SERVICO", string> = {
 };
 
 export default async function HomePage() {
-  const [homePage, solutions, postsPage, settings] = await Promise.all([
+  const [homePage, aboutPage, solutions, postsPage, settings] = await Promise.all([
     getPublishedPageForRoute("home"),
+    getPublishedPageForRoute("about"),
     listPublicSolutionsForRoute(),
     listPublicPostsForRoute({ pageSize: 4 }),
     getPublicSettingsForRoute(),
   ]);
 
   const parsed = homePage ? homeDataSchema.safeParse(homePage.data) : null;
+  // "Sobre nós" da Home reaproveita o conteúdo da página Sobre do CMS (quem somos + valores).
+  const aboutParsed = aboutPage ? aboutDataSchema.safeParse(aboutPage.data) : null;
+  const about = aboutParsed?.success ? aboutParsed.data : null;
   const homeData = parsed?.success ? parsed.data : null;
 
   const description = homeData?.description ?? null;
@@ -275,6 +280,50 @@ export default async function HomePage() {
               <Button href="/blog" variant="secondary">
                 Ver todos os artigos
               </Button>
+            </div>
+          </Container>
+        </Section>
+      ) : null}
+
+      {/* SOBRE NÓS — composição de uma referência do usuário: título centralizado, texto à
+          esquerda e, à direita, os valores escritos em volta de um círculo. Conteúdo da página
+          Sobre do CMS; sem ela publicada, a seção não aparece. */}
+      {about?.whoWeAre ? (
+        <Section
+          tone="muted"
+          spacing="loose"
+          aria-labelledby="home-sobre"
+          className="relative overflow-hidden"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 260 200"
+            className="pointer-events-none absolute top-0 right-0 w-[160px] fill-none stroke-border-strong sm:w-[260px]"
+          >
+            <path d="M 60 0 C 70 110 150 170 260 176" strokeWidth={4} strokeLinecap="round" />
+          </svg>
+          <Container>
+            <Heading as="h2" variant="display-m" id="home-sobre" className="text-center">
+              Sobre nós
+            </Heading>
+            <div
+              className={
+                about.values.length > 0
+                  ? "mt-3xl grid grid-cols-1 items-center gap-3xl lg:grid-cols-2"
+                  : "mx-auto mt-3xl max-w-reading"
+              }
+            >
+              <div className="max-w-reading">
+                <RichText value={about.whoWeAre} />
+                <div className="mt-xl">
+                  <Button href="/sobre" variant="secondary">
+                    Conheça a DM
+                  </Button>
+                </div>
+              </div>
+              {about.values.length > 0 ? (
+                <ValuesCircle names={about.values.map((v) => v.name)} />
+              ) : null}
             </div>
           </Container>
         </Section>

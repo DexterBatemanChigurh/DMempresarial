@@ -6,7 +6,6 @@ import { getPublishedPageForRoute } from "@/features/pages/application/public-pa
 import { listPublicSpecialistsForRoute } from "@/features/people/application/public-specialists";
 import { aboutDataSchema } from "@/features/pages/domain/page-schemas";
 import { publicMetadata } from "@/components/site/seo";
-import { ValuesCircle } from "@/components/site/values-circle";
 
 export const metadata: Metadata = publicMetadata({
   title: "Sobre",
@@ -44,37 +43,15 @@ export default async function AboutPage() {
         </Container>
       </Section>
 
-      {/* QUEM SOMOS — composição de uma referência do usuário: título centralizado, texto à
-          esquerda e, à direita, os valores escritos em volta de um círculo. */}
       {data?.whoWeAre ? (
-        <Section
-          tone="muted"
-          spacing="loose"
-          aria-labelledby="quem-somos"
-          className="relative overflow-hidden"
-        >
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 260 200"
-            className="pointer-events-none absolute top-0 right-0 w-[160px] fill-none stroke-border-strong sm:w-[260px]"
-          >
-            <path d="M 60 0 C 70 110 150 170 260 176" strokeWidth={4} strokeLinecap="round" />
-          </svg>
+        <Section tone="muted" spacing="loose" aria-labelledby="quem-somos">
           <Container>
-            <Heading as="h2" variant="display-m" id="quem-somos" className="text-center">
+            <SectionLabel>Quem somos</SectionLabel>
+            <Heading as="h2" variant="h2" id="quem-somos" className="mt-md">
               Quem somos
             </Heading>
-            <div
-              className={
-                values.length > 0
-                  ? "mt-3xl grid grid-cols-1 items-center gap-3xl lg:grid-cols-2"
-                  : "mx-auto mt-3xl max-w-reading"
-              }
-            >
-              <div className="max-w-reading">
-                <RichText value={data.whoWeAre} />
-              </div>
-              {values.length > 0 ? <ValuesCircle names={values.map((v) => v.name)} /> : null}
+            <div className="mt-lg max-w-reading">
+              <RichText value={data.whoWeAre} />
             </div>
           </Container>
         </Section>
