@@ -166,7 +166,6 @@ export function createFixtures() {
         `/blog/${PREFIX}%`,
       ]);
       await q("delete from leads where email like $1", [`%${EMAIL_DOMAIN}`]);
-      await q("delete from newsletter_subscribers where email like $1", [`%${EMAIL_DOMAIN}`]);
       // Contador de rate limit dos formulários públicos e do upload de mídia: sem dado sensível,
       // seguro limpar entre execuções (banco de teste dedicado).
       await q("delete from rate_limits where key like 'lead:%' or key like 'media:upload:%'");

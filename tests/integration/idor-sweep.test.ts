@@ -46,7 +46,6 @@ beforeAll(async () => {
   await fx.q("delete from pages");
   await fx.q("delete from media");
   await fx.q("delete from leads");
-  await fx.q("delete from newsletter_subscribers");
   await fx.q(
     "delete from audit_logs where entity_type like 'post' or entity_type like 'specialist' or entity_type like 'solution' or entity_type like 'category' or entity_type like 'page'",
   );

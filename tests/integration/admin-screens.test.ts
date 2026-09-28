@@ -2,12 +2,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDatabase } from "@/db/client";
 import {
   eraseLead,
-  eraseSubscriber,
-  exportActiveSubscribersCsv,
   exportLeadsCsv,
   getLeadForAdmin,
   listLeadsForAdmin,
-  listSubscribersForAdmin,
   transitionLead,
 } from "@/features/conversion/application/conversion-admin";
 import {
@@ -21,7 +18,7 @@ import { createFixtures, EMAIL_DOMAIN, PREFIX, uniq } from "./fixtures";
 import { testAppUrl } from "./helpers";
 
 /**
- * Telas novas do painel (leads, newsletter, redirecionamentos) contra Postgres real, pelo role
+ * Telas novas do painel (leads, redirecionamentos) contra Postgres real, pelo role
  * de aplicação: permissão por papel, regras de estado, auditoria e exclusão LGPD.
  */
 const fx = createFixtures();
@@ -127,40 +124,6 @@ describe("leads (só ADMIN)", () => {
     expect(await q("select 1 from leads where id = $1", [id])).toHaveLength(0);
     expect(await auditCount("lead.erased", id)).toBe(1);
     await expect(getLeadForAdmin(deps, admin, id)).rejects.toMatchObject({ code: "NOT_FOUND" });
-  });
-});
-
-describe("assinantes da newsletter (só ADMIN)", () => {
-  async function subscriber(status: "PENDING" | "ACTIVE"): Promise<string> {
-    const [row] = await q<{ id: string }>(
-      `insert into newsletter_subscribers (email, status, consent_at, consent_version, confirmed_at)
-       values ($1, $2::subscriber_status, now(), 'teste', ${status === "ACTIVE" ? "now()" : "null"}) returning id`,
-      [`${uniq("sub-")}${EMAIL_DOMAIN}`, status],
-    );
-    return row!.id;
-  }
-
-  it("exporta só quem confirmou (ACTIVE)", async () => {
-    await subscriber("ACTIVE");
-    const pendingId = await subscriber("PENDING");
-    const [pending] = await q<{ email: string }>(
-      "select email from newsletter_subscribers where id = $1",
-      [pendingId],
-    );
-    const { csv } = await exportActiveSubscribersCsv(deps, admin);
-    expect(csv).not.toContain(pending!.email);
-  });
-
-  it("EDITOR não vê nem exclui; ADMIN exclui com rastro", async () => {
-    const id = await subscriber("ACTIVE");
-    await expect(listSubscribersForAdmin(deps, editor, {})).rejects.toMatchObject({
-      code: "FORBIDDEN",
-    });
-    await expect(eraseSubscriber(deps, { actor: editor, id })).rejects.toMatchObject({
-      code: "FORBIDDEN",
-    });
-    await eraseSubscriber(deps, { actor: admin, id });
-    expect(await auditCount("newsletter.erased", id)).toBe(1);
   });
 });
 

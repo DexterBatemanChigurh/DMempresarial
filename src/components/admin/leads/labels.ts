@@ -13,10 +13,3 @@ export const LEAD_TRANSITION_LABEL = {
   DISCARDED: "Descartar",
   SPAM: "Marcar como spam",
 } as const;
-
-export const SUBSCRIBER_STATUS_LABEL = {
-  PENDING: "Aguardando confirmação",
-  ACTIVE: "Ativo",
-  UNSUBSCRIBED: "Cancelou",
-  BOUNCED: "E-mail devolvido",
-} as const;

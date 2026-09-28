@@ -48,20 +48,3 @@ export const LEAD_TRANSITIONS: Readonly<Record<LeadStatus, readonly LeadStatus[]
 export function canTransitionLead(from: LeadStatus, to: LeadStatus): boolean {
   return LEAD_TRANSITIONS[from].includes(to);
 }
-
-export const SUBSCRIBER_STATUSES = ["PENDING", "ACTIVE", "UNSUBSCRIBED", "BOUNCED"] as const;
-export type SubscriberStatus = (typeof SUBSCRIBER_STATUSES)[number];
-
-export const SUBSCRIBER_TRANSITIONS: Readonly<
-  Record<SubscriberStatus, readonly SubscriberStatus[]>
-> = {
-  PENDING: ["ACTIVE", "UNSUBSCRIBED"],
-  ACTIVE: ["UNSUBSCRIBED", "BOUNCED"],
-  // Voltar exige um NOVO aceite: volta a PENDING, nunca direto a ACTIVE.
-  UNSUBSCRIBED: ["PENDING"],
-  BOUNCED: ["PENDING"],
-};
-
-export function canTransitionSubscriber(from: SubscriberStatus, to: SubscriberStatus): boolean {
-  return SUBSCRIBER_TRANSITIONS[from].includes(to);
-}

@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  canTransitionLead,
-  canTransitionSubscriber,
-  normalizeEmail,
-} from "./conversion/domain/lead";
+import { canTransitionLead, normalizeEmail } from "./conversion/domain/lead";
 import { solutionPublishBlockers } from "./catalog/domain/solution-rules";
 import {
   POST_STATUSES,
@@ -202,13 +198,5 @@ describe("leads e assinantes", () => {
     expect(canTransitionLead("DISCARDED", "NEW")).toBe(false);
     expect(canTransitionLead("QUALIFIED", "NEW")).toBe(false);
     expect(canTransitionLead("SPAM", "NEW")).toBe(true);
-  });
-
-  it("assinante: voltar após descadastro exige NOVO aceite (PENDING), nunca ACTIVE direto", () => {
-    expect(canTransitionSubscriber("PENDING", "ACTIVE")).toBe(true);
-    expect(canTransitionSubscriber("UNSUBSCRIBED", "ACTIVE")).toBe(false);
-    expect(canTransitionSubscriber("UNSUBSCRIBED", "PENDING")).toBe(true);
-    expect(canTransitionSubscriber("BOUNCED", "ACTIVE")).toBe(false);
-    expect(canTransitionSubscriber("ACTIVE", "PENDING")).toBe(false);
   });
 });

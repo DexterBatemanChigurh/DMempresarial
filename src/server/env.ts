@@ -41,8 +41,6 @@ const rawSchema = z.object({
   LEAD_NOTIFY_TO: z.email().optional(),
   // Segredo do cron de publicação agendada (`/api/cron/publish`). Obrigatório em production.
   CRON_SECRET: z.string().min(32).optional(),
-  // Segredo para tokens assinados (confirmação newsletter, descadastro). Mínimo 32 chars.
-  SIGNED_TOKEN_SECRET: z.string().min(32).optional(),
 });
 
 export type Env = {
@@ -59,7 +57,6 @@ export type Env = {
   EMAIL: EmailEnv;
   LEAD_NOTIFY_TO: string | undefined;
   CRON_SECRET: string | undefined;
-  SIGNED_TOKEN_SECRET: string;
 };
 
 export type StorageEnv =
@@ -134,7 +131,6 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     if (value.REQUIRE_2FA === "false")
       problems.push("REQUIRE_2FA: não pode ser false em production");
     if (!value.CRON_SECRET) problems.push("CRON_SECRET: obrigatório em production");
-    if (!value.SIGNED_TOKEN_SECRET) problems.push("SIGNED_TOKEN_SECRET: obrigatório em production");
     if (value.STORAGE_DRIVER === undefined && storageDriver === "local")
       problems.push(
         "STORAGE_DRIVER: em production configure o bucket (s3) ou declare local explicitamente",
@@ -173,7 +169,6 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
         : { driver: "log" },
     LEAD_NOTIFY_TO: value.LEAD_NOTIFY_TO,
     CRON_SECRET: value.CRON_SECRET,
-    SIGNED_TOKEN_SECRET: value.SIGNED_TOKEN_SECRET ?? "",
   };
 }
 

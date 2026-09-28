@@ -40,7 +40,6 @@ jobs:
       DATABASE_URL: postgres://dm_app:ci-only-app-password@127.0.0.1:5432/dm_empresarial
       BETTER_AUTH_SECRET: ci-only-auth-secret-with-32-characters
       CRON_SECRET: ci-only-cron-secret-with-32-characters
-      SIGNED_TOKEN_SECRET: ci-only-signed-token-secret-32-characters
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

@@ -107,16 +107,6 @@ test.describe("Formulário de contato", () => {
   });
 });
 
-test.describe("Newsletter double-opt-in", () => {
-  test("Inscrição cria status PENDING", async ({ page }) => {
-    await page.goto("/");
-    await page.fill('[name="email"]', `news-${Date.now()}@teste.example.test`);
-    await page.check('[name="consent"]');
-    await page.getByRole("button", { name: /inscrever/i }).click();
-    await expect(page.getByText(/verifique seu e-mail/i)).toBeVisible({ timeout: 10000 });
-  });
-});
-
 test.describe("Admin - redirecionamento sem sessão", () => {
   test("Acesso a /admin redireciona para login", async ({ page }) => {
     await page.goto("/admin");

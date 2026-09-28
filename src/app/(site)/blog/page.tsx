@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
 import { Container, Heading, Section, SectionLabel, Text, TextField } from "@/components/ui";
 import {
   listPublicPostsForRoute,
@@ -8,7 +7,6 @@ import {
 } from "@/features/content/application/public-posts";
 import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
 import { publicMetadata } from "@/components/site/seo";
-import { NewsletterSignup } from "@/app/(site)/newsletter/newsletter-signup";
 
 export const metadata: Metadata = publicMetadata({
   title: "Blog",
@@ -242,14 +240,6 @@ export default async function BlogIndexPage({
               Nenhuma categoria criada ainda.
             </Text>
           )}
-        </Container>
-      </Section>
-
-      <Section tone="muted" spacing="loose">
-        <Container>
-          <Suspense fallback={null}>
-            <NewsletterSignup source="blog" />
-          </Suspense>
         </Container>
       </Section>
     </>

@@ -33,7 +33,6 @@ Preencha **todas** no painel da Vercel (Settings → Environment Variables). Use
 | `BETTER_AUTH_URL`                    | `https://dm.empresarial.com`                          | — (cai em `SITE_URL`)                            |
 | `REQUIRE_2FA`                        | `true`                                                | — (padrão `true`; `false` é recusado)            |
 | `CRON_SECRET`                        | `openssl rand -base64 48`                             | ✅                                               |
-| `SIGNED_TOKEN_SECRET`                | `openssl rand -base64 48`                             | ✅                                               |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | `openssl rand -base64 32`                             | (multi-instância)                                |
 | `STORAGE_DRIVER`                     | `s3`                                                  | ✅ (ou os `STORAGE_*` abaixo)                    |
 | `STORAGE_ENDPOINT`                   | `https://<conta>.r2.cloudflarestorage.com`            | ✅ com s3                                        |
@@ -164,7 +163,6 @@ Após **cada** deploy em production:
 - [ ] Login admin funciona (2FA se configurado)
 - [ ] Criação de artigo → publica → aparece no blog
 - [ ] Formulário contato → lead gravado → e-mail enviado (verificar Resend dashboard)
-- [ ] Newsletter inscrição → e-mail confirmação → clique → ACTIVE
 - [ ] Upload imagem → aparece no admin → URL pública acessível
 - [ ] Lighthouse CI passou (performance ≥ 90, a11y ≥ 90)
 - [ ] `npm run test:integration` passa apontando para production (opcional, staging)
@@ -186,14 +184,13 @@ Após **cada** deploy em production:
 
 ## 8. Segredos & Rotação
 
-| Segredo                               | Rotação           | Como                                                      |
-| ------------------------------------- | ----------------- | --------------------------------------------------------- |
-| `BETTER_AUTH_SECRET`                  | 90 dias           | Novo valor na Vercel → redeploy                           |
-| `CRON_SECRET`                         | 90 dias           | Novo valor na Vercel → redeploy                           |
-| `SIGNED_TOKEN_SECRET`                 | 90 dias           | Novo valor na Vercel → redeploy (invalida tokens antigos) |
-| `RESEND_API_KEY`                      | Conforme Resend   | Novo key no Resend → atualiza na Vercel                   |
-| `STORAGE_SECRET_ACCESS_KEY`           | Conforme provedor | Novo key no provedor → atualiza na Vercel                 |
-| `DATABASE_URL` / `DATABASE_URL_ADMIN` | Conforme provedor | Nova senha no provedor → atualiza na Vercel               |
+| Segredo                               | Rotação           | Como                                        |
+| ------------------------------------- | ----------------- | ------------------------------------------- |
+| `BETTER_AUTH_SECRET`                  | 90 dias           | Novo valor na Vercel → redeploy             |
+| `CRON_SECRET`                         | 90 dias           | Novo valor na Vercel → redeploy             |
+| `RESEND_API_KEY`                      | Conforme Resend   | Novo key no Resend → atualiza na Vercel     |
+| `STORAGE_SECRET_ACCESS_KEY`           | Conforme provedor | Novo key no provedor → atualiza na Vercel   |
+| `DATABASE_URL` / `DATABASE_URL_ADMIN` | Conforme provedor | Nova senha no provedor → atualiza na Vercel |
 
 **Nunca** reutilize segredos entre ambientes (dev/staging/prod).
 

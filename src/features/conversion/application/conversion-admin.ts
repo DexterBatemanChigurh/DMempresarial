@@ -8,29 +8,22 @@ import {
   canTransitionLead,
   LEAD_STATUSES,
   LEAD_TRANSITIONS,
-  SUBSCRIBER_STATUSES,
   type LeadStatus,
-  type SubscriberStatus,
 } from "../domain/lead";
 import {
   countLeadsByStatus,
-  countSubscribersByStatus,
   deleteLead,
-  deleteSubscriber,
   findLeadDetail,
-  listActiveSubscribersForExport,
   listLeads,
   listLeadsForExport,
-  listSubscribers,
   setLeadStatus,
   type LeadDetail,
   type LeadSummary,
   type Page,
-  type SubscriberSummary,
 } from "../infrastructure/conversion-admin-repository";
 
 /**
- * Painel de leads e assinantes (docs/03 §14 e §16; prompt 4 §43: "leads são dados privados").
+ * Painel de leads (docs/03 §14 e §16; prompt 4 §43: "leads são dados privados").
  * Toda leitura, exportação, alteração e exclusão passa por `assertCan` — hoje só ADMIN (T-04).
  * A auditoria registra QUEM fez O QUÊ em QUAL registro, nunca o conteúdo (nome, e-mail, mensagem).
  * Exclusão é definitiva (direito de eliminação, LGPD art. 18): some a linha, fica o rastro.
@@ -48,12 +41,6 @@ function authorize(actor: Actor | null | undefined, action: Action): Actor {
 export function parseLeadStatus(value: string | undefined): LeadStatus | undefined {
   return (LEAD_STATUSES as readonly string[]).includes(value ?? "")
     ? (value as LeadStatus)
-    : undefined;
-}
-
-export function parseSubscriberStatus(value: string | undefined): SubscriberStatus | undefined {
-  return (SUBSCRIBER_STATUSES as readonly string[]).includes(value ?? "")
-    ? (value as SubscriberStatus)
     : undefined;
 }
 
@@ -194,60 +181,6 @@ export async function exportLeadsCsv(
   return { csv, count: rows.length };
 }
 
-export async function listSubscribersForAdmin(
-  { db }: Deps,
-  actor: Actor | null | undefined,
-  filter: { status?: SubscriberStatus },
-  options: { page?: number } = {},
-): Promise<{ page: Page<SubscriberSummary>; counts: Record<SubscriberStatus, number> }> {
-  authorize(actor, "subscriber:view");
-  const [page, counts] = await Promise.all([
-    listSubscribers(db, filter, { page: Math.max(1, options.page ?? 1), pageSize: PAGE_SIZE }),
-    countSubscribersByStatus(db),
-  ]);
-  return { page, counts };
-}
-
-/** Só ACTIVE: quem confirmou a inscrição (duplo aceite) — a única lista que pode receber envio. */
-export async function exportActiveSubscribersCsv(
-  { db }: Deps,
-  actor: Actor | null | undefined,
-): Promise<{ csv: string; count: number }> {
-  const who = authorize(actor, "subscriber:view");
-  const rows = await listActiveSubscribersForExport(db);
-  await db.transaction((tx) =>
-    recordAudit(tx, {
-      actorId: who.id,
-      action: "newsletter.exported",
-      entityType: "newsletter_subscriber",
-      metadata: { count: rows.length },
-    }),
-  );
-  const csv = toCsv(
-    ["email", "nome", "confirmado_em", "consentimento_em", "origem"],
-    rows.map((s) => [s.email, s.name, s.confirmedAt, s.consentAt, s.source]),
-  );
-  return { csv, count: rows.length };
-}
-
-export async function eraseSubscriber(
-  { db }: Deps,
-  input: { actor: Actor | null | undefined; id: string },
-): Promise<void> {
-  const actor = authorize(input.actor, "subscriber:erase");
-  await db.transaction(async (tx) => {
-    if (!(await deleteSubscriber(tx, input.id))) {
-      throw new AppError("NOT_FOUND", "Assinante inexistente.");
-    }
-    await recordAudit(tx, {
-      actorId: actor.id,
-      action: "newsletter.erased",
-      entityType: "newsletter_subscriber",
-      entityId: input.id,
-    });
-  });
-}
-
 // -----------------------------------------------------------------------------------------------
 // Wrappers para Server Actions e páginas (`src/app/**` não importa `@/db`).
 // -----------------------------------------------------------------------------------------------
@@ -274,12 +207,3 @@ export const eraseLeadForRoute = (input: { actor: A; id: string }) =>
   eraseLead({ db: getDb() }, input);
 export const exportLeadsCsvForRoute = (actor: A, filter: { status?: LeadStatus }) =>
   exportLeadsCsv({ db: getDb() }, actor, filter);
-export const listSubscribersForAdminForRoute = (
-  actor: A,
-  filter: { status?: SubscriberStatus },
-  options?: { page?: number },
-) => listSubscribersForAdmin({ db: getDb() }, actor, filter, options);
-export const exportActiveSubscribersCsvForRoute = (actor: A) =>
-  exportActiveSubscribersCsv({ db: getDb() }, actor);
-export const eraseSubscriberForRoute = (input: { actor: A; id: string }) =>
-  eraseSubscriber({ db: getDb() }, input);

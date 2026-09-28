@@ -200,7 +200,7 @@ describe("mídia", () => {
   });
 });
 
-describe("leads e newsletter", () => {
+describe("leads", () => {
   const lead = (over: { email?: string; message?: string } = {}) =>
     q(
       "insert into leads (name, email, message, consent_at, consent_version) values ('N', $1, $2, now(), 'v1')",
@@ -224,25 +224,6 @@ describe("leads e newsletter", () => {
         ]),
       ),
     ).toBe("23502");
-  });
-
-  it("assinante: e-mail único sem diferença de caixa; ACTIVE exige confirmação; UNSUBSCRIBED, data", async () => {
-    const email = `Sub-${uniq()}${EMAIL_DOMAIN}`;
-    const insert = (address: string, status = "PENDING", extra = "") =>
-      q(
-        `insert into newsletter_subscribers (email, status, consent_at, consent_version ${extra ? "," + extra.split("=")[0] : ""})
-         values ($1, $2::subscriber_status, now(), 'v1' ${extra ? "," + extra.split("=")[1] : ""})`,
-        [address, status],
-      );
-    await insert(email);
-    expect(await code(() => insert(email.toLowerCase()))).toBe(SQLSTATE.unique);
-    expect(await code(() => insert(`a-${uniq()}${EMAIL_DOMAIN}`, "ACTIVE"))).toBe(SQLSTATE.check);
-    expect(await code(() => insert(`b-${uniq()}${EMAIL_DOMAIN}`, "UNSUBSCRIBED"))).toBe(
-      SQLSTATE.check,
-    );
-    expect(
-      await code(() => insert(`c-${uniq()}${EMAIL_DOMAIN}`, "ACTIVE", "confirmed_at=now()")),
-    ).toBeNull();
   });
 
   it("o role de aplicação lê e grava leads, mas não altera o esquema", async () => {

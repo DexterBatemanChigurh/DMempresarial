@@ -57,8 +57,8 @@ Este documento descreve procedimentos de segurança operacional, resposta a inci
 
 1. **Imediato**: CSP `report-only` → identificar vetor.
 2. **Investigar**: Qual input, qual rota, como bypassou validação.
-3. **Corrigir**: Fortalecer allowlist (Tiptap, Zod, signed tokens).
-4. **Testar**: Adicionar caso ao `tests/no-raw-html.test.ts` e `newsletter.test.ts`.
+3. **Corrigir**: Fortalecer allowlist (Tiptap, Zod).
+4. **Testar**: Adicionar caso ao `tests/no-raw-html.test.ts`.
 
 #### Rate Limit Bypass / Abuso
 
@@ -88,7 +88,7 @@ WHERE actor_user_id IN (SELECT id FROM users WHERE role != 'ADMIN')
 
 -- Acessos a dados sensíveis
 SELECT * FROM audit_logs
-WHERE entity_type IN ('lead', 'newsletter_subscriber', 'user')
+WHERE entity_type IN ('lead', 'user')
   AND at > now() - interval '24 hours';
 ```
 
@@ -108,14 +108,14 @@ WHERE entity_type IN ('lead', 'newsletter_subscriber', 'user')
 
 | Direito do Titular | Implementação                                                          | Responsável       |
 | ------------------ | ---------------------------------------------------------------------- | ----------------- |
-| Acesso             | Admin → visualizar lead/assinante                                      | Admin             |
-| Retificação        | Admin → editar lead/assinante                                          | Admin             |
-| Eliminação         | Admin → `lead.delete` / `subscriber.delete` (anonymiza)                | Admin             |
+| Acesso             | Admin → visualizar lead                                                | Admin             |
+| Retificação        | Admin → editar lead                                                    | Admin             |
+| Eliminação         | Admin → `lead.delete` (anonymiza)                                      | Admin             |
 | Portabilidade      | Exportação JSON/CSV (admin)                                            | Admin             |
-| Oposição           | Descadastro newsletter (token) / lead `DISCARDED`                      | Usuário/Admin     |
+| Oposição           | Lead `DISCARDED`                                                       | Usuário/Admin     |
 | Retenção           | `ip_hash` ≤ 30 dias; `leads` ≤ prazo jurídico; `audit_logs` ≤ 12 meses | Job cron + config |
 
-**Base legal**: Consentimento (newsletter, lead), Legítimo interesse (analytics anônimo), Obrigação legal (auditoria).
+**Base legal**: Consentimento (lead), Legítimo interesse (analytics anônimo), Obrigação legal (auditoria).
 
 ---
 
@@ -176,7 +176,6 @@ curl -I https://dm.empresarial.com/admin/
 - [ ] Cookies: `HttpOnly`, `Secure`, `SameSite=Lax`
 - [ ] Rate limits ativos em todas as rotas mutáveis
 - [ ] `audit_logs` append-only (role `dm_app` sem UPDATE/DELETE)
-- [ ] `SIGNED_TOKEN_SECRET` rotacionado, tokens antigos invalidados
 - [ ] Gitleaks + Dependency review no CI
 - [ ] Penetration test executado e achados corrigidos
 - [ ] Backup/restore testado e documentado

@@ -1,8 +1,8 @@
 import "server-only";
 import { and, count, desc, eq, type SQL } from "drizzle-orm";
 import type { Executor } from "@/db/client";
-import { leads, newsletterSubscribers, posts, solutions } from "@/db/schema";
-import type { LeadStatus, SubscriberStatus } from "../domain/lead";
+import { leads, posts, solutions } from "@/db/schema";
+import type { LeadStatus } from "../domain/lead";
 
 /** Leituras e escritas do painel (dados pessoais: só chamadas depois de `assertCan`). */
 
@@ -167,84 +167,4 @@ export async function listLeadsForExport(
     .leftJoin(posts, eq(posts.id, leads.originPostId))
     .where(where)
     .orderBy(desc(leads.createdAt));
-}
-
-// ------------------------------------------------------------------------------ assinantes
-
-export type SubscriberSummary = {
-  id: string;
-  email: string;
-  name: string | null;
-  status: SubscriberStatus;
-  source: string | null;
-  consentAt: Date;
-  confirmedAt: Date | null;
-  unsubscribedAt: Date | null;
-  createdAt: Date;
-};
-
-const subscriberColumns = {
-  id: newsletterSubscribers.id,
-  email: newsletterSubscribers.email,
-  name: newsletterSubscribers.name,
-  status: newsletterSubscribers.status,
-  source: newsletterSubscribers.source,
-  consentAt: newsletterSubscribers.consentAt,
-  confirmedAt: newsletterSubscribers.confirmedAt,
-  unsubscribedAt: newsletterSubscribers.unsubscribedAt,
-  createdAt: newsletterSubscribers.createdAt,
-};
-
-export async function listSubscribers(
-  executor: Executor,
-  filter: { status?: SubscriberStatus },
-  options: { page: number; pageSize: number },
-): Promise<Page<SubscriberSummary>> {
-  const where = filter.status ? eq(newsletterSubscribers.status, filter.status) : undefined;
-  const [items, [totals]] = await Promise.all([
-    executor
-      .select(subscriberColumns)
-      .from(newsletterSubscribers)
-      .where(where)
-      .orderBy(desc(newsletterSubscribers.createdAt))
-      .limit(options.pageSize)
-      .offset((options.page - 1) * options.pageSize),
-    executor.select({ n: count() }).from(newsletterSubscribers).where(where),
-  ]);
-  return { items, total: totals?.n ?? 0, ...options };
-}
-
-export async function countSubscribersByStatus(
-  executor: Executor,
-): Promise<Record<SubscriberStatus, number>> {
-  const rows = await executor
-    .select({ status: newsletterSubscribers.status, n: count() })
-    .from(newsletterSubscribers)
-    .groupBy(newsletterSubscribers.status);
-  const out: Record<SubscriberStatus, number> = {
-    PENDING: 0,
-    ACTIVE: 0,
-    UNSUBSCRIBED: 0,
-    BOUNCED: 0,
-  };
-  for (const row of rows) out[row.status] = row.n;
-  return out;
-}
-
-export async function listActiveSubscribersForExport(
-  executor: Executor,
-): Promise<SubscriberSummary[]> {
-  return executor
-    .select(subscriberColumns)
-    .from(newsletterSubscribers)
-    .where(eq(newsletterSubscribers.status, "ACTIVE"))
-    .orderBy(desc(newsletterSubscribers.confirmedAt));
-}
-
-export async function deleteSubscriber(executor: Executor, id: string): Promise<boolean> {
-  const rows = await executor
-    .delete(newsletterSubscribers)
-    .where(eq(newsletterSubscribers.id, id))
-    .returning({ id: newsletterSubscribers.id });
-  return rows.length > 0;
 }

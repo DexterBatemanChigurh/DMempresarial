@@ -6,7 +6,6 @@ import { toActionError } from "@/lib/errors";
 import { fail, ok, type ActionResult } from "@/lib/result";
 import {
   eraseLeadForRoute,
-  eraseSubscriberForRoute,
   parseLeadStatus,
   transitionLeadForRoute,
 } from "@/features/conversion/application/conversion-admin";
@@ -48,19 +47,4 @@ export async function eraseLeadAction(
   }
   revalidatePath("/admin/leads");
   redirect("/admin/leads");
-}
-
-export async function eraseSubscriberAction(
-  _prevState: ActionResult<{ id: string }> | null,
-  formData: FormData,
-): Promise<ActionResult<{ id: string }>> {
-  try {
-    const { actor } = await requireAdminSession();
-    const id = str(formData, "id");
-    await eraseSubscriberForRoute({ actor, id });
-    revalidatePath("/admin/newsletter");
-    return ok({ id });
-  } catch (error) {
-    return fail(toActionError(error));
-  }
 }

@@ -23,8 +23,6 @@ export const ACTIONS = [
   "lead:update",
   "lead:export",
   "lead:erase",
-  "subscriber:view",
-  "subscriber:erase",
   "user:manage",
   "settings:manage",
   "redirect:manage",
@@ -58,7 +56,7 @@ const deletableDraft: Rule = (actor, r) =>
   (actor.role === "ADMIN" || isOwner(actor, r));
 
 // Ausência de entrada = NEGADO. Matriz de referência: docs/03, parte 12.
-// Leads e assinantes: somente ADMIN (decisão T-04, padrão recomendado).
+// Leads: somente ADMIN (decisão T-04, padrão recomendado).
 const POLICY: Record<Role, Partial<Record<Action, Rule>>> = {
   ADMIN: {
     ...(Object.fromEntries(ACTIONS.map((action) => [action, always])) as Record<Action, Rule>),
