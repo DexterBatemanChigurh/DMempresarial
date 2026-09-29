@@ -10,6 +10,10 @@ import {
   listPublicPostsForRoute,
 } from "@/features/content/application/public-posts";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
+import { PostCard } from "@/components/content/post-card";
+import { ArrowRightIcon } from "@/components/ui/icons";
+import { CATEGORY_SOLUTION, findSpecialist } from "@/content/dm";
+import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
 import { buildPublicMediaResolverForRoute } from "@/features/media/application/resolve";
 import { extractMediaIds } from "@/lib/rich-text";
 import type { RichDoc } from "@/lib/rich-text";
@@ -63,10 +67,18 @@ export default async function BlogPostPage({ params }: Params) {
     type: "doc",
     content: post.coverMediaId ? [{ type: "image", attrs: { mediaId: post.coverMediaId } }] : [],
   };
+  const categories = await listPublicCategoriesForRoute();
+  const categoryName = new Map(categories.map((c) => [c.slug, c.name]));
+  const related = relatedPosts.slice(0, 3);
   const resolveMedia = await buildPublicMediaResolverForRoute([
     post.coverMediaId,
     ...extractMediaIds(post.body as RichDoc),
+    ...related.map((p) => p.coverMediaId),
   ]);
+  const author = findSpecialist(post.authorSlug);
+  const solution = post.primaryCategorySlug
+    ? CATEGORY_SOLUTION[post.primaryCategorySlug]
+    : undefined;
 
   return (
     <>
@@ -84,39 +96,57 @@ export default async function BlogPostPage({ params }: Params) {
 
       <Section spacing="loose">
         <Container>
-          {post.primaryCategorySlug ? (
-            <Link
-              href={`/blog/categoria/${post.primaryCategorySlug}`}
-              className="group inline-flex items-center gap-xs text-link group-hover:underline group-focus-visible:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
-            >
-              <Text size="metadata" tone="secondary">
-                {post.primaryCategorySlug}
-              </Text>
+          <nav
+            aria-label="Trilha"
+            className="flex flex-wrap items-center gap-xs font-sans text-label font-semibold tracking-[0.08em] uppercase"
+          >
+            <Link href="/blog" className="text-text-secondary hover:text-link">
+              Blog
             </Link>
-          ) : null}
+            {post.primaryCategorySlug ? (
+              <>
+                <span aria-hidden="true" className="text-text-secondary">
+                  /
+                </span>
+                <Link
+                  href={`/blog/categoria/${post.primaryCategorySlug}`}
+                  className="text-link hover:underline"
+                >
+                  {categoryName.get(post.primaryCategorySlug) ?? post.primaryCategorySlug}
+                </Link>
+              </>
+            ) : null}
+          </nav>
 
           <Heading as="h1" variant="display-l" className="mt-md">
             {post.title}
           </Heading>
 
-          {post.subtitle ? (
+          {post.subtitle || post.excerpt ? (
             <Text size="lg" tone="secondary" className="mt-md max-w-reading">
-              {post.subtitle}
+              {post.subtitle || post.excerpt}
             </Text>
           ) : null}
 
-          <div className="mt-lg flex flex-wrap items-center gap-md text-text-secondary">
-            <Text size="metadata">{post.authorName}</Text>
-            <Text size="metadata">·</Text>
-            <Text size="metadata">
+          <div className="mt-lg font-sans text-body-sm">
+            {author ? (
+              <Link
+                href={`/sobre/especialistas/${author.slug}`}
+                className="font-semibold text-text hover:text-link"
+              >
+                {author.name}
+              </Link>
+            ) : (
+              <span className="font-semibold text-text">{post.authorName}</span>
+            )}
+            <p className="mt-2xs text-text-secondary">
               {post.publishedAt?.toLocaleDateString("pt-BR", {
                 day: "2-digit",
                 month: "long",
                 year: "numeric",
-              })}
-            </Text>
-            <Text size="metadata">·</Text>
-            <Text size="metadata">{post.readingMinutes} min</Text>
+              })}{" "}
+              · {post.readingMinutes} min de leitura
+            </p>
           </div>
 
           {post.coverMediaId ? (
@@ -136,34 +166,40 @@ export default async function BlogPostPage({ params }: Params) {
         </Container>
       </Section>
 
-      {relatedPosts.length > 0 ? (
+      {related.length > 0 ? (
         <Section spacing="loose" aria-labelledby="relacionados">
           <Container>
             <SectionLabel>Relacionados</SectionLabel>
             <Heading as="h2" variant="h2" id="relacionados" className="mt-md">
               Continue lendo
             </Heading>
-            <ul className="mt-xl grid grid-cols-1 gap-xl md:grid-cols-2 lg:grid-cols-3">
-              {relatedPosts.map((p) => (
-                <li key={p.slug} className="border-t border-border pt-lg">
-                  <Link
-                    href={`/blog/${p.slug}`}
-                    className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
-                  >
-                    <Text size="metadata" tone="secondary">
-                      {p.authorName} · {p.readingMinutes} min
-                    </Text>
-                    <Heading
-                      as="h3"
-                      variant="h3"
-                      className="mt-xs text-link group-hover:underline group-focus-visible:underline"
-                    >
-                      {p.title}
-                    </Heading>
-                  </Link>
+            <ul className="mt-xl grid grid-cols-1 gap-xl md:grid-cols-3">
+              {related.map((p) => (
+                <li key={p.slug}>
+                  <PostCard
+                    post={p}
+                    resolve={resolveMedia}
+                    categoryName={categoryName.get(p.primaryCategorySlug ?? "")}
+                  />
                 </li>
               ))}
             </ul>
+          </Container>
+        </Section>
+      ) : null}
+
+      {solution ? (
+        <Section tone="muted" spacing="loose" aria-labelledby="solucao-relacionada">
+          <Container>
+            <Heading as="h2" variant="h3" id="solucao-relacionada">
+              Sua empresa está passando por uma situação semelhante?
+            </Heading>
+            <Link
+              href={solution.href}
+              className="mt-md inline-flex min-h-11 items-center gap-xs font-sans text-body font-semibold text-link hover:underline"
+            >
+              {solution.label} <ArrowRightIcon className="size-5" />
+            </Link>
           </Container>
         </Section>
       ) : null}

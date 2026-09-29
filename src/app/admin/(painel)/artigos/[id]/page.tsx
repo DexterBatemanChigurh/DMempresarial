@@ -79,6 +79,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
               coverAlt: cover?.alt ?? "",
               authorSlug: post.authorSlug,
               seoTitle: post.seoTitle ?? "",
+              isFeatured: post.isFeatured,
               seoDescription: post.seoDescription ?? "",
               categoryIds,
               primaryCategoryId,

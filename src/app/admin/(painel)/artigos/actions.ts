@@ -65,6 +65,7 @@ function readPostForm(formData: FormData) {
     seoTitle: optionalStr(formData, "seoTitle"),
     seoDescription: optionalStr(formData, "seoDescription"),
     ogMediaId: null,
+    isFeatured: formData.get("isFeatured") === "on",
     categoryIds: list(formData, "categoryIds"),
     primaryCategoryId: optionalStr(formData, "primaryCategoryId"),
     tagIds: list(formData, "tagIds"),

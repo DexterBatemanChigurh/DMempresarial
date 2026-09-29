@@ -36,6 +36,7 @@ export type PostFormValues = {
   coverAlt: string;
   authorSlug: string;
   seoTitle: string;
+  isFeatured: boolean;
   seoDescription: string;
   categoryIds: string[];
   primaryCategoryId: string | null;
@@ -219,6 +220,13 @@ export function PostForm({ mode, action, initial, options, postId, version, onSa
         initialValue={initial.body}
         error={fieldErrors?.body?.[0]}
       />
+
+      <fieldset className="space-y-sm border-t border-border pt-lg">
+        <legend className="mb-xs font-sans text-sm font-semibold text-text">Destaque</legend>
+        <CheckboxField id="isFeatured" defaultChecked={initial.isFeatured}>
+          Destacar no blog (topo da página e &ldquo;Conteúdos que vale a pena conhecer&rdquo;)
+        </CheckboxField>
+      </fieldset>
 
       <fieldset className="space-y-md border-t border-border pt-lg">
         <legend className="mb-xs font-sans text-sm font-semibold text-text">SEO</legend>

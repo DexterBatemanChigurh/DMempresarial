@@ -34,6 +34,7 @@ export default async function NewPostPage() {
             coverAlt: "",
             authorSlug: "",
             seoTitle: "",
+            isFeatured: false,
             seoDescription: "",
             categoryIds: [],
             primaryCategoryId: null,

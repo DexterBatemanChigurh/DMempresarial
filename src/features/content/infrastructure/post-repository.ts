@@ -178,6 +178,7 @@ export type PublicPostSummary = {
   authorName: string;
   primaryCategorySlug: string | null;
   coverMediaId: string | null;
+  isFeatured: boolean;
 };
 
 export type PublicPost = PublicPostSummary & {
@@ -204,6 +205,7 @@ const summaryColumns = {
   authorSlug: posts.authorSlug,
   primaryCategorySlug: categories.slug,
   coverMediaId: posts.coverMediaId,
+  isFeatured: posts.isFeatured,
 };
 
 /** `where` para a categoria PRIMÁRIA, junto ao mesmo par de `leftJoin` usado nas consultas
@@ -319,14 +321,17 @@ export function boundedPaging(page: number, pageSize: number) {
 
 export async function listPublishedPosts(
   executor: Executor,
-  options: { page?: number; pageSize?: number; categorySlug?: string } = {},
+  options: { page?: number; pageSize?: number; categorySlug?: string; featuredOnly?: boolean } = {},
 ): Promise<Page<PublicPostSummary>> {
   const { page, pageSize, offset } = boundedPaging(options.page ?? 1, options.pageSize ?? 12);
+  const published = options.featuredOnly
+    ? and(isPublished, eq(posts.isFeatured, true))
+    : isPublished;
   // Filtra pela categoria PRIMÁRIA (mesma que a consulta expõe como `primaryCategorySlug`):
   // uma página de categoria não deveria misturar posts em que ela é só secundária.
   const where = options.categorySlug
-    ? and(isPublished, eq(categories.slug, options.categorySlug))
-    : isPublished;
+    ? and(published, eq(categories.slug, options.categorySlug))
+    : published;
 
   const [totalRow] = await executor
     .select({ n: count() })
@@ -351,15 +356,24 @@ export async function listPublishedPosts(
 export async function searchPublishedPosts(
   executor: Executor,
   query: string,
-  options: { page?: number; pageSize?: number } = {},
+  options: { page?: number; pageSize?: number; categorySlug?: string } = {},
 ): Promise<Page<PublicPostSummary>> {
   const term = query.trim().slice(0, 100);
   const { page, pageSize, offset } = boundedPaging(options.page ?? 1, options.pageSize ?? 12);
   if (term === "") return { items: [], total: 0, page, pageSize };
 
   const tsquery = sql`websearch_to_tsquery('portuguese', public.f_unaccent(${term}))`;
-  const matches = and(isPublished, sql`${posts.searchVector} @@ ${tsquery}`);
-  const [totalRow] = await executor.select({ n: count() }).from(posts).where(matches);
+  const matches = and(
+    isPublished,
+    sql`${posts.searchVector} @@ ${tsquery}`,
+    options.categorySlug ? eq(categories.slug, options.categorySlug) : undefined,
+  );
+  const [totalRow] = await executor
+    .select({ n: count() })
+    .from(posts)
+    .leftJoin(postCategories, primaryCategoryJoin)
+    .leftJoin(categories, eq(categories.id, postCategories.categoryId))
+    .where(matches);
   const rows = await executor
     .select(summaryColumns)
     .from(posts)

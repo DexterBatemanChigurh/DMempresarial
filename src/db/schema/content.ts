@@ -45,6 +45,8 @@ export const posts = pgTable(
     scheduledFor: tz("scheduled_for"),
     archivedAt: tz("archived_at"),
     readingMinutes: integer("reading_minutes").notNull().default(0),
+    /** Destaque editorial no /blog (escolhido no painel). */
+    isFeatured: boolean("is_featured").notNull().default(false),
     // Busca sem acento (função f_unaccent, migration 0002). Nunca é escrita pela aplicação.
     searchVector: tsvector("search_vector").generatedAlwaysAs(
       sql`setweight(to_tsvector('portuguese', public.f_unaccent(coalesce(title, ''))), 'A') || setweight(to_tsvector('portuguese', public.f_unaccent(coalesce(subtitle, '') || ' ' || coalesce(excerpt, ''))), 'B') || setweight(to_tsvector('portuguese', public.f_unaccent(body_text)), 'C')`,

@@ -42,6 +42,8 @@ export type PostFormInput = {
   /** Slug de um especialista da lista fixa (src/content/dm.ts). */
   authorSlug: string;
   seoTitle?: string | null;
+  /** Destaque editorial no /blog. */
+  isFeatured?: boolean;
   seoDescription?: string | null;
   ogMediaId?: string | null;
   categoryIds: string[];
@@ -150,6 +152,7 @@ export async function createPost(
           seoTitle: input.seoTitle?.trim() || null,
           seoDescription: input.seoDescription?.trim() || null,
           ogMediaId: input.ogMediaId ?? null,
+          isFeatured: input.isFeatured ?? false,
           createdBy: actor.id,
           updatedBy: actor.id,
         })
@@ -227,6 +230,7 @@ export async function updatePost(
         seoTitle: input.seoTitle?.trim() || null,
         seoDescription: input.seoDescription?.trim() || null,
         ogMediaId: input.ogMediaId ?? null,
+        isFeatured: input.isFeatured ?? false,
         updatedBy: actor.id,
         version: existing.version + 1,
       })

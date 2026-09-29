@@ -13,7 +13,7 @@ import {
 /** Leituras públicas de artigos: só `PUBLISHED`, sem sessão. */
 export async function listPublicPosts(
   { db }: { db: Database },
-  options: { page?: number; pageSize?: number; categorySlug?: string } = {},
+  options: { page?: number; pageSize?: number; categorySlug?: string; featuredOnly?: boolean } = {},
 ): Promise<Page<PublicPostSummary>> {
   return listPublishedPosts(db, options);
 }
@@ -21,7 +21,7 @@ export async function listPublicPosts(
 export async function searchPublicPosts(
   { db }: { db: Database },
   query: string,
-  options: { page?: number; pageSize?: number } = {},
+  options: { page?: number; pageSize?: number; categorySlug?: string } = {},
 ): Promise<Page<PublicPostSummary>> {
   return searchPublishedPosts(db, query, options);
 }
@@ -52,16 +52,17 @@ export async function listPublicPostsForRoute(options?: {
   page?: number;
   pageSize?: number;
   categorySlug?: string;
+  featuredOnly?: boolean;
 }) {
   "use cache";
-  cacheTag(options?.categorySlug ? `posts:category:${options.categorySlug}` : "posts");
+  cacheTag("posts", ...(options?.categorySlug ? [`posts:category:${options.categorySlug}`] : []));
   cacheLife("days");
   return listPublicPosts({ db: getDb() }, options ?? {});
 }
 
 export async function searchPublicPostsForRoute(
   query: string,
-  options?: { page?: number; pageSize?: number },
+  options?: { page?: number; pageSize?: number; categorySlug?: string },
 ) {
   "use cache";
   cacheTag("posts");

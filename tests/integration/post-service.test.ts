@@ -427,6 +427,7 @@ describe("rascunho NUNCA vaza para o público", () => {
         "body",
         "coverMediaId",
         "excerpt",
+        "isFeatured",
         "primaryCategorySlug",
         "publishedAt",
         "readingMinutes",

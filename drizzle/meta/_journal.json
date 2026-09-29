@@ -57,6 +57,13 @@
       "when": 1790641465484,
       "tag": "0007_remove_cms_conteudo_fixo",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790658421221,
+      "tag": "0008_destaque_no_blog",
+      "breakpoints": true
     }
   ]
 }
