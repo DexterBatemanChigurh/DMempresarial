@@ -1,14 +1,7 @@
 import "server-only";
 import { and, asc, count, eq } from "drizzle-orm";
 import type { Executor, Transaction } from "@/db/client";
-import {
-  categories,
-  postCategories,
-  postTags,
-  posts,
-  specialistCategories,
-  tags,
-} from "@/db/schema";
+import { categories, postCategories, postTags, posts, tags } from "@/db/schema";
 
 /**
  * Leitura administrativa de categorias e tags: sem filtro de status (elas não têm um — são
@@ -78,7 +71,6 @@ export type CategoryForAdmin = {
   description: string | null;
   position: number;
   postCount: number;
-  specialistCount: number;
 };
 
 export async function listCategoriesForAdmin(executor: Executor): Promise<CategoryForAdmin[]> {
@@ -93,24 +85,13 @@ export async function listCategoriesForAdmin(executor: Executor): Promise<Catego
     .from(categories)
     .orderBy(asc(categories.position), asc(categories.name));
 
-  const [postCounts, specialistCounts] = await Promise.all([
-    executor
-      .select({ categoryId: postCategories.categoryId, n: count() })
-      .from(postCategories)
-      .groupBy(postCategories.categoryId),
-    executor
-      .select({ categoryId: specialistCategories.categoryId, n: count() })
-      .from(specialistCategories)
-      .groupBy(specialistCategories.categoryId),
-  ]);
+  const postCounts = await executor
+    .select({ categoryId: postCategories.categoryId, n: count() })
+    .from(postCategories)
+    .groupBy(postCategories.categoryId);
   const postCountById = new Map(postCounts.map((r) => [r.categoryId, r.n]));
-  const specialistCountById = new Map(specialistCounts.map((r) => [r.categoryId, r.n]));
 
-  return rows.map((row) => ({
-    ...row,
-    postCount: postCountById.get(row.id) ?? 0,
-    specialistCount: specialistCountById.get(row.id) ?? 0,
-  }));
+  return rows.map((row) => ({ ...row, postCount: postCountById.get(row.id) ?? 0 }));
 }
 
 export async function isCategoryReferenced(executor: Executor, id: string): Promise<boolean> {
@@ -119,13 +100,7 @@ export async function isCategoryReferenced(executor: Executor, id: string): Prom
     .from(postCategories)
     .where(eq(postCategories.categoryId, id))
     .limit(1);
-  if (inPost) return true;
-  const [inSpecialist] = await executor
-    .select({ specialistId: specialistCategories.specialistId })
-    .from(specialistCategories)
-    .where(eq(specialistCategories.categoryId, id))
-    .limit(1);
-  return Boolean(inSpecialist);
+  return Boolean(inPost);
 }
 
 export type TagForAdmin = { id: string; slug: string; name: string; postCount: number };
@@ -196,42 +171,6 @@ export async function mergeCategories(
     await tx
       .delete(postCategories)
       .where(and(eq(postCategories.postId, row.postId), eq(postCategories.categoryId, fromId)));
-  }
-
-  const fromSpecialistRows = await tx
-    .select({ specialistId: specialistCategories.specialistId })
-    .from(specialistCategories)
-    .where(eq(specialistCategories.categoryId, fromId));
-  for (const row of fromSpecialistRows) {
-    const [existingTo] = await tx
-      .select({ specialistId: specialistCategories.specialistId })
-      .from(specialistCategories)
-      .where(
-        and(
-          eq(specialistCategories.specialistId, row.specialistId),
-          eq(specialistCategories.categoryId, toId),
-        ),
-      );
-    if (!existingTo) {
-      await tx
-        .update(specialistCategories)
-        .set({ categoryId: toId })
-        .where(
-          and(
-            eq(specialistCategories.specialistId, row.specialistId),
-            eq(specialistCategories.categoryId, fromId),
-          ),
-        );
-    } else {
-      await tx
-        .delete(specialistCategories)
-        .where(
-          and(
-            eq(specialistCategories.specialistId, row.specialistId),
-            eq(specialistCategories.categoryId, fromId),
-          ),
-        );
-    }
   }
 
   await tx.delete(categories).where(eq(categories.id, fromId));

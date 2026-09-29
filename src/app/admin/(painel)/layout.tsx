@@ -18,16 +18,11 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       nav={[
         { href: "/admin", label: "Início" },
         { href: "/admin/artigos", label: "Artigos" },
-        // AUTHOR nunca gerencia categorias/tags/especialistas: sem link para uma tela que o
+        // AUTHOR nunca gerencia categorias/tags: sem link para uma tela que o
         // servidor sempre recusaria.
         ...(can(actor, "taxonomy:manage")
           ? [{ href: "/admin/categorias", label: "Categorias" }]
           : []),
-        ...(can(actor, "specialist:manage")
-          ? [{ href: "/admin/especialistas", label: "Especialistas" }]
-          : []),
-        ...(can(actor, "solution:manage") ? [{ href: "/admin/solucoes", label: "Soluções" }] : []),
-        ...(can(actor, "page:manage") ? [{ href: "/admin/paginas", label: "Páginas" }] : []),
         ...(can(actor, "lead:view") ? [{ href: "/admin/leads", label: "Leads" }] : []),
         ...(can(actor, "redirect:manage")
           ? [{ href: "/admin/redirecionamentos", label: "Redirecionamentos" }]

@@ -81,7 +81,6 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             <Row label="Cargo">{lead.jobTitle}</Row>
             <Row label="Segmento">{lead.segment}</Row>
             <Row label="Site">{lead.website}</Row>
-            <Row label="Solução de interesse">{lead.interestSolutionTitle}</Row>
             <Row label="Artigo de origem">{lead.originPostTitle}</Row>
           </dl>
 

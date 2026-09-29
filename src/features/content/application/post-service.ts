@@ -100,7 +100,7 @@ export async function transitionPost(
         {
           title: post.title,
           slug: post.slug,
-          authorId: post.authorId,
+          authorSlug: post.authorSlug,
           primaryCategoryId: loaded.primaryCategoryId,
           body: post.body,
           coverMediaId: post.coverMediaId,
@@ -324,7 +324,7 @@ export async function publishDuePosts(
         {
           title: post.title,
           slug: post.slug,
-          authorId: post.authorId,
+          authorSlug: post.authorSlug,
           primaryCategoryId: loaded.primaryCategoryId,
           body: post.body,
           coverMediaId: post.coverMediaId,

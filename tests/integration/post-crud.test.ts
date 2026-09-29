@@ -11,7 +11,7 @@ import {
 } from "@/features/content/application/post-crud";
 import { transitionPost } from "@/features/content/application/post-service";
 import type { Actor } from "@/server/permissions";
-import { createFixtures, doc, uniq } from "./fixtures";
+import { AUTHOR, createFixtures, doc, uniq } from "./fixtures";
 import { testAppUrl } from "./helpers";
 
 const fx = createFixtures();
@@ -20,7 +20,6 @@ const deps = { db: handle.db };
 const { q } = fx;
 
 let admin: Actor, editor: Actor, author: Actor, otherAuthor: Actor;
-let specialistId: string;
 let categoryId: string;
 
 beforeAll(async () => {
@@ -32,7 +31,6 @@ beforeAll(async () => {
     fx.user("AUTHOR"),
   ]);
   [admin, editor, author, otherAuthor] = users as [Actor, Actor, Actor, Actor];
-  specialistId = (await fx.specialist()).id;
   categoryId = (await fx.category()).id;
 });
 afterAll(async () => {
@@ -52,15 +50,13 @@ const input = (over: Partial<CreatePostInput> = {}): CreatePostInput => ({
   body: doc("Corpo do artigo."),
   format: null,
   coverMediaId: null,
-  authorId: specialistId,
+  authorSlug: AUTHOR,
   seoTitle: null,
   seoDescription: null,
   ogMediaId: null,
   categoryIds: [],
   primaryCategoryId: null,
   tagIds: [],
-  solutionIds: [],
-  primarySolutionId: null,
   ...over,
 });
 
@@ -74,8 +70,8 @@ const updateInput = (
 
 const rowOf = async (id: string) =>
   (
-    await q<{ title: string; author_id: string; version: number; created_by: string }>(
-      "select title, author_id, version, created_by from posts where id = $1",
+    await q<{ title: string; author_slug: string; version: number; created_by: string }>(
+      "select title, author_slug, version, created_by from posts where id = $1",
       [id],
     )
   )[0]!;
@@ -169,7 +165,7 @@ describe("createPost", () => {
 describe("updatePost", () => {
   it("EDITOR edita um artigo PUBLICADO (post:edit é irrestrito para EDITOR/ADMIN)", async () => {
     const post = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       createdBy: author.id,
       status: "PUBLISHED",
     });
@@ -187,7 +183,7 @@ describe("updatePost", () => {
   });
 
   it("AUTHOR edita o PRÓPRIO rascunho, mas não depois de enviado para revisão", async () => {
-    const draft = await fx.post({ authorId: specialistId, createdBy: author.id, status: "DRAFT" });
+    const draft = await fx.post({ authorSlug: AUTHOR, createdBy: author.id, status: "DRAFT" });
     await expect(
       updatePost(
         deps,
@@ -196,7 +192,7 @@ describe("updatePost", () => {
     ).resolves.toMatchObject({ id: draft.id });
 
     const inReview = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       createdBy: author.id,
       status: "REVIEW",
     });
@@ -209,7 +205,7 @@ describe("updatePost", () => {
   });
 
   it("artigo de OUTRA pessoa: o AUTHOR recebe NOT_FOUND (não revela existência)", async () => {
-    const post = await fx.post({ authorId: specialistId, createdBy: author.id, status: "DRAFT" });
+    const post = await fx.post({ authorSlug: AUTHOR, createdBy: author.id, status: "DRAFT" });
     await expect(
       updatePost(
         deps,
@@ -219,7 +215,7 @@ describe("updatePost", () => {
   });
 
   it("versão desatualizada → CONFLICT, nada muda", async () => {
-    const post = await fx.post({ authorId: specialistId, createdBy: author.id, status: "DRAFT" });
+    const post = await fx.post({ authorSlug: AUTHOR, createdBy: author.id, status: "DRAFT" });
     await expect(
       updatePost(
         deps,
@@ -243,7 +239,7 @@ describe("updatePost", () => {
   });
 
   it("troca o conjunto de categorias (apaga as antigas, grava as novas)", async () => {
-    const post = await fx.post({ authorId: specialistId, createdBy: author.id, categoryId });
+    const post = await fx.post({ authorSlug: AUTHOR, createdBy: author.id, categoryId });
     const replacement = await fx.category();
     await updatePost(
       deps,
@@ -261,7 +257,7 @@ describe("updatePost", () => {
 
   it("não muda status nem slug (essas colunas não fazem parte da entrada)", async () => {
     const post = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       createdBy: author.id,
       status: "PUBLISHED",
     });
@@ -280,7 +276,7 @@ describe("updatePost", () => {
 
 describe("deletePost", () => {
   it("ADMIN apaga um rascunho nunca publicado (com auditoria); as junções somem em cascata", async () => {
-    const post = await fx.post({ authorId: specialistId, createdBy: author.id, status: "DRAFT" });
+    const post = await fx.post({ authorSlug: AUTHOR, createdBy: author.id, status: "DRAFT" });
     await deletePost(deps, { actor: admin, postId: post.id });
     expect(await q("select 1 from posts where id = $1", [post.id])).toHaveLength(0);
     expect(await categoryLinksOf(post.id)).toHaveLength(0);
@@ -292,11 +288,11 @@ describe("deletePost", () => {
   });
 
   it("AUTHOR apaga o PRÓPRIO rascunho, mas não o de outra pessoa (NOT_FOUND)", async () => {
-    const mine = await fx.post({ authorId: specialistId, createdBy: author.id, status: "DRAFT" });
+    const mine = await fx.post({ authorSlug: AUTHOR, createdBy: author.id, status: "DRAFT" });
     await expect(deletePost(deps, { actor: author, postId: mine.id })).resolves.toBeUndefined();
 
     const theirs = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       createdBy: otherAuthor.id,
       status: "DRAFT",
     });
@@ -306,7 +302,7 @@ describe("deletePost", () => {
   });
 
   it("EDITOR não apaga rascunho (só ADMIN e o próprio AUTHOR podem)", async () => {
-    const post = await fx.post({ authorId: specialistId, createdBy: author.id, status: "DRAFT" });
+    const post = await fx.post({ authorSlug: AUTHOR, createdBy: author.id, status: "DRAFT" });
     await expect(deletePost(deps, { actor: editor, postId: post.id })).rejects.toMatchObject({
       code: "FORBIDDEN",
     });
@@ -314,7 +310,7 @@ describe("deletePost", () => {
 
   it("artigo já publicado (mesmo arquivado depois) não pode ser apagado", async () => {
     const post = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       createdBy: author.id,
       status: "PUBLISHED",
     });
@@ -340,7 +336,7 @@ describe("getPostForEdit", () => {
 
   it("artigo de outra pessoa: AUTHOR recebe NOT_FOUND", async () => {
     const post = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       createdBy: otherAuthor.id,
       status: "DRAFT",
     });
@@ -350,7 +346,7 @@ describe("getPostForEdit", () => {
   });
 
   it("devolve as associações (categorias, com a primária marcada)", async () => {
-    const post = await fx.post({ authorId: specialistId, createdBy: author.id, categoryId });
+    const post = await fx.post({ authorSlug: AUTHOR, createdBy: author.id, categoryId });
     const found = await getPostForEdit(deps, admin, post.id);
     expect(found.categoryIds).toContain(categoryId);
     expect(found.primaryCategoryId).toBe(categoryId);
@@ -359,9 +355,9 @@ describe("getPostForEdit", () => {
 
 describe("listPostsForAdmin", () => {
   it("AUTHOR só vê os PRÓPRIOS artigos; ADMIN/EDITOR veem todos", async () => {
-    const mine = await fx.post({ authorId: specialistId, createdBy: author.id, categoryId: null });
+    const mine = await fx.post({ authorSlug: AUTHOR, createdBy: author.id, categoryId: null });
     const theirs = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       createdBy: otherAuthor.id,
       categoryId: null,
     });
@@ -378,7 +374,7 @@ describe("listPostsForAdmin", () => {
 
   it("filtra por status", async () => {
     const published = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       createdBy: admin.id,
       status: "PUBLISHED",
       categoryId: null,

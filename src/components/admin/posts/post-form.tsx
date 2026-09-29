@@ -34,14 +34,12 @@ export type PostFormValues = {
   coverMediaId: string | null;
   coverUrl: string | null;
   coverAlt: string;
-  authorId: string;
+  authorSlug: string;
   seoTitle: string;
   seoDescription: string;
   categoryIds: string[];
   primaryCategoryId: string | null;
   tagIds: string[];
-  solutionIds: string[];
-  primarySolutionId: string | null;
 };
 
 type Props = {
@@ -121,16 +119,14 @@ export function PostForm({ mode, action, initial, options, postId, version, onSa
       />
 
       <SelectField
-        id="authorId"
+        id="authorSlug"
         label="Autor"
         required
         placeholder="Selecione"
-        defaultValue={initial.authorId}
-        error={fieldErrors?.authorId?.[0]}
-        options={options.specialists.map((s) => ({
-          value: s.id,
-          label: `${s.name}${s.kind === "GUEST" ? " (convidado)" : ""}${s.status !== "PUBLISHED" ? ` — ${s.status === "DRAFT" ? "rascunho" : "arquivado"}` : ""}`,
-        }))}
+        hint="A lista de especialistas fica em src/content/dm.ts."
+        defaultValue={initial.authorSlug}
+        error={fieldErrors?.authorSlug?.[0]}
+        options={options.authors.map((a) => ({ value: a.slug, label: a.name }))}
       />
 
       <SelectField
@@ -212,42 +208,6 @@ export function PostForm({ mode, action, initial, options, postId, version, onSa
               >
                 {t.name}
               </CheckboxField>
-            </li>
-          ))}
-        </ul>
-      </fieldset>
-
-      <fieldset className="space-y-xs">
-        <legend className="mb-xs font-sans text-sm font-semibold text-text">
-          Solução relacionada
-        </legend>
-        <p className="mb-xs font-sans text-caption text-text-secondary">
-          Define o CTA contextual do artigo. No máximo uma principal.
-        </p>
-        {fieldErrors?.primarySolutionId ? (
-          <FormMessage tone="error">{fieldErrors.primarySolutionId[0]}</FormMessage>
-        ) : null}
-        <ul className="space-y-xs">
-          {options.solutions.map((s) => (
-            <li key={s.id} className="flex items-center gap-md">
-              <CheckboxField
-                id={`solution-${s.id}`}
-                name="solutionIds"
-                value={s.id}
-                defaultChecked={initial.solutionIds.includes(s.id)}
-              >
-                {s.title}
-              </CheckboxField>
-              <label className="flex items-center gap-xs font-sans text-caption text-text-secondary">
-                <input
-                  type="radio"
-                  name="primarySolutionId"
-                  value={s.id}
-                  defaultChecked={initial.primarySolutionId === s.id}
-                  className="size-5 accent-link"
-                />
-                Principal
-              </label>
             </li>
           ))}
         </ul>

@@ -139,6 +139,11 @@ export function findSpecialist(slug: string): Specialist | undefined {
   return SPECIALISTS.find((s) => s.slug === slug);
 }
 
+/** Nome do autor de um artigo. Se o especialista sair da lista, o artigo passa a ser da DM. */
+export function authorName(slug: string): string {
+  return findSpecialist(slug)?.name ?? "DM Empresarial";
+}
+
 // -------------------------------------------------------------------------------- Contato
 
 export const CONTACT = {

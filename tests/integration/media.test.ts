@@ -10,7 +10,7 @@ import { extractMediaIds } from "@/lib/rich-text";
 import { buildMediaResolver } from "@/features/media/application/resolve";
 import { createLocalStoragePort } from "@/server/storage/local";
 import type { Actor } from "@/server/permissions";
-import { createFixtures, uniq } from "./fixtures";
+import { AUTHOR, createFixtures, uniq } from "./fixtures";
 import { testAppUrl } from "./helpers";
 
 const fx = createFixtures();
@@ -310,8 +310,7 @@ describe("permissões", () => {
 describe("exclusão: mídia em uso não pode ser apagada", () => {
   it("recusa apagar a capa de um artigo publicado, e o arquivo continua no storage", async () => {
     const cover = await uploadMedia(deps, { actor: editor, bytes: await jpeg(200, 150) });
-    const specialist = await fx.specialist();
-    await fx.post({ authorId: specialist.id, coverMediaId: cover.id });
+    await fx.post({ authorSlug: AUTHOR, coverMediaId: cover.id });
 
     await expect(deleteMedia(deps, { actor: admin, id: cover.id })).rejects.toMatchObject({
       code: "DOMAIN_RULE",

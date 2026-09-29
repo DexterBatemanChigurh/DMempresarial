@@ -1,15 +1,8 @@
 import "server-only";
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import type { Executor, Transaction } from "@/db/client";
-import {
-  categories,
-  postCategories,
-  postSolutions,
-  postTags,
-  media,
-  posts,
-  specialists,
-} from "@/db/schema";
+import { authorName } from "@/content/dm";
+import { categories, postCategories, postTags, media, posts } from "@/db/schema";
 import type { PostStatus } from "../domain/post-status";
 
 /** Página de resultados paginados. */
@@ -91,31 +84,23 @@ export type PostAssociations = {
   categoryIds: string[];
   primaryCategoryId: string | null;
   tagIds: string[];
-  solutionIds: string[];
-  primarySolutionId: string | null;
 };
 
 export async function loadPostAssociations(
   executor: Executor,
   postId: string,
 ): Promise<PostAssociations> {
-  const [categoryRows, tagRows, solutionRows] = await Promise.all([
+  const [categoryRows, tagRows] = await Promise.all([
     executor
       .select({ categoryId: postCategories.categoryId, isPrimary: postCategories.isPrimary })
       .from(postCategories)
       .where(eq(postCategories.postId, postId)),
     executor.select({ tagId: postTags.tagId }).from(postTags).where(eq(postTags.postId, postId)),
-    executor
-      .select({ solutionId: postSolutions.solutionId, isPrimary: postSolutions.isPrimary })
-      .from(postSolutions)
-      .where(eq(postSolutions.postId, postId)),
   ]);
   return {
     categoryIds: categoryRows.map((r) => r.categoryId),
     primaryCategoryId: categoryRows.find((r) => r.isPrimary)?.categoryId ?? null,
     tagIds: tagRows.map((r) => r.tagId),
-    solutionIds: solutionRows.map((r) => r.solutionId),
-    primarySolutionId: solutionRows.find((r) => r.isPrimary)?.solutionId ?? null,
   };
 }
 
@@ -159,17 +144,21 @@ export async function listPostsForAdmin(
       slug: posts.slug,
       title: posts.title,
       status: posts.status,
-      authorName: specialists.name,
+      authorSlug: posts.authorSlug,
       updatedAt: posts.updatedAt,
       version: posts.version,
     })
     .from(posts)
-    .innerJoin(specialists, eq(specialists.id, posts.authorId))
     .where(where)
     .orderBy(desc(posts.updatedAt), desc(posts.id))
     .limit(pageSize)
     .offset(offset);
-  return { items: rows, total: totalRow?.n ?? 0, page, pageSize };
+  return {
+    items: rows.map(({ authorSlug, ...row }) => ({ ...row, authorName: authorName(authorSlug) })),
+    total: totalRow?.n ?? 0,
+    page,
+    pageSize,
+  };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -185,6 +174,7 @@ export type PublicPostSummary = {
   excerpt: string | null;
   publishedAt: Date | null;
   readingMinutes: number;
+  authorSlug: string;
   authorName: string;
   primaryCategorySlug: string | null;
   coverMediaId: string | null;
@@ -211,7 +201,7 @@ const summaryColumns = {
   excerpt: posts.excerpt,
   publishedAt: posts.publishedAt,
   readingMinutes: posts.readingMinutes,
-  authorName: specialists.name,
+  authorSlug: posts.authorSlug,
   primaryCategorySlug: categories.slug,
   coverMediaId: posts.coverMediaId,
 };
@@ -223,11 +213,17 @@ const primaryCategoryJoin = and(
   eq(postCategories.isPrimary, true),
 );
 
-type SummaryRow = Omit<PublicPostSummary, "publishedAt"> & { publishedAt: Date | null };
+type SummaryRow = Omit<PublicPostSummary, "publishedAt" | "authorName"> & {
+  publishedAt: Date | null;
+};
 
 function toSummary(row: SummaryRow): PublicPostSummary {
   // `published_at` é obrigatório em PUBLISHED (CHECK no banco); o fallback nunca deveria ocorrer.
-  return { ...row, publishedAt: row.publishedAt ?? new Date(0) };
+  return {
+    ...row,
+    publishedAt: row.publishedAt ?? new Date(0),
+    authorName: authorName(row.authorSlug),
+  };
 }
 
 export async function findPublishedPostBySlug(
@@ -247,7 +243,6 @@ export async function findPublishedPostBySlug(
       scheduledFor: posts.scheduledFor,
     })
     .from(posts)
-    .innerJoin(specialists, eq(specialists.id, posts.authorId))
     .leftJoin(
       postCategories,
       and(eq(postCategories.postId, posts.id), eq(postCategories.isPrimary, true)),
@@ -292,7 +287,6 @@ export async function findPostBySlugForPreview(
       scheduledFor: posts.scheduledFor,
     })
     .from(posts)
-    .innerJoin(specialists, eq(specialists.id, posts.authorId))
     .leftJoin(
       postCategories,
       and(eq(postCategories.postId, posts.id), eq(postCategories.isPrimary, true)),
@@ -343,7 +337,6 @@ export async function listPublishedPosts(
   const rows = await executor
     .select(summaryColumns)
     .from(posts)
-    .innerJoin(specialists, eq(specialists.id, posts.authorId))
     .leftJoin(postCategories, primaryCategoryJoin)
     .leftJoin(categories, eq(categories.id, postCategories.categoryId))
     .where(where)
@@ -370,7 +363,6 @@ export async function searchPublishedPosts(
   const rows = await executor
     .select(summaryColumns)
     .from(posts)
-    .innerJoin(specialists, eq(specialists.id, posts.authorId))
     .leftJoin(postCategories, primaryCategoryJoin)
     .leftJoin(categories, eq(categories.id, postCategories.categoryId))
     .where(matches)

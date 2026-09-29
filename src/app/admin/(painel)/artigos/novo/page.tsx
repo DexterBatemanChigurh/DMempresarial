@@ -32,14 +32,12 @@ export default async function NewPostPage() {
             coverMediaId: null,
             coverUrl: null,
             coverAlt: "",
-            authorId: "",
+            authorSlug: "",
             seoTitle: "",
             seoDescription: "",
             categoryIds: [],
             primaryCategoryId: null,
             tagIds: [],
-            solutionIds: [],
-            primarySolutionId: null,
           }}
         />
       </div>

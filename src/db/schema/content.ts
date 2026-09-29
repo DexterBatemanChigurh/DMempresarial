@@ -11,11 +11,9 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
-import { solutions } from "./catalog";
 import { createdAt, maxLen, pk, slugCheck, tsvector, tz, updatedAt } from "./_helpers";
 import { postFormat, postStatus } from "./enums";
 import { media } from "./media";
-import { specialists } from "./people";
 import { editorial, seoChecks, seoColumns } from "./seo";
 import { categories, tags } from "./taxonomy";
 
@@ -38,10 +36,8 @@ export const posts = pgTable(
     bodyText: text("body_text").notNull().default(""),
     format: postFormat("format"),
     coverMediaId: uuid("cover_media_id").references(() => media.id, { onDelete: "set null" }),
-    // Autor = especialista (D5). RESTRICT: não se apaga quem tem artigos.
-    authorId: uuid("author_id")
-      .notNull()
-      .references(() => specialists.id, { onDelete: "restrict" }),
+    // Autor = especialista da lista fixa em src/content/dm.ts (slug), validado na aplicação.
+    authorSlug: text("author_slug").notNull(),
     status: postStatus("status").notNull().default("DRAFT"),
     publishedAt: tz("published_at"),
     // Primeira publicação: nunca é apagada. Um artigo que já foi público só pode ser arquivado.
@@ -79,7 +75,7 @@ export const posts = pgTable(
     index("posts_scheduled_idx")
       .on(t.scheduledFor)
       .where(sql`${t.status} = 'SCHEDULED'`),
-    index("posts_author_idx").on(t.authorId),
+    index("posts_author_idx").on(t.authorSlug),
     index("posts_search_idx").using("gin", t.searchVector),
   ],
 );
@@ -117,25 +113,4 @@ export const postTags = pgTable(
       .references(() => tags.id, { onDelete: "restrict" }),
   },
   (t) => [primaryKey({ columns: [t.postId, t.tagId] }), index("post_tags_tag_idx").on(t.tagId)],
-);
-
-/** Solução relacionada; no máximo uma primária define o CTA contextual do artigo. */
-export const postSolutions = pgTable(
-  "post_solutions",
-  {
-    postId: uuid("post_id")
-      .notNull()
-      .references(() => posts.id, { onDelete: "cascade" }),
-    solutionId: uuid("solution_id")
-      .notNull()
-      .references(() => solutions.id, { onDelete: "restrict" }),
-    isPrimary: boolean("is_primary").notNull().default(false),
-  },
-  (t) => [
-    primaryKey({ columns: [t.postId, t.solutionId] }),
-    uniqueIndex("post_solutions_one_primary_uq")
-      .on(t.postId)
-      .where(sql`${t.isPrimary}`),
-    index("post_solutions_solution_idx").on(t.solutionId),
-  ],
 );

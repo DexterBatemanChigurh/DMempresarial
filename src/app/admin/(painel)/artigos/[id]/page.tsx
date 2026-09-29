@@ -41,7 +41,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
     throw error;
   }
 
-  const { post, categoryIds, primaryCategoryId, tagIds, solutionIds, primarySolutionId } = found;
+  const { post, categoryIds, primaryCategoryId, tagIds } = found;
   const [options, cover] = await Promise.all([
     loadPostFormOptionsForRoute(),
     post.coverMediaId ? getPostCoverForRoute(post.coverMediaId) : Promise.resolve(null),
@@ -77,14 +77,12 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
               coverMediaId: post.coverMediaId,
               coverUrl: cover?.url ?? null,
               coverAlt: cover?.alt ?? "",
-              authorId: post.authorId,
+              authorSlug: post.authorSlug,
               seoTitle: post.seoTitle ?? "",
               seoDescription: post.seoDescription ?? "",
               categoryIds,
               primaryCategoryId,
               tagIds,
-              solutionIds,
-              primarySolutionId,
             }}
           />
         </div>

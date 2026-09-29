@@ -17,7 +17,6 @@ import {
   setUserRole,
   type UserSummary,
 } from "../infrastructure/user-repository";
-import { specialists } from "@/db/schema/people";
 import { users } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 
@@ -203,10 +202,7 @@ export async function deleteUser({ db }: Deps, input: DeleteUserInput): Promise<
   }
 
   await db.transaction(async (tx) => {
-    // Remove sessões, contas, 2FA (já tem cascade no banco)
-    // Remove especialista vinculado se existir (userId = set null no banco, mas apagamos aqui)
-    await tx.delete(specialists).where(eq(specialists.userId, target.id));
-    // Remove o usuário (cascade remove sessions, accounts, two_factors)
+    // Remove o usuário (cascade remove sessões e contas)
     await tx.delete(users).where(eq(users.id, target.id));
     await recordAudit(tx, {
       actorId: actor.id,

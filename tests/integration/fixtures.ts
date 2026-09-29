@@ -6,6 +6,8 @@ import { testAdminUrl } from "./helpers";
  * Fixtures de teste: inserem com o role DONO (contornam o que o role de aplicação não pode) e
  * são apagadas por prefixo, para que uma execução nunca deixe lixo para a próxima.
  */
+/** Autor dos artigos de teste: o especialista da lista fixa (src/content/dm.ts). */
+export const AUTHOR = "especialista-dm";
 export const PREFIX = "it-dom-";
 export const EMAIL_DOMAIN = "@dom-it.example.test";
 
@@ -40,25 +42,6 @@ export function createFixtures() {
       return { id, role };
     },
 
-    async specialist(over: { kind?: "TEAM" | "GUEST"; status?: string; userId?: string } = {}) {
-      const slug = uniq("esp-");
-      const status = over.status ?? "DRAFT";
-      const [row] = await q<{ id: string }>(
-        `insert into specialists (slug, name, kind, status, user_id, published_at, role_title, summary)
-         values ($1, $2, $3, $4::publish_status, $5, ${status === "PUBLISHED" ? "now()" : "null"}, $6, $7) returning id`,
-        [
-          slug,
-          `Pessoa ${slug}`,
-          over.kind ?? "TEAM",
-          status,
-          over.userId ?? null,
-          "Cargo",
-          "Resumo",
-        ],
-      );
-      return { id: row!.id, slug };
-    },
-
     async category(slug = uniq("cat-")) {
       const [row] = await q<{ id: string }>(
         "insert into categories (slug, name) values ($1, $2) returning id",
@@ -85,31 +68,9 @@ export function createFixtures() {
       return { id: row!.id };
     },
 
-    async solution(over: { status?: string; type?: string } = {}) {
-      const slug = uniq("sol-");
-      const status = over.status ?? "DRAFT";
-      const [row] = await q<{ id: string }>(
-        `insert into solutions (type, slug, title, summary, status, published_at)
-         values ($1::solution_type, $2, $3, $4, $5::publish_status, ${status === "PUBLISHED" ? "now()" : "null"}) returning id`,
-        [over.type ?? "CONSULTORIA", slug, `Solução ${slug}`, "Resumo da solução", status],
-      );
-      return { id: row!.id, slug };
-    },
-
-    async page(over: { key?: string; template?: string; status?: string; data?: unknown } = {}) {
-      const key = over.key ?? uniq("pag-");
-      const status = over.status ?? "DRAFT";
-      const [row] = await q<{ id: string }>(
-        `insert into pages (key, template, title, data, status, published_at)
-         values ($1, $2::page_template, $3, $4::jsonb, $5::publish_status, ${status === "PUBLISHED" ? "now()" : "null"}) returning id`,
-        [key, over.template ?? "LEGAL", `Página ${key}`, JSON.stringify(over.data ?? {}), status],
-      );
-      return { id: row!.id, key };
-    },
-
     /** Artigo pronto para publicar (categoria primária, texto). Ajuste por `over`. */
     async post(over: {
-      authorId: string;
+      authorSlug?: string;
       createdBy?: string | null;
       status?: string;
       title?: string;
@@ -127,7 +88,7 @@ export function createFixtures() {
         over.publishedAt ?? (status === "PUBLISHED" ? new Date().toISOString() : null);
       const text = over.bodyText ?? "Texto do artigo de teste";
       const [row] = await q<{ id: string; version: number }>(
-        `insert into posts (slug, title, body, body_text, author_id, created_by, status, published_at,
+        `insert into posts (slug, title, body, body_text, author_slug, created_by, status, published_at,
                             first_published_at, scheduled_for, archived_at, cover_media_id)
          values ($1, $2, $3::jsonb, $4, $5, $6, $7::post_status, $8::timestamptz, $8::timestamptz, $9::timestamptz,
                  ${status === "ARCHIVED" ? "now()" : "null"}, $10) returning id, version`,
@@ -136,7 +97,7 @@ export function createFixtures() {
           over.title ?? `Título ${slug}`,
           JSON.stringify(over.body ?? doc(text)),
           text,
-          over.authorId,
+          over.authorSlug ?? AUTHOR,
           over.createdBy ?? null,
           status,
           publishedAt,
@@ -170,11 +131,8 @@ export function createFixtures() {
       // seguro limpar entre execuções (banco de teste dedicado).
       await q("delete from rate_limits where key like 'lead:%' or key like 'media:upload:%'");
       await q("delete from posts where slug like $1", [`${PREFIX}%`]);
-      await q("delete from specialists where slug like $1", [`${PREFIX}%`]);
-      await q("delete from solutions where slug like $1", [`${PREFIX}%`]);
       await q("delete from categories where slug like $1", [`${PREFIX}%`]);
       await q("delete from tags where slug like $1", [`${PREFIX}%`]);
-      await q("delete from pages where key like $1", [`${PREFIX}%`]);
       await q("delete from media where storage_key like $1", [`${PREFIX}%`]);
       // Mídia de upload real usa chave `aaaa/mm/<uuid>.webp` (nunca prefixada); identificada pelo
       // dono. Precisa rodar ANTES de apagar os usuários (a FK vira NULL em cascata e perderíamos o rastro).

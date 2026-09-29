@@ -61,15 +61,13 @@ function readPostForm(formData: FormData) {
     body: JSON.parse(str(formData, "body") || "null"),
     format: parsePostFormat(optionalStr(formData, "format")),
     coverMediaId: optionalStr(formData, "coverMediaId"),
-    authorId: str(formData, "authorId"),
+    authorSlug: str(formData, "authorSlug"),
     seoTitle: optionalStr(formData, "seoTitle"),
     seoDescription: optionalStr(formData, "seoDescription"),
     ogMediaId: null,
     categoryIds: list(formData, "categoryIds"),
     primaryCategoryId: optionalStr(formData, "primaryCategoryId"),
     tagIds: list(formData, "tagIds"),
-    solutionIds: list(formData, "solutionIds"),
-    primarySolutionId: optionalStr(formData, "primarySolutionId"),
   };
 }
 

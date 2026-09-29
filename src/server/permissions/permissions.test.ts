@@ -24,15 +24,11 @@ const EXPECTED: Record<Role, Partial<Record<Action, boolean>>> = {
     "post:submit": true,
     "post:edit": true,
     "taxonomy:manage": true,
-    "specialist:manage": true,
-    "solution:manage": true,
-    "page:manage": true,
     "media:upload": true,
     "media:manage": true,
     "media:delete": true,
     "redirect:manage": true,
     "post:delete-draft": false,
-    "specialist:edit-own": false,
     "lead:view": false,
     "lead:update": false,
     "lead:export": false,
@@ -48,9 +44,6 @@ const EXPECTED: Record<Role, Partial<Record<Action, boolean>>> = {
     "post:publish": false,
     "post:archive": false,
     "taxonomy:manage": false,
-    "specialist:manage": false,
-    "solution:manage": false,
-    "page:manage": false,
     "lead:view": false,
     "lead:update": false,
     "lead:export": false,
@@ -129,9 +122,7 @@ describe("can — propriedade do AUTHOR (BOLA/IDOR)", () => {
     expect(can(me, "post:delete-draft", mine({ ownerId: "u-outro" }))).toBe(false);
   });
 
-  it("edita só o PRÓPRIO perfil de especialista e só edita/apaga a PRÓPRIA mídia", () => {
-    expect(can(me, "specialist:edit-own", { ownerId: "u-me" })).toBe(true);
-    expect(can(me, "specialist:edit-own", { ownerId: "u-outro" })).toBe(false);
+  it("só edita/apaga a PRÓPRIA mídia", () => {
     expect(can(me, "media:manage", { ownerId: "u-me" })).toBe(true);
     expect(can(me, "media:manage", { ownerId: "u-outro" })).toBe(false);
     expect(can(me, "media:delete", { ownerId: "u-me" })).toBe(true);

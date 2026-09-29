@@ -33,7 +33,8 @@ export async function GET(request: Request) {
   }
 
   // Verifica se o usuário tem permissão para editar este post
-  const resource: { ownerId: string } = { ownerId: post.post.authorId };
+  // Dono = usuário que criou o artigo (o autor exibido é outra coisa: um especialista da lista).
+  const resource = { ownerId: post.post.createdBy, status: post.post.status };
   assertCan(actor, "post:edit" as Action, resource);
 
   // Ativa o Draft Mode

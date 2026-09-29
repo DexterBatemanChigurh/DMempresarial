@@ -22,10 +22,6 @@ export const postFormat = pgEnum("post_format", [
   "REGIONAL",
 ]);
 
-export const solutionType = pgEnum("solution_type", ["CONSULTORIA", "SERVICO"]);
-export const solutionItemKind = pgEnum("solution_item_kind", ["SITUATION", "STEP", "GOAL"]);
-export const specialistKind = pgEnum("specialist_kind", ["TEAM", "GUEST"]);
-export const pageTemplate = pgEnum("page_template", ["HOME", "ABOUT", "CONTACT", "LEGAL"]);
 export const mediaStatus = pgEnum("media_status", ["PENDING", "READY"]);
 export const leadStatus = pgEnum("lead_status", [
   "NEW",

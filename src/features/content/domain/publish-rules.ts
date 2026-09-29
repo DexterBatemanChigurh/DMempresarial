@@ -22,7 +22,7 @@ export type PublishBlockerCode =
 export type PostForPublish = {
   title: string;
   slug: string;
-  authorId: string | null;
+  authorSlug: string | null;
   primaryCategoryId: string | null;
   body: unknown;
   coverMediaId: string | null;
@@ -39,7 +39,7 @@ export function postPublishBlockers(
   if (post.title.trim() === "") add("TITLE_MISSING", "Falta o título.");
   if (!isValidSlug(post.slug)) add("SLUG_INVALID", "O endereço (slug) é inválido.");
   else if (isReservedSlug(post.slug)) add("SLUG_RESERVED", "Este endereço (slug) é reservado.");
-  if (!post.authorId) add("AUTHOR_MISSING", "Falta o autor.");
+  if (!post.authorSlug) add("AUTHOR_MISSING", "Falta o autor.");
   if (!post.primaryCategoryId) add("PRIMARY_CATEGORY_MISSING", "Escolha a categoria principal.");
   if (isEmptyRichText(post.body)) add("BODY_EMPTY", "O texto do artigo está vazio.");
   // Imagem de capa sem descrição inviabiliza a leitura por leitor de tela (docs/02, seção 26).

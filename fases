@@ -13,7 +13,7 @@ Legenda: 🟢 pronta · 🟡 parcial · 🔴 pendente
 | 1 | Fundação técnica | 🟢 | TS estrito, lint, env validado (falha rápida), logger com redação, role `dm_app` sem DDL, Better Auth, `can()` | — |
 | 2 | Design System    | 🟢 | Tokens, fontes (Newsreader + Instrument Sans), componentes, contraste testado. **Cor de ação = azul da marca `#5c6c9d`** (revisão registrada em `docs/02` §09) | — |
 | 3 | Banco e domínio  | 🟢 | Migrations 0000–0006, auditoria append-only, máquinas de estado | — |
-| 4 | CMS              | 🟢 | Artigos, categorias, especialistas, soluções, páginas, configurações, mídia, usuários, auditoria, preview, cron. **Novas telas:** Leads, Redirecionamentos | — |
+| 4 | CMS              | 🟢 | Artigos, categorias, configurações, mídia, usuários, auditoria, preview, cron, Leads, Redirecionamentos. Especialistas, Soluções e Páginas saíram do painel em 28/09: conteúdo fixo em `src/content/dm.ts` | — |
 | 5 | Páginas públicas | 🟢 | Home, Sobre, Especialistas, Soluções, **Serviços** (visão filtrada, D1), Contato, legais, 404. Menu do Prompt 1 §6 | — |
 | 6 | Blog/editorial   | 🟢 | Índice, categoria, artigo, busca, relacionados | — |
 | 7 | Leads            | 🟢 | Pipeline de lead; aviso de lead para `LEAD_NOTIFY_TO`. Newsletter **removida** em 28/09 a pedido (tabela `newsletter_subscribers` continua no banco, sem uso) | Atribuição de origem (UTM) segue desligada até decisão jurídica |

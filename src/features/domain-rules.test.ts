@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { canTransitionLead, normalizeEmail } from "./conversion/domain/lead";
-import { solutionPublishBlockers } from "./catalog/domain/solution-rules";
 import {
   POST_STATUSES,
   POST_TRANSITIONS,
@@ -10,7 +9,6 @@ import {
   type PostStatus,
 } from "./content/domain/post-status";
 import { postPublishBlockers, type PostForPublish } from "./content/domain/publish-rules";
-import { specialistPublishBlockers } from "./people/domain/specialist-rules";
 
 const doc = (text: string) => ({
   type: "doc",
@@ -58,7 +56,7 @@ describe("pré-requisitos de publicação do artigo", () => {
   const ok: PostForPublish = {
     title: "Um título",
     slug: "um-titulo",
-    authorId: "a1",
+    authorSlug: "especialista-dm",
     primaryCategoryId: "c1",
     body: doc("texto"),
     coverMediaId: null,
@@ -76,7 +74,7 @@ describe("pré-requisitos de publicação do artigo", () => {
       ...ok,
       title: "  ",
       slug: "Slug Inválido",
-      authorId: null,
+      authorSlug: null,
       primaryCategoryId: null,
       body: doc(""),
     });
@@ -119,74 +117,7 @@ describe("pré-requisitos de publicação do artigo", () => {
   });
 });
 
-describe("pré-requisitos de publicação da solução", () => {
-  const ok = {
-    title: "Título",
-    slug: "consultoria-de-gestao",
-    summary: "Quando a empresa cresce sem estrutura…",
-    context: doc("contexto"),
-    approach: doc("abordagem"),
-  };
-
-  it("exige Hero (título + resumo), Contexto e Abordagem", () => {
-    expect(solutionPublishBlockers(ok)).toEqual([]);
-    const codes = solutionPublishBlockers({
-      ...ok,
-      title: "",
-      summary: " ",
-      context: null,
-      approach: doc(""),
-    }).map((b) => b.code);
-    expect(codes).toEqual([
-      "TITLE_MISSING",
-      "SUMMARY_MISSING",
-      "CONTEXT_MISSING",
-      "APPROACH_MISSING",
-    ]);
-  });
-
-  it("slug reservado (ex.: 'servicos') não publica", () => {
-    expect(solutionPublishBlockers({ ...ok, slug: "servicos" }).map((b) => b.code)).toEqual([
-      "SLUG_RESERVED",
-    ]);
-  });
-});
-
-describe("pré-requisitos de publicação do especialista", () => {
-  const ok = {
-    kind: "TEAM" as const,
-    name: "Nome Real",
-    slug: "nome-real",
-    roleTitle: "Cargo",
-    summary: "Resumo confirmado.",
-    photoMediaId: "m1",
-  };
-
-  it("exige nome, cargo, foto e resumo, e só isso (nada de formação inventada)", () => {
-    expect(specialistPublishBlockers(ok)).toEqual([]);
-    const codes = specialistPublishBlockers({
-      ...ok,
-      name: "",
-      roleTitle: null,
-      summary: "  ",
-      photoMediaId: null,
-    }).map((b) => b.code);
-    expect(codes).toEqual([
-      "NAME_MISSING",
-      "ROLE_TITLE_MISSING",
-      "PHOTO_MISSING",
-      "SUMMARY_MISSING",
-    ]);
-  });
-
-  it("autor convidado nunca é publicável, mesmo com todos os campos", () => {
-    expect(specialistPublishBlockers({ ...ok, kind: "GUEST" }).map((b) => b.code)).toEqual([
-      "GUEST_NOT_PUBLISHABLE",
-    ]);
-  });
-});
-
-describe("leads e assinantes", () => {
+describe("leads", () => {
   it("normaliza e-mail (espaços e caixa)", () => {
     expect(normalizeEmail("  Pessoa@Exemplo.COM ")).toBe("pessoa@exemplo.com");
   });

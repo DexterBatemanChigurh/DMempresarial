@@ -15,13 +15,11 @@ export type CategoryRow = {
   name: string;
   description: string | null;
   postCount: number;
-  specialistCount: number;
 };
 
 function usageLabel(row: CategoryRow): string {
   const parts: string[] = [];
   if (row.postCount > 0) parts.push(`${row.postCount} artigo(s)`);
-  if (row.specialistCount > 0) parts.push(`${row.specialistCount} especialista(s)`);
   return parts.length > 0
     ? `Em uso: ${parts.join(", ")}`
     : "Não usada em nenhum artigo ou especialista.";
@@ -35,7 +33,7 @@ export function CategoryItem({
   others: CategoryRow[];
 }) {
   const [mode, setMode] = useState<"view" | "edit" | "delete" | "merge">("view");
-  const inUse = category.postCount > 0 || category.specialistCount > 0;
+  const inUse = category.postCount > 0;
 
   const [updateState, updateFormAction, updating] = useActionState<
     ActionResult<{ id: string }> | null,

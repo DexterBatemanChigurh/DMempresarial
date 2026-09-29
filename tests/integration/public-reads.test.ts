@@ -1,23 +1,17 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDatabase } from "@/db/client";
 import { getPublicSettings } from "@/features/settings/application/settings-crud";
-import { getPublishedPage } from "@/features/pages/application/public-page";
-import {
-  getPublicSolutionBySlug,
-  listPublicSolutions,
-} from "@/features/catalog/application/public-solutions";
-import { listPublicSpecialists } from "@/features/people/application/public-specialists";
 import {
   getPublicPostBySlug,
   listPublicPosts,
   searchPublicPosts,
 } from "@/features/content/application/public-posts";
 import { listPublicCategories } from "@/features/taxonomy/application/public-taxonomy";
-import { createFixtures, doc, uniq } from "./fixtures";
+import { AUTHOR, createFixtures } from "./fixtures";
 import { testAppUrl } from "./helpers";
 
 /**
- * Cobertura da superfície pública inteira (Home/Soluções/Sobre/Contato/Blog): cada leitura só
+ * Cobertura da superfície pública que vem do banco (Blog, categorias, configurações): cada leitura só
  * `PUBLISHED` sai daqui, e sem dado a lista/objeto vem vazio — nunca um rascunho, nunca erro.
  * Testa as funções `{ db }` diretamente (sem `"use cache"`, que só existe em runtime Next).
  */
@@ -34,64 +28,18 @@ afterAll(async () => {
   await handle.close();
 });
 
-describe("getPublishedPage", () => {
-  it("devolve null para chave inexistente ou não publicada", async () => {
-    expect(await getPublishedPage(deps, uniq("pag-"))).toBeNull();
-    const draft = await fx.page({ status: "DRAFT" });
-    expect(await getPublishedPage(deps, draft.key)).toBeNull();
-  });
-
-  it("devolve a página quando publicada", async () => {
-    const published = await fx.page({ status: "PUBLISHED", data: { body: doc("Texto.") } });
-    const found = await getPublishedPage(deps, published.key);
-    expect(found?.key).toBe(published.key);
-  });
-});
-
-describe("listPublicSolutions / getPublicSolutionBySlug", () => {
-  it("só lista soluções publicadas", async () => {
-    const published = await fx.solution({ status: "PUBLISHED" });
-    const draft = await fx.solution({ status: "DRAFT" });
-    const slugs = (await listPublicSolutions(deps)).map((s) => s.slug);
-    expect(slugs).toContain(published.slug);
-    expect(slugs).not.toContain(draft.slug);
-  });
-
-  it("getPublicSolutionBySlug devolve null para rascunho ou inexistente", async () => {
-    const draft = await fx.solution({ status: "DRAFT" });
-    expect(await getPublicSolutionBySlug(deps, draft.slug)).toBeNull();
-    expect(await getPublicSolutionBySlug(deps, uniq("sol-"))).toBeNull();
-  });
-});
-
-describe("listPublicSpecialists", () => {
-  it("só lista especialistas TEAM publicados (nunca GUEST nem rascunho)", async () => {
-    const team = await fx.specialist({ kind: "TEAM", status: "PUBLISHED" });
-    // GUEST nunca publica — é regra de negócio reforçada por CHECK no próprio banco
-    // (specialists_guest_not_public), então nem dá para construir o estado "GUEST publicado".
-    const guest = await fx.specialist({ kind: "GUEST", status: "DRAFT" });
-    const draft = await fx.specialist({ kind: "TEAM", status: "DRAFT" });
-    const slugs = (await listPublicSpecialists(deps)).map((s) => s.slug);
-    expect(slugs).toContain(team.slug);
-    expect(slugs).not.toContain(guest.slug);
-    expect(slugs).not.toContain(draft.slug);
-  });
-});
-
 describe("listPublicPosts / searchPublicPosts / getPublicPostBySlug", () => {
-  let authorId: string;
   let categoryId: string;
   let categorySlug: string;
 
   beforeAll(async () => {
-    authorId = (await fx.specialist({ kind: "TEAM", status: "PUBLISHED" })).id;
     const category = await fx.category();
     categoryId = category.id;
     categorySlug = category.slug;
   });
 
   it("rascunho nunca vaza para o público (lista, busca, nem por slug direto)", async () => {
-    const draft = await fx.post({ authorId, status: "DRAFT", categoryId });
+    const draft = await fx.post({ status: "DRAFT", categoryId });
     const listed = (await listPublicPosts(deps)).items.map((p) => p.slug);
     expect(listed).not.toContain(draft.slug);
     expect(await getPublicPostBySlug(deps, draft.slug)).toBeNull();
@@ -102,7 +50,6 @@ describe("listPublicPosts / searchPublicPosts / getPublicPostBySlug", () => {
 
   it("artigo publicado aparece na lista e por slug, com a categoria primária", async () => {
     const published = await fx.post({
-      authorId,
       status: "PUBLISHED",
       categoryId,
       bodyText: "Texto publicado de verdade",
@@ -115,11 +62,17 @@ describe("listPublicPosts / searchPublicPosts / getPublicPostBySlug", () => {
     expect(listed.items.some((p) => p.slug === published.slug)).toBe(true);
   });
 
+  it("o nome do autor vem da lista fixa de especialistas (src/content/dm.ts)", async () => {
+    const published = await fx.post({ authorSlug: AUTHOR, status: "PUBLISHED", categoryId });
+    const found = await getPublicPostBySlug(deps, published.slug);
+    expect(found?.authorSlug).toBe(AUTHOR);
+    expect(found?.authorName).toBe("Especialista DM");
+  });
+
   it("filtro por categoria só traz posts dessa categoria primária", async () => {
     const otherCategory = await fx.category();
-    const inCategory = await fx.post({ authorId, status: "PUBLISHED", categoryId });
+    const inCategory = await fx.post({ status: "PUBLISHED", categoryId });
     const otherPost = await fx.post({
-      authorId,
       status: "PUBLISHED",
       categoryId: otherCategory.id,
     });
@@ -133,10 +86,9 @@ describe("listPublicPosts / searchPublicPosts / getPublicPostBySlug", () => {
 
 describe("listPublicCategories", () => {
   it("conta só artigos publicados por categoria", async () => {
-    const authorId = (await fx.specialist({ kind: "TEAM", status: "PUBLISHED" })).id;
     const category = await fx.category();
-    await fx.post({ authorId, status: "PUBLISHED", categoryId: category.id });
-    await fx.post({ authorId, status: "DRAFT", categoryId: category.id });
+    await fx.post({ status: "PUBLISHED", categoryId: category.id });
+    await fx.post({ status: "DRAFT", categoryId: category.id });
 
     const found = (await listPublicCategories(deps)).find((c) => c.slug === category.slug);
     expect(found?.postCount).toBe(1);

@@ -11,17 +11,9 @@ import {
   listPublishedPostSlugs,
   searchPublishedPosts,
 } from "@/features/content/infrastructure/post-repository";
-import {
-  findPublishedSolutionBySlug,
-  listPublishedSolutions,
-} from "@/features/catalog/infrastructure/solution-repository";
-import {
-  findPublishedSpecialistBySlug,
-  listPublishedSpecialists,
-} from "@/features/people/infrastructure/specialist-repository";
 import { findRedirect } from "@/features/platform/infrastructure/redirects";
 import type { Actor } from "@/server/permissions";
-import { createFixtures, doc, PREFIX, uniq } from "./fixtures";
+import { AUTHOR, createFixtures, doc, PREFIX, uniq } from "./fixtures";
 import { testAppUrl } from "./helpers";
 
 const fx = createFixtures();
@@ -30,7 +22,6 @@ const deps = { db: handle.db };
 const { q } = fx;
 
 let admin: Actor, editor: Actor, author: Actor, otherAuthor: Actor;
-let specialistId: string;
 
 beforeAll(async () => {
   await fx.cleanup();
@@ -41,7 +32,6 @@ beforeAll(async () => {
     fx.user("AUTHOR"),
   ]);
   [admin, editor, author, otherAuthor] = users as [Actor, Actor, Actor, Actor];
-  specialistId = (await fx.specialist()).id;
 });
 afterAll(async () => {
   await fx.cleanup();
@@ -51,7 +41,7 @@ afterAll(async () => {
 
 /** Artigo pronto para publicar, criado por `createdBy` (padrão: o autor do teste). */
 const mk = (over: Partial<Parameters<typeof fx.post>[0]> = {}) =>
-  fx.post({ authorId: specialistId, createdBy: author.id, ...over });
+  fx.post({ authorSlug: AUTHOR, createdBy: author.id, ...over });
 
 const rowOf = async (id: string) =>
   (
@@ -433,6 +423,7 @@ describe("rascunho NUNCA vaza para o público", () => {
     expect(Object.keys(dto ?? {}).sort()).toEqual(
       [
         "authorName",
+        "authorSlug",
         "body",
         "coverMediaId",
         "excerpt",
@@ -652,34 +643,6 @@ describe("mudança de slug e redirecionamento automático", () => {
         expectedVersion: post.version + 7,
       }),
     ).rejects.toMatchObject({ code: "CONFLICT" });
-  });
-});
-
-describe("leitura pública de soluções e especialistas", () => {
-  it("soluções: só as publicadas, por lista e por slug", async () => {
-    const draft = await fx.solution({ status: "DRAFT" });
-    const published = await fx.solution({ status: "PUBLISHED", type: "SERVICO" });
-    const list = (await listPublishedSolutions(handle.db)).map((s) => s.slug);
-    expect(list).toContain(published.slug);
-    expect(list).not.toContain(draft.slug);
-    expect(await findPublishedSolutionBySlug(handle.db, draft.slug)).toBeNull();
-    const found = await findPublishedSolutionBySlug(handle.db, published.slug);
-    expect(found).toMatchObject({ type: "SERVICO", items: [] });
-    expect(Object.keys(found ?? {})).not.toContain("id");
-  });
-
-  it("especialistas: só da equipe e publicados; sem user_id no DTO", async () => {
-    const draft = await fx.specialist({ status: "DRAFT" });
-    const published = await fx.specialist({ status: "PUBLISHED" });
-    const guest = await fx.specialist({ kind: "GUEST" });
-    const list = (await listPublishedSpecialists(handle.db)).map((s) => s.slug);
-    expect(list).toContain(published.slug);
-    expect(list).not.toContain(draft.slug);
-    expect(list).not.toContain(guest.slug);
-    expect(await findPublishedSpecialistBySlug(handle.db, draft.slug)).toBeNull();
-    expect(await findPublishedSpecialistBySlug(handle.db, guest.slug)).toBeNull();
-    const found = await findPublishedSpecialistBySlug(handle.db, published.slug);
-    expect(Object.keys(found ?? {})).not.toContain("userId");
   });
 });
 

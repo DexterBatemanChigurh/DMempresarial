@@ -1,7 +1,6 @@
 import { sql } from "drizzle-orm";
 import { check, index, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { users } from "./auth";
-import { solutions } from "./catalog";
 import { citext, createdAt, maxLen, pk, tz, updatedAt } from "./_helpers";
 import { leadStatus, subscriberStatus } from "./enums";
 import { posts } from "./content";
@@ -27,9 +26,6 @@ export const leads = pgTable(
     segment: text("segment"),
     website: text("website"),
     // Origens verificadas no servidor (devem existir e ser públicas no momento do envio).
-    interestSolutionId: uuid("interest_solution_id").references(() => solutions.id, {
-      onDelete: "set null",
-    }),
     originPostId: uuid("origin_post_id").references(() => posts.id, { onDelete: "set null" }),
     // Atribuição (docs/01, seção 15): de onde veio o lead.
     source: text("source"),

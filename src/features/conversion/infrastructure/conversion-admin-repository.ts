@@ -1,7 +1,7 @@
 import "server-only";
 import { and, count, desc, eq, type SQL } from "drizzle-orm";
 import type { Executor } from "@/db/client";
-import { leads, posts, solutions } from "@/db/schema";
+import { leads, posts } from "@/db/schema";
 import type { LeadStatus } from "../domain/lead";
 
 /** Leituras e escritas do painel (dados pessoais: só chamadas depois de `assertCan`). */
@@ -23,7 +23,6 @@ export type LeadDetail = LeadSummary & {
   jobTitle: string | null;
   segment: string | null;
   website: string | null;
-  interestSolutionTitle: string | null;
   originPostTitle: string | null;
   source: string | null;
   medium: string | null;
@@ -92,7 +91,6 @@ export async function findLeadDetail(executor: Executor, id: string): Promise<Le
       jobTitle: leads.jobTitle,
       segment: leads.segment,
       website: leads.website,
-      interestSolutionTitle: solutions.title,
       originPostTitle: posts.title,
       source: leads.source,
       medium: leads.medium,
@@ -105,7 +103,6 @@ export async function findLeadDetail(executor: Executor, id: string): Promise<Le
       notifiedAt: leads.notifiedAt,
     })
     .from(leads)
-    .leftJoin(solutions, eq(solutions.id, leads.interestSolutionId))
     .leftJoin(posts, eq(posts.id, leads.originPostId))
     .where(eq(leads.id, id))
     .limit(1);
@@ -150,7 +147,6 @@ export async function listLeadsForExport(
       jobTitle: leads.jobTitle,
       segment: leads.segment,
       website: leads.website,
-      interestSolutionTitle: solutions.title,
       originPostTitle: posts.title,
       source: leads.source,
       medium: leads.medium,
@@ -163,7 +159,6 @@ export async function listLeadsForExport(
       notifiedAt: leads.notifiedAt,
     })
     .from(leads)
-    .leftJoin(solutions, eq(solutions.id, leads.interestSolutionId))
     .leftJoin(posts, eq(posts.id, leads.originPostId))
     .where(where)
     .orderBy(desc(leads.createdAt));

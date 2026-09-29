@@ -1,7 +1,7 @@
 import "server-only";
 import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import type { Executor } from "@/db/client";
-import { media, pages, posts, solutions, specialists } from "@/db/schema";
+import { media, posts } from "@/db/schema";
 
 /**
  * Acesso à tabela `media`. Nada aqui decide permissão (isso é da camada `application`, que
@@ -109,8 +109,8 @@ export async function deleteMediaRow(executor: Executor, id: string): Promise<vo
 }
 
 /**
- * Verifica se a mídia está referenciada em algum lugar publicável (capa/OG de artigo, solução,
- * página, especialista ou dentro do corpo de um artigo). A exclusão só é permitida se devolver
+ * Verifica se a mídia está referenciada em algum lugar publicável (capa/OG de artigo ou dentro do
+ * corpo de um artigo). A exclusão só é permitida se devolver
  * `false` — evita imagem quebrada em conteúdo existente.
  */
 export async function isMediaReferenced(executor: Executor, id: string): Promise<boolean> {
@@ -122,31 +122,6 @@ export async function isMediaReferenced(executor: Executor, id: string): Promise
     )
     .limit(1);
   if (postRow) return true;
-
-  const [solutionRow] = await executor
-    .select({ id: solutions.id })
-    .from(solutions)
-    .where(
-      sql`${solutions.ogMediaId} = ${id} OR ${solutions.context}::text LIKE ${"%" + id + "%"} OR ${solutions.approach}::text LIKE ${"%" + id + "%"}`,
-    )
-    .limit(1);
-  if (solutionRow) return true;
-
-  const [specialistRow] = await executor
-    .select({ id: specialists.id })
-    .from(specialists)
-    .where(
-      sql`${specialists.photoMediaId} = ${id} OR ${specialists.ogMediaId} = ${id} OR ${specialists.bio}::text LIKE ${"%" + id + "%"}`,
-    )
-    .limit(1);
-  if (specialistRow) return true;
-
-  const [pageRow] = await executor
-    .select({ id: pages.id })
-    .from(pages)
-    .where(sql`${pages.ogMediaId} = ${id} OR ${pages.data}::text LIKE ${"%" + id + "%"}`)
-    .limit(1);
-  if (pageRow) return true;
 
   return false;
 }

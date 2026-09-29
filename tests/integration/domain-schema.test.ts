@@ -1,21 +1,19 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDatabase } from "@/db/client";
 import { BASE_CATEGORIES, CONFIRMED_ADDRESS, seedBase } from "../../scripts/lib/db-seed.mts";
-import { createFixtures, EMAIL_DOMAIN, pgErrorCode, SQLSTATE, uniq } from "./fixtures";
+import { AUTHOR, createFixtures, EMAIL_DOMAIN, pgErrorCode, SQLSTATE, uniq } from "./fixtures";
 import { testAdminUrl, testAppUrl } from "./helpers";
 
 const fx = createFixtures();
 const app = createDatabase(testAppUrl(), { max: 2 });
 const { q } = fx;
 
-let authorId: string;
 beforeAll(async () => {
   await fx.cleanup();
   // Reseta site_settings para estado inicial do seed (phone=null, email=null)
   await q("update site_settings set phone = null, email = null where id = 1");
   // Garante que o seed base está carregado (o global-setup já roda, mas o cleanup pode ter limpo)
   await seedBase(testAdminUrl());
-  authorId = (await fx.specialist()).id;
 });
 afterAll(async () => {
   await fx.cleanup();
@@ -47,9 +45,9 @@ describe("slugs e formato", () => {
 describe("estados e datas (o banco recusa incoerência)", () => {
   const insert = (status: string, extra = "") =>
     q(
-      `insert into posts (slug, title, author_id, status ${extra ? "," + extra.split("=")[0] : ""})
+      `insert into posts (slug, title, author_slug, status ${extra ? "," + extra.split("=")[0] : ""})
        values ($1, 't', $2, $3::post_status ${extra ? "," + extra.split("=")[1] : ""})`,
-      [uniq("st-"), authorId, status],
+      [uniq("st-"), AUTHOR, status],
     );
 
   it("PUBLISHED exige published_at e first_published_at", async () => {
@@ -68,44 +66,11 @@ describe("estados e datas (o banco recusa incoerência)", () => {
       await code(() => insert("SCHEDULED", "scheduled_for=now() + interval '1 day'")),
     ).toBeNull();
   });
-
-  it("solução, especialista e página seguem a mesma regra (3 estados)", async () => {
-    expect(
-      await code(() =>
-        q(
-          "insert into solutions (type, slug, title, summary, status) values ('SERVICO', $1, 't', 's', 'PUBLISHED')",
-          [uniq("s-")],
-        ),
-      ),
-    ).toBe(SQLSTATE.check);
-    expect(
-      await code(() =>
-        q("insert into specialists (slug, name, status) values ($1, 'n', 'ARCHIVED')", [
-          uniq("e-"),
-        ]),
-      ),
-    ).toBe(SQLSTATE.check);
-  });
-
-  it("autor CONVIDADO nunca é publicado; da equipe, sim", async () => {
-    const guest = () =>
-      q(
-        "insert into specialists (slug, name, kind, status, published_at) values ($1, 'n', 'GUEST', 'PUBLISHED', now())",
-        [uniq("g-")],
-      );
-    expect(await code(guest)).toBe(SQLSTATE.check);
-    const team = () =>
-      q(
-        "insert into specialists (slug, name, kind, status, published_at) values ($1, 'n', 'TEAM', 'PUBLISHED', now())",
-        [uniq("t-")],
-      );
-    expect(await code(team)).toBeNull();
-  });
 });
 
 describe("relacionamentos e integridade referencial", () => {
-  it("no máximo UMA categoria e UMA solução primárias por artigo", async () => {
-    const post = await fx.post({ authorId, categoryId: null });
+  it("no máximo UMA categoria primária por artigo", async () => {
+    const post = await fx.post({ categoryId: null });
     const [a, b] = [await fx.category(), await fx.category()];
     await q("insert into post_categories values ($1, $2, true)", [post.id, a.id]);
     expect(
@@ -114,55 +79,26 @@ describe("relacionamentos e integridade referencial", () => {
     expect(
       await code(() => q("insert into post_categories values ($1, $2, false)", [post.id, b.id])),
     ).toBeNull();
-
-    const [s1, s2] = [await fx.solution(), await fx.solution()];
-    await q("insert into post_solutions values ($1, $2, true)", [post.id, s1.id]);
-    expect(
-      await code(() => q("insert into post_solutions values ($1, $2, true)", [post.id, s2.id])),
-    ).toBe(SQLSTATE.unique);
   });
 
-  it("não apaga categoria em uso nem autor com artigos (RESTRICT)", async () => {
+  it("não apaga categoria em uso (RESTRICT)", async () => {
     const category = await fx.category();
-    const author = await fx.specialist();
-    await fx.post({ authorId: author.id, categoryId: category.id });
+    await fx.post({ authorSlug: AUTHOR, categoryId: category.id });
     // PG 17 responde 23503 e PG 18 responde 23001: ambos significam "exclusão recusada".
     const refusedCategory = await code(() =>
       q("delete from categories where id = $1", [category.id]),
     );
-    const refusedAuthor = await code(() => q("delete from specialists where id = $1", [author.id]));
     expect(SQLSTATE.foreignKey).toContain(refusedCategory);
-    expect(SQLSTATE.foreignKey).toContain(refusedAuthor);
   });
 
-  it("apagar o artigo leva junto categorias, tags e soluções vinculadas (CASCADE)", async () => {
-    const post = await fx.post({ authorId });
-    const solution = await fx.solution();
-    await q("insert into post_solutions values ($1, $2, false)", [post.id, solution.id]);
+  it("apagar o artigo leva junto categorias e tags vinculadas (CASCADE)", async () => {
+    const post = await fx.post({});
     await q("delete from posts where id = $1", [post.id]);
     const [countRow] = await q<{ n: string }>(
       "select count(*) as n from post_categories where post_id = $1",
       [post.id],
     );
     expect(Number(countRow?.n)).toBe(0);
-  });
-
-  it("um usuário corresponde a no máximo um especialista", async () => {
-    const user = await fx.user("AUTHOR");
-    await fx.specialist({ userId: user.id });
-    expect(await code(() => fx.specialist({ userId: user.id }))).toBe(SQLSTATE.unique);
-  });
-
-  it("solução: itens ordenados sem posição repetida por tipo", async () => {
-    const solution = await fx.solution();
-    const item = (kind: string, position: number) =>
-      q(
-        "insert into solution_items (solution_id, kind, position, title) values ($1, $2::solution_item_kind, $3, 't')",
-        [solution.id, kind, position],
-      );
-    await item("STEP", 1);
-    expect(await code(() => item("STEP", 1))).toBe(SQLSTATE.unique);
-    expect(await code(() => item("GOAL", 1))).toBeNull();
   });
 });
 
@@ -337,7 +273,6 @@ describe("busca de texto (Postgres full-text, sem acento)", () => {
 
   it("acha com ou sem acento e por flexão de número (empresa ≈ empresas)", async () => {
     const post = await fx.post({
-      authorId,
       title: "Gestão financeira de pequenas empresas",
       bodyText: "Como organizar o caixa da sua empresa",
     });
@@ -348,7 +283,7 @@ describe("busca de texto (Postgres full-text, sem acento)", () => {
   });
 
   it("o vetor é gerado pelo banco: a aplicação não pode escrevê-lo", async () => {
-    const post = await fx.post({ authorId });
+    const post = await fx.post({});
     expect(
       await code(() =>
         q("update posts set search_vector = to_tsvector('x') where id = $1", [post.id]),

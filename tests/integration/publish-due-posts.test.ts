@@ -1,8 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDatabase } from "@/db/client";
 import { publishDuePosts } from "@/features/content/application/post-service";
-import type { Actor } from "@/server/permissions";
-import { createFixtures } from "./fixtures";
+import { AUTHOR, createFixtures } from "./fixtures";
 import { testAppUrl } from "./helpers";
 
 const fx = createFixtures();
@@ -10,13 +9,8 @@ const handle = createDatabase(testAppUrl(), { max: 6 });
 const deps = { db: handle.db };
 const { q } = fx;
 
-let author: Actor;
-let specialistId: string;
-
 beforeAll(async () => {
   await fx.cleanup();
-  author = (await fx.user("AUTHOR")) as Actor;
-  specialistId = (await fx.specialist({ userId: author.id })).id;
 });
 afterAll(async () => {
   await fx.cleanup();
@@ -31,16 +25,16 @@ describe("publishDuePosts", () => {
     const future = new Date(now.getTime() + 3_600_000);
 
     const due = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       status: "SCHEDULED",
       scheduledFor: past.toISOString(),
     });
     const notYetDue = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       status: "SCHEDULED",
       scheduledFor: future.toISOString(),
     });
-    const draft = await fx.post({ authorId: specialistId, status: "DRAFT" });
+    const draft = await fx.post({ authorSlug: AUTHOR, status: "DRAFT" });
 
     const result = await publishDuePosts(deps, { now });
 
@@ -69,7 +63,7 @@ describe("publishDuePosts", () => {
   it("idempotente: rodar de novo não publica nada a mais (já não é SCHEDULED)", async () => {
     const past = new Date(Date.now() - 60_000);
     const due = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       status: "SCHEDULED",
       scheduledFor: past.toISOString(),
     });
@@ -84,7 +78,7 @@ describe("publishDuePosts", () => {
   it("agendado vencido sem categoria principal não publica sozinho (fica para revisão manual)", async () => {
     const past = new Date(Date.now() - 60_000);
     const stuck = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       status: "SCHEDULED",
       scheduledFor: past.toISOString(),
       categoryId: null,

@@ -12,7 +12,7 @@ import {
   updateCategory,
 } from "@/features/taxonomy/application/taxonomy-service";
 import type { Actor } from "@/server/permissions";
-import { createFixtures, uniq } from "./fixtures";
+import { AUTHOR, createFixtures, uniq } from "./fixtures";
 import { testAppUrl } from "./helpers";
 
 const fx = createFixtures();
@@ -21,13 +21,11 @@ const deps = { db: handle.db };
 const { q } = fx;
 
 let admin: Actor, editor: Actor, author: Actor;
-let specialistId: string;
 
 beforeAll(async () => {
   await fx.cleanup();
   const users = await Promise.all([fx.user("ADMIN"), fx.user("EDITOR"), fx.user("AUTHOR")]);
   [admin, editor, author] = users as [Actor, Actor, Actor];
-  specialistId = (await fx.specialist()).id;
 });
 afterAll(async () => {
   await fx.cleanup();
@@ -102,22 +100,11 @@ describe("createCategory / updateCategory", () => {
 describe("deleteCategory", () => {
   it("bloqueada se referenciada por um artigo, nada muda", async () => {
     const category = await fx.category();
-    await fx.post({ authorId: specialistId, createdBy: admin.id, categoryId: category.id });
+    await fx.post({ authorSlug: AUTHOR, createdBy: admin.id, categoryId: category.id });
     await expect(deleteCategory(deps, { actor: admin, id: category.id })).rejects.toMatchObject({
       code: "DOMAIN_RULE",
     });
     expect(await q("select 1 from categories where id = $1", [category.id])).toHaveLength(1);
-  });
-
-  it("bloqueada se referenciada por um especialista", async () => {
-    const category = await fx.category();
-    await q("insert into specialist_categories (specialist_id, category_id) values ($1, $2)", [
-      specialistId,
-      category.id,
-    ]);
-    await expect(deleteCategory(deps, { actor: admin, id: category.id })).rejects.toMatchObject({
-      code: "DOMAIN_RULE",
-    });
   });
 
   it("sem uso: apaga e registra auditoria; AUTHOR não pode", async () => {
@@ -147,7 +134,7 @@ describe("mergeCategoriesService", () => {
     const from = await fx.category();
     const to = await fx.category();
     const post = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       createdBy: admin.id,
       categoryId: from.id,
     });
@@ -163,7 +150,7 @@ describe("mergeCategoriesService", () => {
     const from = await fx.category();
     const to = await fx.category();
     const post = await fx.post({
-      authorId: specialistId,
+      authorSlug: AUTHOR,
       createdBy: admin.id,
       categoryId: from.id,
     });
@@ -184,7 +171,7 @@ describe("mergeCategoriesService", () => {
   it("artigo com AMBAS: destino já principal → a linha da origem some sem trocar a principal", async () => {
     const from = await fx.category();
     const to = await fx.category();
-    const post = await fx.post({ authorId: specialistId, createdBy: admin.id, categoryId: to.id });
+    const post = await fx.post({ authorSlug: AUTHOR, createdBy: admin.id, categoryId: to.id });
     await q(
       "insert into post_categories (post_id, category_id, is_primary) values ($1, $2, false)",
       [post.id, from.id],
@@ -197,23 +184,6 @@ describe("mergeCategoriesService", () => {
       [post.id],
     );
     expect(links).toEqual([{ category_id: to.id, is_primary: true }]);
-  });
-
-  it("especialista com AMBAS: sobra só um vínculo", async () => {
-    const from = await fx.category();
-    const to = await fx.category();
-    const specialist = (await fx.specialist()).id;
-    await q(
-      "insert into specialist_categories (specialist_id, category_id) values ($1, $2), ($1, $3)",
-      [specialist, from.id, to.id],
-    );
-
-    await mergeCategoriesService(deps, { actor: admin, fromId: from.id, toId: to.id });
-
-    const links = await q("select 1 from specialist_categories where specialist_id = $1", [
-      specialist,
-    ]);
-    expect(links).toHaveLength(1);
   });
 });
 
@@ -228,7 +198,7 @@ describe("tags", () => {
 
   it("deleteTag: bloqueada se em uso; libera depois de removida do artigo", async () => {
     const tag = await fx.tag();
-    const post = await fx.post({ authorId: specialistId, createdBy: admin.id, categoryId: null });
+    const post = await fx.post({ authorSlug: AUTHOR, createdBy: admin.id, categoryId: null });
     await q("insert into post_tags (post_id, tag_id) values ($1, $2)", [post.id, tag.id]);
 
     await expect(deleteTag(deps, { actor: admin, id: tag.id })).rejects.toMatchObject({
@@ -242,7 +212,7 @@ describe("tags", () => {
   it("mergeTagsService: dedupe quando o artigo já tem as duas", async () => {
     const from = await fx.tag();
     const to = await fx.tag();
-    const post = await fx.post({ authorId: specialistId, createdBy: admin.id, categoryId: null });
+    const post = await fx.post({ authorSlug: AUTHOR, createdBy: admin.id, categoryId: null });
     await q("insert into post_tags (post_id, tag_id) values ($1, $2), ($1, $3)", [
       post.id,
       from.id,
@@ -258,17 +228,12 @@ describe("tags", () => {
 });
 
 describe("listCategoriesForAdmin / listTagsForAdmin", () => {
-  it("conta artigos e especialistas por categoria; AUTHOR não acessa", async () => {
+  it("conta artigos por categoria; AUTHOR não acessa", async () => {
     const category = await fx.category();
-    await fx.post({ authorId: specialistId, createdBy: admin.id, categoryId: category.id });
-    await q("insert into specialist_categories (specialist_id, category_id) values ($1, $2)", [
-      specialistId,
-      category.id,
-    ]);
-
+    await fx.post({ authorSlug: AUTHOR, createdBy: admin.id, categoryId: category.id });
     const rows = await listCategoriesForAdmin(deps, admin);
     const row = rows.find((r) => r.id === category.id);
-    expect(row).toMatchObject({ postCount: 1, specialistCount: 1 });
+    expect(row).toMatchObject({ postCount: 1 });
 
     await expect(listCategoriesForAdmin(deps, author)).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(listTagsForAdmin(deps, author)).rejects.toMatchObject({ code: "FORBIDDEN" });

@@ -1,7 +1,8 @@
 import "server-only";
 import { and, eq } from "drizzle-orm";
 import type { Database, Transaction } from "@/db/client";
-import { postCategories, postSolutions, postTags, posts, type postFormat } from "@/db/schema";
+import { findSpecialist } from "@/content/dm";
+import { postCategories, postTags, posts, type postFormat } from "@/db/schema";
 import { AppError } from "@/lib/errors";
 import { isReservedSlug, isValidSlug, slugify } from "@/lib/slug";
 import { recordAudit } from "@/features/platform/infrastructure/audit";
@@ -38,15 +39,14 @@ export type PostFormInput = {
   body: unknown;
   format?: PostFormat | null;
   coverMediaId?: string | null;
-  authorId: string;
+  /** Slug de um especialista da lista fixa (src/content/dm.ts). */
+  authorSlug: string;
   seoTitle?: string | null;
   seoDescription?: string | null;
   ogMediaId?: string | null;
   categoryIds: string[];
   primaryCategoryId?: string | null;
   tagIds: string[];
-  solutionIds: string[];
-  primarySolutionId?: string | null;
   requestId?: string;
 };
 
@@ -66,9 +66,7 @@ function validateFields(input: PostFormInput): void {
   if (input.primaryCategoryId && !input.categoryIds.includes(input.primaryCategoryId)) {
     fieldErrors.primaryCategoryId = ["A categoria principal precisa estar entre as escolhidas."];
   }
-  if (input.primarySolutionId && !input.solutionIds.includes(input.primarySolutionId)) {
-    fieldErrors.primarySolutionId = ["A solução principal precisa estar entre as escolhidas."];
-  }
+  if (!findSpecialist(input.authorSlug)) fieldErrors.authorSlug = ["Escolha um autor da lista."];
   if (Object.keys(fieldErrors).length > 0) {
     throw new AppError("VALIDATION", "Confira os campos do artigo.", { fieldErrors });
   }
@@ -83,22 +81,17 @@ function isUniqueViolation(error: unknown): boolean {
   return false;
 }
 
-/** Grava as associações (categorias, tags, soluções): apaga tudo e reinsere o conjunto novo. */
+/** Grava as associações (categorias, tags): apaga tudo e reinsere o conjunto novo. */
 async function replaceAssociations(
   tx: Transaction,
   postId: string,
-  input: Pick<
-    PostFormInput,
-    "categoryIds" | "primaryCategoryId" | "tagIds" | "solutionIds" | "primarySolutionId"
-  >,
+  input: Pick<PostFormInput, "categoryIds" | "primaryCategoryId" | "tagIds">,
 ): Promise<void> {
   await tx.delete(postCategories).where(eq(postCategories.postId, postId));
   await tx.delete(postTags).where(eq(postTags.postId, postId));
-  await tx.delete(postSolutions).where(eq(postSolutions.postId, postId));
 
   const categoryIds = [...new Set(input.categoryIds)];
   const tagIds = [...new Set(input.tagIds)];
-  const solutionIds = [...new Set(input.solutionIds)];
 
   if (categoryIds.length > 0) {
     await tx.insert(postCategories).values(
@@ -111,15 +104,6 @@ async function replaceAssociations(
   }
   if (tagIds.length > 0) {
     await tx.insert(postTags).values(tagIds.map((tagId) => ({ postId, tagId })));
-  }
-  if (solutionIds.length > 0) {
-    await tx.insert(postSolutions).values(
-      solutionIds.map((solutionId) => ({
-        postId,
-        solutionId,
-        isPrimary: solutionId === input.primarySolutionId,
-      })),
-    );
   }
 }
 
@@ -162,7 +146,7 @@ export async function createPost(
           readingMinutes: prepared.readingMinutes,
           format: input.format ?? null,
           coverMediaId: input.coverMediaId ?? null,
-          authorId: input.authorId,
+          authorSlug: input.authorSlug,
           seoTitle: input.seoTitle?.trim() || null,
           seoDescription: input.seoDescription?.trim() || null,
           ogMediaId: input.ogMediaId ?? null,
@@ -239,7 +223,7 @@ export async function updatePost(
         readingMinutes: prepared.readingMinutes,
         format: input.format ?? null,
         coverMediaId: input.coverMediaId ?? null,
-        authorId: input.authorId,
+        authorSlug: input.authorSlug,
         seoTitle: input.seoTitle?.trim() || null,
         seoDescription: input.seoDescription?.trim() || null,
         ogMediaId: input.ogMediaId ?? null,
