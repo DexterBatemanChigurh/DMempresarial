@@ -32,8 +32,9 @@ const nextConfig: NextConfig = {
     return [
       { source: "/privacy", destination: "/politica-de-privacidade", permanent: true },
       { source: "/terms", destination: "/termos-de-uso", permanent: true },
-      // `/servicos` é uma visão filtrada; a página de cada serviço vive só em `/solucoes/<slug>`
-      // (docs/01, D1): uma URL canônica por entidade.
+      // `/servicos` saiu (29/09/2026): os serviços são uma seção de `/solucoes`, e a página de cada
+      // um vive só em `/solucoes/<slug>` (docs/01, D1): uma URL canônica por entidade.
+      { source: "/servicos", destination: "/solucoes#servicos", permanent: true },
       { source: "/servicos/:slug", destination: "/solucoes/:slug", permanent: true },
     ];
   },

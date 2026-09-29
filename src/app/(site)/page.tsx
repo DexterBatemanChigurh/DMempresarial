@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Paragraphs } from "@/components/content/paragraphs";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
-import { ArrowRightIcon, ClockIcon, UsersIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { ClockIcon, UsersIcon, WhatsAppIcon } from "@/components/ui/icons";
 
 /** Colunas do grid do blog por quantidade real de artigos: menos de 4 nunca deixa um card
  * solitário boiando num grid de 4 (docs/02 §04, grid consistente). */
@@ -218,19 +218,7 @@ export default async function HomePage() {
       {/* SOBRE NÓS — composição de uma referência do usuário: título centralizado, texto à
           esquerda e, à direita, os valores escritos em volta de um círculo. Texto em
           src/content/dm.ts; sem valores cadastrados, o círculo usa só dados reais da DM. */}
-      <Section
-        tone="muted"
-        spacing="loose"
-        aria-labelledby="home-sobre"
-        className="relative overflow-hidden"
-      >
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 260 200"
-          className="pointer-events-none absolute top-0 right-0 w-[160px] fill-none stroke-border-strong sm:w-[260px]"
-        >
-          <path d="M 60 0 C 70 110 150 170 260 176" strokeWidth={4} strokeLinecap="round" />
-        </svg>
+      <Section tone="muted" spacing="loose" aria-labelledby="home-sobre">
         <Container>
           <Heading as="h2" variant="display-m" id="home-sobre" className="text-center">
             Sobre nós
@@ -255,36 +243,22 @@ export default async function HomePage() {
         </Container>
       </Section>
 
-      {/* CTA — cartão com a ponta esquerda arredondada e um botão circular flutuando na costura
-          de baixo (geometria de uma referência do usuário; cores e texto da DM). */}
+      {/* CTA final — texto e botões definidos pelo usuário. */}
       <Section spacing="loose" aria-labelledby="home-cta">
-        <h2 id="home-cta" className="sr-only">
-          Fale com a DM
-        </h2>
         <Container>
-          <div className="flex flex-col gap-3xl">
-            {/* Vamos conversar — arredonda só a ponta esquerda; título e texto lado a
-                lado (não empilhados); botão circular flutuando na costura de baixo. */}
-            <div className="relative rounded-[28px] bg-action p-2xl pb-3xl lg:rounded-r-[28px] lg:rounded-l-[999px] lg:py-3xl lg:pr-2xl lg:pl-4xl">
-              <div className="grid grid-cols-1 gap-lg lg:grid-cols-[minmax(0,22rem)_minmax(0,24rem)] lg:items-center">
-                {/* `Heading`/`Text` sempre aplicam a própria cor de texto (`text-text`); nesta
-                    faixa a cor certa é a de contraste da ação, então usamos a tag crua com as
-                    MESMAS classes tipográficas dos componentes, evitando a disputa entre duas
-                    classes de cor no mesmo elemento (`cn` só concatena, não resolve prioridade). */}
-                <h3 className="font-serif text-h2 font-medium text-action-contrast">
-                  {CONTACT.title}
-                </h3>
-                <p className="font-sans text-body text-action-contrast/85">{CONTACT.intro}</p>
-              </div>
-
-              <Link
-                href="/contato"
-                aria-label="Fale com a DM"
-                data-tone="dark"
-                className="mt-lg flex size-14 items-center justify-center rounded-full bg-surface text-text transition-colors duration-150 ease-standard hover:bg-surface-muted lg:absolute lg:bottom-0 lg:left-1/2 lg:mt-0 lg:-translate-x-1/2 lg:translate-y-1/2"
-              >
-                <ArrowRightIcon className="size-6" />
-              </Link>
+          <div className="rounded-[28px] border border-border bg-surface-muted px-lg py-2xl text-center md:px-2xl md:py-3xl">
+            <Heading as="h2" variant="h2" id="home-cta" className="mx-auto max-w-[36rem]">
+              Sua empresa pode estar pronta para o próximo passo.
+            </Heading>
+            <Text tone="secondary" className="mx-auto mt-md max-w-reading">
+              Conte-nos o que está acontecendo. A partir disso, podemos entender o cenário e
+              conversar sobre os caminhos possíveis.
+            </Text>
+            <div className="mt-xl flex flex-col items-center justify-center gap-md sm:flex-row">
+              <Button href="/contato">Conversar com a DM</Button>
+              <Button href="/solucoes" variant="secondary">
+                Conhecer nossas soluções
+              </Button>
             </div>
           </div>
         </Container>

@@ -130,6 +130,175 @@ export function findSolution(slug: string): Solution | undefined {
 
 // --------------------------------------------------------------------------- Especialistas
 
+/** Link de uma solução na página /solucoes. Sem `slug`, ainda não há página própria: o nome
+ * aparece sem link (nunca um link para uma página vazia). */
+export type SolutionLink = { label: string; slug?: string };
+
+/** Página /solucoes (texto definido pelo usuário em 29/09/2026). */
+export const SOLUTIONS_PAGE = {
+  hero: {
+    title: "Soluções para os desafios que sua empresa enfrenta.",
+    description:
+      "Da estratégia à execução, a DM Empresarial atua em diferentes frentes para ajudar empresas a organizar, transformar e desenvolver seus negócios.",
+  },
+  problems: [
+    {
+      problem: "Empresa sem direção clara",
+      solution: "Consultoria Estratégica",
+      anchor: "estrategia",
+    },
+    { problem: "Gestão desorganizada", solution: "Gestão e Processos", anchor: "gestao" },
+    { problem: "Dificuldades financeiras", solution: "Soluções Financeiras", anchor: "financas" },
+    {
+      problem: "Dívidas e créditos a recuperar",
+      solution: "Recuperação e Reorganização Financeira",
+      anchor: "servicos",
+    },
+    {
+      problem: "Necessidade de posicionamento",
+      solution: "Marketing e Estratégia",
+      anchor: "marketing",
+    },
+  ],
+  /** Consultorias: começam com diagnóstico e análise do negócio. */
+  areas: [
+    {
+      id: "estrategia",
+      name: "Estratégia",
+      tagline: "Direção para decisões mais claras.",
+      links: [{ label: "Consultoria Estratégica", slug: "consultoria-estrategica" }],
+    },
+    {
+      id: "gestao",
+      name: "Gestão",
+      tagline: "Organização para empresas que precisam evoluir.",
+      links: [{ label: "Consultoria em Gestão" }, { label: "Consultoria em Processos" }],
+    },
+    {
+      id: "financas",
+      name: "Finanças",
+      tagline: "Mais clareza para decisões financeiras.",
+      links: [{ label: "Consultoria Financeira" }],
+    },
+    {
+      id: "marketing",
+      name: "Marketing",
+      tagline: "Posicionamento para empresas que querem crescer.",
+      links: [{ label: "Consultoria de Marketing" }],
+    },
+  ] as { id: string; name: string; tagline: string; links: SolutionLink[] }[],
+  /** Serviços: soluções mais específicas e direcionadas. */
+  services: [
+    { label: "Recuperação de Crédito", slug: "recuperacao-de-credito" },
+    { label: "Reorganização Financeira", slug: "reorganizacao-de-dividas" },
+    { label: "Reestruturação de Gestão", slug: "reestruturacao-de-gestao" },
+    { label: "Planejamento Estratégico" },
+  ] as SolutionLink[],
+  steps: [
+    { name: "Entendimento", text: "Conhecemos o cenário e os desafios da empresa." },
+    { name: "Diagnóstico", text: "Identificamos problemas, oportunidades e prioridades." },
+    { name: "Estratégia", text: "Definimos os caminhos possíveis." },
+    { name: "Implementação", text: "Transformamos a estratégia em ação." },
+    { name: "Acompanhamento", text: "Avaliamos a evolução e os próximos passos." },
+  ],
+  needs: [
+    { need: "Preciso organizar minha empresa", answer: "Gestão e Processos", href: "#gestao" },
+    {
+      need: "Preciso melhorar minha situação financeira",
+      answer: "Soluções Financeiras",
+      href: "#financas",
+    },
+    { need: "Preciso definir os próximos passos", answer: "Estratégia", href: "#estrategia" },
+    {
+      need: "Preciso recuperar valores ou reorganizar dívidas",
+      answer: "Recuperação Financeira",
+      href: "#servicos",
+    },
+    { need: "Preciso melhorar meu posicionamento", answer: "Marketing", href: "#marketing" },
+    {
+      need: "Ainda não sei exatamente o que preciso",
+      answer: "Conversar com a DM",
+      href: "/contato",
+    },
+  ],
+  cta: {
+    title: "Nem todo desafio empresarial tem uma resposta pronta.",
+    text: "Conte à DM o que está acontecendo na sua empresa. A partir do cenário apresentado, podemos entender quais caminhos fazem sentido.",
+  },
+};
+
+/** Página /blog (texto definido pelo usuário em 29/09/2026). */
+export const BLOG_PAGE = {
+  hero: {
+    title: "Conhecimento para decisões empresariais mais claras.",
+    description:
+      "Conteúdos sobre gestão, estratégia, finanças, marketing e os desafios de quem conduz uma empresa.",
+  },
+  /** Navegação por necessidade: cada item leva a uma categoria do blog (slug). */
+  needs: [
+    { need: "Tenho problemas de gestão", answer: "Conteúdos sobre Gestão", category: "gestao" },
+    {
+      need: "Preciso entender melhor minhas finanças",
+      answer: "Conteúdos sobre Finanças",
+      category: "financas",
+    },
+    {
+      need: "Estou planejando mudanças na empresa",
+      answer: "Estratégia e Gestão",
+      category: "gestao",
+    },
+    { need: "Quero melhorar meu posicionamento", answer: "Marketing", category: "marketing" },
+    { need: "Quero organizar meus processos", answer: "Processos", category: "processos" },
+  ],
+  cta: {
+    title: "O conteúdo ajudou. E agora?",
+    text: "Se esse desafio também faz parte da realidade da sua empresa, podemos conversar sobre o cenário e entender os caminhos possíveis.",
+  },
+};
+
+/** Solução relacionada a cada categoria do blog (fim do artigo: conteúdo → problema → solução). */
+export const CATEGORY_SOLUTION: Record<string, { label: string; href: string }> = {
+  gestao: { label: "Conheça as soluções de gestão da DM", href: "/solucoes#gestao" },
+  processos: { label: "Conheça as soluções de gestão da DM", href: "/solucoes#gestao" },
+  financas: { label: "Conheça as soluções financeiras da DM", href: "/solucoes#financas" },
+  marketing: { label: "Conheça as soluções de marketing da DM", href: "/solucoes#marketing" },
+};
+
+/** Página /contato (texto definido pelo usuário em 29/09/2026). */
+export const CONTACT_PAGE = {
+  hero: {
+    title: "Vamos conversar sobre sua empresa.",
+    description:
+      "Conte brevemente o que está acontecendo. A partir dessas informações, podemos entender o seu cenário e os caminhos possíveis.",
+  },
+  /** Assunto do contato: gravado em `leads.segment` para a DM classificar o lead. */
+  subjects: [
+    { value: "estrategia", label: "Estratégia" },
+    { value: "gestao", label: "Gestão" },
+    { value: "financas", label: "Finanças" },
+    { value: "recuperacao-de-credito", label: "Recuperação de crédito" },
+    { value: "processos", label: "Processos" },
+    { value: "marketing", label: "Marketing" },
+    { value: "outro", label: "Outro assunto" },
+  ],
+  /** Sem prazo prometido: a DM não definiu um tempo de resposta. */
+  nextSteps: [
+    {
+      name: "Recebemos sua mensagem",
+      text: "As informações são encaminhadas para a equipe responsável.",
+    },
+    { name: "Entendemos o cenário", text: "A DM analisa as informações apresentadas." },
+    {
+      name: "Entramos em contato",
+      text: "Um responsável pode retornar para entender melhor a situação.",
+    },
+    {
+      name: "Conversamos sobre os caminhos",
+      text: "A partir do contexto, são discutidas as possibilidades.",
+    },
+  ],
+};
+
 export type Specialist = {
   /** Endereço: /sobre/especialistas/<slug>. Também é o autor gravado nos artigos do blog. */
   slug: string;

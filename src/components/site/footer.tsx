@@ -1,12 +1,17 @@
 import Link from "next/link";
 import type { ComponentType, SVGProps } from "react";
 import { Container } from "@/components/ui";
-import { FacebookIcon, InstagramIcon, LinkedInIcon, WhatsAppIcon } from "@/components/ui/icons";
+import {
+  ArrowRightIcon,
+  FacebookIcon,
+  InstagramIcon,
+  LinkedInIcon,
+  WhatsAppIcon,
+} from "@/components/ui/icons";
 
 /**
- * Rodapé público, na composição de uma referência do usuário: uma faixa baixa com a marca à
- * esquerda, o menu e as redes à direita, e uma tira clara fina embaixo. Cores e fontes são as
- * da DM. Dado real ou nada: redes e WhatsApp só aparecem quando `site_settings` os tem (L-05).
+ * Rodapé público (composição definida pelo usuário): marca com chamada, quatro colunas de links
+ * e uma linha final com copyright, páginas legais e redes. Dado real ou nada: redes e WhatsApp só aparecem quando `site_settings` os tem (L-05).
  */
 export type FooterSettings = {
   legalName: string | null;
@@ -18,12 +23,35 @@ export type FooterSettings = {
   social: Record<string, string | undefined>;
 };
 
-const NAV = [
-  { href: "/sobre", label: "Sobre" },
-  { href: "/solucoes", label: "Soluções" },
-  { href: "/servicos", label: "Serviços" },
-  { href: "/blog", label: "Blog" },
-  { href: "/contato", label: "Contato" },
+type FooterLink = { href: string; label: string };
+
+/** Colunas do rodapé (composição definida pelo usuário). Só links para páginas que existem. */
+const COLUMNS: { title: string; links: FooterLink[] }[] = [
+  {
+    title: "Empresa",
+    links: [
+      { href: "/sobre", label: "Sobre a DM" },
+      { href: "/sobre/especialistas", label: "Especialistas" },
+      { href: "/sobre#como-trabalhamos", label: "Nossa abordagem" },
+    ],
+  },
+  {
+    title: "Soluções",
+    links: [
+      { href: "/solucoes/consultoria-estrategica", label: "Consultorias" },
+      { href: "/solucoes#servicos", label: "Serviços" },
+      { href: "/solucoes", label: "Soluções" },
+    ],
+  },
+  {
+    title: "Conteúdo",
+    links: [
+      { href: "/blog", label: "Blog" },
+      { href: "/blog/categoria/gestao", label: "Gestão" },
+      { href: "/blog/categoria/financas", label: "Finanças" },
+      { href: "/blog/categoria/negocios-em-frutal-e-regiao", label: "Negócios" },
+    ],
+  },
 ];
 
 const LEGAL = [
@@ -45,29 +73,33 @@ export function Footer({ settings, year }: { settings: FooterSettings | null; ye
 
   return (
     <>
-      <footer>
-        <div data-tone="dark" className="bg-surface text-text">
-          <Container
-            size="wide"
-            className="flex flex-col items-center gap-xl py-2xl lg:flex-row lg:justify-between lg:py-xl"
+      <footer data-tone="dark" className="bg-surface text-text">
+        {/* Marca e chamada */}
+        <Container size="wide" className="border-b border-border py-2xl">
+          <p className="font-sans text-label font-semibold tracking-[0.12em] uppercase">
+            DM Empresarial
+          </p>
+          <p className="mt-sm max-w-[28rem] font-serif text-h3 font-medium text-text">
+            Estratégia, gestão e soluções para empresas que querem avançar.
+          </p>
+          <Link
+            href="/sobre"
+            className="mt-lg inline-flex min-h-11 items-center gap-xs rounded-control border-[1.5px] border-text px-lg font-sans text-sm font-semibold text-text transition-colors duration-150 ease-standard hover:bg-text hover:text-surface"
           >
-            <Link
-              href="/"
-              aria-label="DM Empresarial, página inicial"
-              className="text-center lg:text-left"
-            >
-              <span className="block font-serif text-h1 leading-none font-medium">
-                DM Empresarial
-              </span>
-              <span className="mt-2xs block font-sans text-label font-semibold tracking-[0.12em] text-text-secondary uppercase">
-                Consultoria empresarial
-              </span>
-            </Link>
+            Conheça a DM <ArrowRightIcon className="size-5" />
+          </Link>
+        </Container>
 
-            <div className="flex flex-col items-center gap-lg md:flex-row md:gap-3xl">
-              <nav aria-label="Rodapé">
-                <ul className="flex flex-wrap justify-center gap-x-xl gap-y-sm font-sans text-body">
-                  {NAV.map((item) => (
+        {/* Colunas */}
+        <Container size="wide" className="border-b border-border py-2xl">
+          <nav aria-label="Rodapé" className="grid grid-cols-2 gap-x-lg gap-y-xl md:grid-cols-4">
+            {COLUMNS.map((column) => (
+              <div key={column.title}>
+                <h2 className="font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
+                  {column.title}
+                </h2>
+                <ul className="mt-md space-y-xs font-sans text-body-sm">
+                  {column.links.map((item) => (
                     <li key={item.href}>
                       <Link
                         href={item.href}
@@ -78,59 +110,80 @@ export function Footer({ settings, year }: { settings: FooterSettings | null; ye
                     </li>
                   ))}
                 </ul>
-              </nav>
-
-              {socialEntries.length > 0 ? (
-                <ul className="flex items-center gap-md">
-                  {socialEntries.map(([platform, url]) => {
-                    const known = SOCIAL[platform];
-                    return (
-                      <li key={platform}>
-                        <a
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`${known?.label ?? platform} (abre em nova aba)`}
-                          className="flex size-11 items-center justify-center text-text transition-colors duration-150 ease-standard hover:text-link"
-                        >
-                          {known ? (
-                            <known.Icon className="size-8" />
-                          ) : (
-                            <span className="font-sans text-body">{platform}</span>
-                          )}
-                        </a>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : null}
+              </div>
+            ))}
+            <div>
+              <h2 className="font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
+                Contato
+              </h2>
+              <ul className="mt-md space-y-xs font-sans text-body-sm text-text">
+                <li>Frutal — MG</li>
+                {settings?.address ? (
+                  <li className="text-text-secondary">{settings.address}</li>
+                ) : null}
+                <li>
+                  <Link
+                    href="/contato"
+                    className="font-semibold text-link transition-colors duration-150 ease-standard hover:underline"
+                  >
+                    Falar com a DM →
+                  </Link>
+                </li>
+              </ul>
             </div>
-          </Container>
-        </div>
+          </nav>
+        </Container>
 
-        <div className="bg-surface text-text-secondary">
-          <Container
-            size="wide"
-            className={`flex flex-wrap items-center justify-center gap-x-lg gap-y-2xs pt-sm text-center font-sans text-caption ${
-              // Espaço para o botão flutuante do WhatsApp não cobrir o texto no fim da página.
-              whatsapp ? "pb-24 md:pb-sm" : "pb-sm"
-            }`}
-          >
+        {/* Linha final */}
+        <Container
+          size="wide"
+          className={`flex flex-col gap-md py-lg font-sans text-caption text-text-secondary md:flex-row md:items-center md:justify-between ${
+            // Espaço para o botão flutuante do WhatsApp não cobrir o texto no fim da página.
+            whatsapp ? "pb-24 md:pb-lg" : ""
+          }`}
+        >
+          <div className="space-y-2xs">
             <p>
               © {year} {settings?.legalName ?? "DM Empresarial"}
-              {settings?.cnpj ? ` · CNPJ ${settings.cnpj}` : ""}. Todos os direitos reservados.
+              {settings?.cnpj ? ` · CNPJ ${settings.cnpj}` : ""}
             </p>
-            {LEGAL.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="underline-offset-[3px] transition-colors hover:text-text hover:underline"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </Container>
-        </div>
+            <p className="flex flex-wrap gap-x-xs">
+              {LEGAL.map((item, i) => (
+                <span key={item.href}>
+                  {i > 0 ? <span aria-hidden="true">· </span> : null}
+                  <Link
+                    href={item.href}
+                    className="underline-offset-[3px] transition-colors hover:text-text hover:underline"
+                  >
+                    {item.label}
+                  </Link>
+                </span>
+              ))}
+            </p>
+          </div>
+
+          {socialEntries.length > 0 ? (
+            <ul className="flex items-center gap-lg">
+              {socialEntries.map(([platform, url]) => {
+                const known = SOCIAL[platform];
+                return (
+                  <li key={platform}>
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${known?.label ?? platform} (abre em nova aba)`}
+                      className="inline-flex min-h-11 items-center gap-xs text-text transition-colors duration-150 ease-standard hover:text-link"
+                    >
+                      {known ? <known.Icon className="size-5" /> : null}
+                      {known?.label ?? platform}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+        </Container>
       </footer>
 
       {whatsapp ? (
