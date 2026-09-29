@@ -19,7 +19,7 @@ import type { RichDoc } from "@/lib/rich-text";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { ServicesWheel } from "@/components/site/services-wheel";
 import { ValuesCircle } from "@/components/site/values-circle";
-import { ABOUT, CONTACT, HOME, SOLUTIONS, WHATSAPP_URL } from "@/content/dm";
+import { ABOUT, CONTACT, HOME, WHATSAPP_URL } from "@/content/dm";
 import { env } from "@/server/env";
 
 const homeMetadata = publicMetadata({
@@ -42,23 +42,11 @@ const AUTHORITY_STATS = HOME.stats.map((stat, i) => ({
   Icon: STAT_ICONS[i] ?? UsersIcon,
 }));
 
-// As duas únicas cores usadas no gráfico de soluções — tons já existentes da paleta da DM
-// (docs/02 §15: paleta contida, nunca cor nova só para "colorir um gráfico").
-const SOLUTION_TYPE_COLOR: Record<"CONSULTORIA" | "SERVICO", string> = {
-  CONSULTORIA: "var(--color-azul-marca)",
-  SERVICO: "var(--color-verde-tinta)",
-};
-const SOLUTION_TYPE_LABEL: Record<"CONSULTORIA" | "SERVICO", string> = {
-  CONSULTORIA: "Consultoria",
-  SERVICO: "Serviço",
-};
-
 export default async function HomePage() {
   const [postsPage, settings] = await Promise.all([
     listPublicPostsForRoute({ pageSize: 4 }),
     getPublicSettingsForRoute(),
   ]);
-  const solutions = SOLUTIONS;
   const posts = postsPage.items;
 
   // Capas dos artigos do blog: resolvidas em lote (uma consulta).
@@ -68,22 +56,6 @@ export default async function HomePage() {
       ? { type: "doc", content: coverIds.map((mediaId) => ({ type: "image", attrs: { mediaId } })) }
       : null;
   const coverResolver = coverDoc ? await buildMediaResolverForRoute(coverDoc) : null;
-
-  // Gráfico de soluções: fatias iguais por solução publicada, coloridas pelo tipo (só 2 tons da
-  // paleta da DM — nunca uma cor nova só para decorar um gráfico).
-  const solutionSlices = solutions.map((s, i) => {
-    const start = (360 / solutions.length) * i;
-    const end = (360 / solutions.length) * (i + 1);
-    return { ...s, start, end };
-  });
-  const donutGradient =
-    solutions.length > 0
-      ? `conic-gradient(${solutionSlices
-          .map((s) => `${SOLUTION_TYPE_COLOR[s.type]} ${s.start}deg ${s.end}deg`)
-          .join(", ")})`
-      : undefined;
-  const consultoriaCount = solutions.filter((s) => s.type === "CONSULTORIA").length;
-  const servicoCount = solutions.filter((s) => s.type === "SERVICO").length;
 
   return (
     <>
@@ -292,129 +264,14 @@ export default async function HomePage() {
         </Container>
       </Section>
 
-      {/* 4 SOLUÇÕES — soluções reais, agrupadas por tipo num gráfico simples (nunca fatias
-          decorativas sem significado: cada fatia é uma solução publicada de verdade). */}
-      {solutions.length > 0 ? (
-        <Section tone="muted" spacing="loose" aria-labelledby="home-solucoes">
-          <Container>
-            <SectionLabel>Soluções</SectionLabel>
-            <Heading as="h2" variant="h2" id="home-solucoes" className="mt-md">
-              O que fazemos
-            </Heading>
-
-            <div className="mt-2xl grid grid-cols-1 items-center gap-2xl lg:grid-cols-[auto_1fr] lg:gap-x-4xl">
-              <div className="flex flex-col items-center gap-md justify-self-center">
-                <div
-                  className="relative flex size-[220px] items-center justify-center rounded-full sm:size-[280px]"
-                  style={{ background: donutGradient }}
-                >
-                  <div className="flex size-[70%] flex-col items-center justify-center rounded-full bg-surface-muted text-center">
-                    <Text as="span" size="sm" tone="secondary">
-                      soluções
-                    </Text>
-                    <Text as="span" className="font-serif text-display-m text-text">
-                      {solutions.length}
-                    </Text>
-                  </div>
-                </div>
-                <ul className="flex gap-lg">
-                  <li className="flex items-center gap-xs">
-                    <span
-                      aria-hidden="true"
-                      className="size-2.5 rounded-full"
-                      style={{ background: SOLUTION_TYPE_COLOR.CONSULTORIA }}
-                    />
-                    <Text size="sm" tone="secondary">
-                      {SOLUTION_TYPE_LABEL.CONSULTORIA} ({consultoriaCount})
-                    </Text>
-                  </li>
-                  <li className="flex items-center gap-xs">
-                    <span
-                      aria-hidden="true"
-                      className="size-2.5 rounded-full"
-                      style={{ background: SOLUTION_TYPE_COLOR.SERVICO }}
-                    />
-                    <Text size="sm" tone="secondary">
-                      {SOLUTION_TYPE_LABEL.SERVICO} ({servicoCount})
-                    </Text>
-                  </li>
-                </ul>
-              </div>
-
-              <ul className="grid min-w-0 max-w-[48rem] grid-cols-1 gap-lg sm:grid-cols-2">
-                {solutions.map((item) => (
-                  <li key={item.slug} className="relative pl-md">
-                    <span
-                      aria-hidden="true"
-                      className="absolute top-2xs bottom-2xs left-0 w-1 rounded-full"
-                      style={{ background: SOLUTION_TYPE_COLOR[item.type] }}
-                    />
-                    <Link
-                      href={`/solucoes/${item.slug}`}
-                      className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
-                    >
-                      <Heading
-                        as="h3"
-                        variant="h4"
-                        className="text-link group-hover:underline group-focus-visible:underline"
-                      >
-                        {item.title}
-                      </Heading>
-                      <Text size="sm" tone="secondary" className="mt-2xs">
-                        {item.summary}
-                      </Text>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="mt-2xl">
-              <Button href="/solucoes" variant="secondary">
-                Ver todas as soluções
-              </Button>
-            </div>
-          </Container>
-        </Section>
-      ) : null}
-
-      {/* 5 CTA — geometria da referência do usuário (dois cartões flutuantes, não colados na
-          borda do viewport): duas faixas empilhadas com pontas arredondadas alternadas (a de
-          cima abre à direita, a de baixo à esquerda), um círculo sobrepondo a ponta arredondada
-          da primeira (meio dentro meio fora DO CARTÃO, não da tela — por isso ele fica inteiro,
-          nunca cortado), e um botão circular flutuando na costura da segunda com o fundo. Cores,
-          texto e o círculo (sem foto real ainda) continuam os da DM. */}
+      {/* CTA — cartão com a ponta esquerda arredondada e um botão circular flutuando na costura
+          de baixo (geometria de uma referência do usuário; cores e texto da DM). */}
       <Section spacing="loose" aria-labelledby="home-cta">
         <h2 id="home-cta" className="sr-only">
           Fale com a DM
         </h2>
         <Container>
           <div className="flex flex-col gap-3xl">
-            {/* Soluções — arredonda só a ponta direita; o círculo (foto da equipe, quando houver)
-                sobrepõe essa ponta, meio dentro meio fora, como na referência. */}
-            <div
-              data-tone="dark"
-              className="relative flex flex-col justify-center gap-lg rounded-[28px] bg-surface p-2xl lg:rounded-l-[28px] lg:rounded-r-[999px] lg:py-3xl lg:pr-[200px] lg:pl-2xl"
-            >
-              <SectionLabel>Soluções</SectionLabel>
-              <Text size="lg" className="max-w-[28rem] text-text">
-                Consultoria e serviços descritos pelo problema que resolvem — sem tabela de preços,
-                cada conversa começa pelo contexto da sua empresa.
-              </Text>
-              <div>
-                <Button href="/solucoes" variant="secondary" size="sm">
-                  Conheça as soluções →
-                </Button>
-              </div>
-
-              <div
-                aria-hidden="true"
-                className="mt-lg flex size-24 items-center justify-center self-center rounded-full border border-border bg-surface-muted lg:absolute lg:top-1/2 lg:right-0 lg:mt-0 lg:size-40 lg:translate-x-1/4 min-[1360px]:translate-x-3/5 lg:-translate-y-1/2 lg:self-auto"
-              >
-                <UsersIcon className="size-8 text-text-muted lg:size-10" />
-              </div>
-            </div>
-
             {/* Vamos conversar — arredonda só a ponta esquerda; título e texto lado a
                 lado (não empilhados); botão circular flutuando na costura de baixo. */}
             <div className="relative rounded-[28px] bg-action p-2xl pb-3xl lg:rounded-r-[28px] lg:rounded-l-[999px] lg:py-3xl lg:pr-2xl lg:pl-4xl">
