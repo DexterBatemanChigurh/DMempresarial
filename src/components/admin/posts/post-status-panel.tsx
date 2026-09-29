@@ -39,6 +39,8 @@ type Props = {
    * nunca é recalculado no navegador (a autorização real também não é). */
   targets: PostStatus[];
   canDelete: boolean;
+  /** "Excluir rascunho" ou "Excluir artigo" (ADMIN, qualquer situação). */
+  deleteLabel?: string;
   canChangeSlug: boolean;
 };
 
@@ -50,6 +52,7 @@ export function PostStatusPanel({
   scheduledFor,
   targets,
   canDelete,
+  deleteLabel = "Excluir rascunho",
   canChangeSlug,
 }: Props) {
   const router = useRouter();
@@ -186,26 +189,31 @@ export function PostStatusPanel({
             </FormMessage>
           ) : null}
           {confirmingDelete ? (
-            <form action={deleteFormAction} className="flex items-center gap-sm">
+            <form action={deleteFormAction} className="space-y-sm">
               <input type="hidden" name="postId" value={postId} />
-              <span className="font-sans text-caption text-text-secondary">Excluir de vez?</span>
-              <Button
-                type="submit"
-                size="sm"
-                variant="secondary"
-                loading={deletePending}
-                loadingLabel="Excluindo…"
-              >
-                Confirmar exclusão
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="tertiary"
-                onClick={() => setConfirmingDelete(false)}
-              >
-                Cancelar
-              </Button>
+              <p role="alert" className="font-sans text-caption text-danger">
+                Excluir de vez? O artigo sai do site e do painel, com suas categorias, tags e
+                redirecionamentos. Não dá para desfazer. As imagens continuam na Mídia.
+              </p>
+              <div className="flex flex-wrap items-center gap-sm">
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="secondary"
+                  loading={deletePending}
+                  loadingLabel="Excluindo…"
+                >
+                  Confirmar exclusão
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="tertiary"
+                  onClick={() => setConfirmingDelete(false)}
+                >
+                  Cancelar
+                </Button>
+              </div>
             </form>
           ) : (
             <Button
@@ -214,7 +222,7 @@ export function PostStatusPanel({
               variant="tertiary"
               onClick={() => setConfirmingDelete(true)}
             >
-              Excluir rascunho
+              {deleteLabel}
             </Button>
           )}
         </div>

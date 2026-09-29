@@ -11,6 +11,8 @@ export const ACTIONS = [
   "post:publish",
   "post:archive",
   "post:delete-draft",
+  /** Excluir QUALQUER artigo (publicado inclusive), em definitivo: só ADMIN. */
+  "post:delete",
   "taxonomy:manage",
   "media:upload",
   "media:manage",
@@ -55,7 +57,8 @@ const deletableDraft: Rule = (actor, r) =>
 const POLICY: Record<Role, Partial<Record<Action, Rule>>> = {
   ADMIN: {
     ...(Object.fromEntries(ACTIONS.map((action) => [action, always])) as Record<Action, Rule>),
-    // Nem o ADMIN apaga definitivamente algo que já esteve público (quebraria links e histórico).
+    // `post:delete` (qualquer artigo) vale só para o ADMIN — decisão do usuário em 29/09/2026.
+    // `post:delete-draft` segue a regra de rascunho nunca publicado, como para os outros papéis.
     "post:delete-draft": deletableDraft,
   },
   EDITOR: {

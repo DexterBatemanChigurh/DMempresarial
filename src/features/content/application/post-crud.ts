@@ -2,11 +2,18 @@ import "server-only";
 import { and, eq } from "drizzle-orm";
 import type { Database, Transaction } from "@/db/client";
 import { findSpecialist } from "@/content/dm";
-import { postCategories, postTags, posts, type postFormat } from "@/db/schema";
+import {
+  categories,
+  postCategories,
+  postTags,
+  posts,
+  redirects,
+  type postFormat,
+} from "@/db/schema";
 import { AppError } from "@/lib/errors";
 import { isReservedSlug, isValidSlug, slugify } from "@/lib/slug";
 import { recordAudit } from "@/features/platform/infrastructure/audit";
-import { assertCan, type Actor } from "@/server/permissions";
+import { assertCan, can, type Actor } from "@/server/permissions";
 import type { PostStatus } from "../domain/post-status";
 import {
   boundedPaging,
@@ -257,14 +264,19 @@ export type DeletePostInput = {
   requestId?: string;
 };
 
-/** Exclusão definitiva: só rascunho NUNCA publicado (a regra vive em `deletableDraft`, em
- * `server/permissions`). Junções (categorias/tags/soluções) somem em cascata (FK `ON DELETE
- * CASCADE`); a mídia referenciada não é apagada. */
-export async function deletePost({ db }: Deps, input: DeletePostInput): Promise<void> {
+/** Exclusão definitiva. ADMIN (`post:delete`) exclui qualquer artigo, publicado inclusive;
+ * os demais só rascunho NUNCA publicado (`post:delete-draft`). Em cascata: categorias e tags
+ * (FK `ON DELETE CASCADE`), redirecionamentos automáticos que levavam ao artigo (senão o link
+ * antigo cairia num 404 com cara de redirecionamento) e a referência nos leads (FK `SET NULL`,
+ * o contato em si fica). A mídia não é apagada: pode estar em uso em outro lugar. */
+export async function deletePost(
+  { db }: Deps,
+  input: DeletePostInput,
+): Promise<{ slug: string; categorySlugs: string[] }> {
   const { actor, postId } = input;
   if (!actor) throw new AppError("UNAUTHENTICATED", "Sem sessão válida.");
 
-  await db.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     const [existing] = await tx
       .select()
       .from(posts)
@@ -273,27 +285,37 @@ export async function deletePost({ db }: Deps, input: DeletePostInput): Promise<
       .for("update");
     if (!existing) throw new AppError("NOT_FOUND", "Artigo inexistente.");
 
-    const hideExistence = actor.role === "AUTHOR" && existing.createdBy !== actor.id;
-    assertCan(
-      actor,
-      "post:delete-draft",
-      {
-        ownerId: existing.createdBy,
-        status: existing.status as PostStatus,
-        hasBeenPublished: existing.firstPublishedAt !== null,
-      },
-      { hideExistence },
-    );
+    if (!can(actor, "post:delete")) {
+      const hideExistence = actor.role === "AUTHOR" && existing.createdBy !== actor.id;
+      assertCan(
+        actor,
+        "post:delete-draft",
+        {
+          ownerId: existing.createdBy,
+          status: existing.status as PostStatus,
+          hasBeenPublished: existing.firstPublishedAt !== null,
+        },
+        { hideExistence },
+      );
+    }
 
+    const categoryRows = await tx
+      .select({ slug: categories.slug })
+      .from(postCategories)
+      .innerJoin(categories, eq(categories.id, postCategories.categoryId))
+      .where(eq(postCategories.postId, postId));
+
+    await tx.delete(redirects).where(eq(redirects.toPath, `/blog/${existing.slug}`));
     await tx.delete(posts).where(eq(posts.id, postId));
     await recordAudit(tx, {
       actorId: actor.id,
       action: "post.deleted",
       entityType: "post",
       entityId: postId,
-      metadata: {},
+      metadata: { status: existing.status },
       requestId: input.requestId,
     });
+    return { slug: existing.slug, categorySlugs: categoryRows.map((r) => r.slug) };
   });
 }
 
@@ -352,7 +374,9 @@ export function updatePostForRoute(
   return updatePost({ db: getDb() }, input);
 }
 
-export function deletePostForRoute(input: DeletePostInput): Promise<void> {
+export function deletePostForRoute(
+  input: DeletePostInput,
+): Promise<{ slug: string; categorySlugs: string[] }> {
   return deletePost({ db: getDb() }, input);
 }
 

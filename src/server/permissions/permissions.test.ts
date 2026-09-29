@@ -28,6 +28,7 @@ const EXPECTED: Record<Role, Partial<Record<Action, boolean>>> = {
     "media:manage": true,
     "media:delete": true,
     "post:delete-draft": false,
+    "post:delete": false,
     "lead:view": false,
     "lead:update": false,
     "lead:export": false,
@@ -38,6 +39,7 @@ const EXPECTED: Record<Role, Partial<Record<Action, boolean>>> = {
   },
   AUTHOR: {
     "post:create": true,
+    "post:delete": false,
     "media:upload": true,
     "media:manage": false,
     "post:publish": false,
@@ -139,6 +141,10 @@ describe("can — EDITOR e ADMIN em exclusão de rascunho", () => {
         hasBeenPublished: true,
       }),
     ).toBe(false);
+    // Excluir qualquer artigo (publicado inclusive) é uma ação separada, só do ADMIN.
+    expect(can(admin, "post:delete", { ownerId: "outro", status: "PUBLISHED" })).toBe(true);
+    expect(can(actor("EDITOR"), "post:delete", { ownerId: "x", status: "PUBLISHED" })).toBe(false);
+    expect(can(actor("AUTHOR"), "post:delete", { ownerId: "x", status: "DRAFT" })).toBe(false);
     expect(can(admin, "post:delete-draft", { ownerId: "outro", status: "PUBLISHED" })).toBe(false);
   });
 

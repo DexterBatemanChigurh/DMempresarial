@@ -122,15 +122,20 @@ export async function deletePostAction(
   _prevState: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
-  let postId: string;
+  let deleted: { slug: string; categorySlugs: string[] };
   try {
     const { actor } = await requireAdminSession();
-    postId = str(formData, "postId");
-    await deletePostForRoute({ actor, postId });
+    deleted = await deletePostForRoute({ actor, postId: str(formData, "postId") });
   } catch (error) {
     return fail(toActionError(error));
   }
-  invalidate(["posts"]);
+  // O artigo some do site na hora: página dele, listagens, categorias e redirecionamentos.
+  invalidate([
+    `post:${deleted.slug}`,
+    "posts",
+    "categories",
+    ...deleted.categorySlugs.map((slug) => `posts:category:${slug}`),
+  ]);
   redirect("/admin/artigos");
 }
 

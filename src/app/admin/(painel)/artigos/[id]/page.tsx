@@ -50,7 +50,9 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
   const status = post.status as PostStatus;
   const resource = { ownerId: post.createdBy, hasBeenPublished: post.firstPublishedAt !== null };
   const targets = availableTransitions(actor, status, resource, POST_STATUSES);
-  const canDelete = can(actor, "post:delete-draft", { ...resource, status });
+  // ADMIN exclui qualquer artigo; os demais, só o próprio rascunho nunca publicado.
+  const canDeleteAny = can(actor, "post:delete");
+  const canDelete = canDeleteAny || can(actor, "post:delete-draft", { ...resource, status });
   const canChangeSlug = can(actor, "post:edit", { ...resource, status });
 
   return (
@@ -96,6 +98,11 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
             scheduledFor={post.scheduledFor ? post.scheduledFor.toISOString().slice(0, 16) : null}
             targets={targets}
             canDelete={canDelete}
+            deleteLabel={
+              status === "DRAFT" && !resource.hasBeenPublished
+                ? "Excluir rascunho"
+                : "Excluir artigo"
+            }
             canChangeSlug={canChangeSlug}
           />
         </div>

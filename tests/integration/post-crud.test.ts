@@ -289,7 +289,9 @@ describe("deletePost", () => {
 
   it("AUTHOR apaga o PRÓPRIO rascunho, mas não o de outra pessoa (NOT_FOUND)", async () => {
     const mine = await fx.post({ authorSlug: AUTHOR, createdBy: author.id, status: "DRAFT" });
-    await expect(deletePost(deps, { actor: author, postId: mine.id })).resolves.toBeUndefined();
+    await expect(deletePost(deps, { actor: author, postId: mine.id })).resolves.toMatchObject({
+      slug: mine.slug,
+    });
 
     const theirs = await fx.post({
       authorSlug: AUTHOR,
@@ -308,22 +310,53 @@ describe("deletePost", () => {
     });
   });
 
-  it("artigo já publicado (mesmo arquivado depois) não pode ser apagado", async () => {
+  it("artigo já publicado: EDITOR e AUTHOR não apagam (FORBIDDEN / NOT_FOUND)", async () => {
+    const post = await fx.post({ authorSlug: AUTHOR, createdBy: author.id, status: "PUBLISHED" });
+    await expect(deletePost(deps, { actor: editor, postId: post.id })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
+    await expect(deletePost(deps, { actor: author, postId: post.id })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
+    expect(await q("select 1 from posts where id = $1", [post.id])).toHaveLength(1);
+  });
+
+  it("ADMIN apaga artigo publicado e arquivado, em cascata (categorias, redirecionamentos, lead)", async () => {
     const post = await fx.post({
       authorSlug: AUTHOR,
       createdBy: author.id,
       status: "PUBLISHED",
     });
+    // A fixture já liga o artigo a uma categoria principal.
+    expect((await categoryLinksOf(post.id)).length).toBeGreaterThan(0);
+    const oldPath = `/blog/${uniq("antigo-")}`;
+    await q("insert into redirects (from_path, to_path) values ($1, $2)", [
+      oldPath,
+      `/blog/${post.slug}`,
+    ]);
+    const [lead] = await q<{ id: string }>(
+      `insert into leads (name, email, message, consent_at, consent_version, origin_post_id)
+       values ('Teste', $1, 'oi', now(), 'v1', $2) returning id`,
+      [`${uniq("lead-")}@dom-it.example.test`, post.id],
+    );
     await transitionPost(deps, {
       actor: admin,
       postId: post.id,
       to: "ARCHIVED",
       expectedVersion: post.version,
     });
-    await expect(deletePost(deps, { actor: admin, postId: post.id })).rejects.toMatchObject({
-      code: "FORBIDDEN",
-    });
-    expect(await q("select 1 from posts where id = $1", [post.id])).toHaveLength(1);
+
+    const result = await deletePost(deps, { actor: admin, postId: post.id });
+    expect(result.slug).toBe(post.slug);
+    expect(await q("select 1 from posts where id = $1", [post.id])).toHaveLength(0);
+    expect(await categoryLinksOf(post.id)).toHaveLength(0);
+    expect(await q("select 1 from redirects where from_path = $1", [oldPath])).toHaveLength(0);
+    const [leadAfter] = await q<{ origin_post_id: string | null }>(
+      "select origin_post_id from leads where id = $1",
+      [lead!.id],
+    );
+    expect(leadAfter!.origin_post_id).toBeNull();
+    await q("delete from leads where id = $1", [lead!.id]);
   });
 });
 
