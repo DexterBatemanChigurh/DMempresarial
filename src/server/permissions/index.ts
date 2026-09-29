@@ -21,7 +21,6 @@ export const ACTIONS = [
   "lead:erase",
   "user:manage",
   "settings:manage",
-  "redirect:manage",
   "audit:view",
 ] as const;
 export type Action = (typeof ACTIONS)[number];
@@ -69,7 +68,6 @@ const POLICY: Record<Role, Partial<Record<Action, Rule>>> = {
     "media:upload": always,
     "media:manage": always,
     "media:delete": always,
-    "redirect:manage": always,
   },
   AUTHOR: {
     "post:create": always,

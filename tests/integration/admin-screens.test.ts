@@ -7,12 +7,6 @@ import {
   listLeadsForAdmin,
   transitionLead,
 } from "@/features/conversion/application/conversion-admin";
-import {
-  createManualRedirect,
-  deleteRedirect,
-  listRedirects,
-} from "@/features/platform/application/redirect-admin";
-import { getRedirect } from "@/features/platform/application/public-redirects";
 import type { Actor } from "@/server/permissions";
 import { createFixtures, EMAIL_DOMAIN, PREFIX, uniq } from "./fixtures";
 import { testAppUrl } from "./helpers";
@@ -124,62 +118,5 @@ describe("leads (só ADMIN)", () => {
     expect(await q("select 1 from leads where id = $1", [id])).toHaveLength(0);
     expect(await auditCount("lead.erased", id)).toBe(1);
     await expect(getLeadForAdmin(deps, admin, id)).rejects.toMatchObject({ code: "NOT_FOUND" });
-  });
-});
-
-describe("redirecionamentos", () => {
-  const path = (label: string) => `/blog/${uniq(label)}`;
-
-  it("EDITOR cria um manual e o Proxy passa a resolver o endereço", async () => {
-    const from = path("velho-");
-    const to = path("novo-");
-    await createManualRedirect(deps, { actor: editor, fromPath: `${from}/`, toPath: to });
-    expect(await getRedirect(deps, from)).toEqual({ toPath: to, statusCode: 301 });
-  });
-
-  it("nunca forma cadeia: destino que já redireciona é seguido, e quem apontava para a origem é reapontado", async () => {
-    const a = path("a-");
-    const b = path("b-");
-    const c = path("c-");
-    await createManualRedirect(deps, { actor: editor, fromPath: b, toPath: c });
-    // a → b vira a → c
-    const created = await createManualRedirect(deps, { actor: editor, fromPath: a, toPath: b });
-    expect(created.toPath).toBe(c);
-    // c → d: quem apontava para c (a e b) passa a apontar direto para d
-    const d = path("d-");
-    await createManualRedirect(deps, { actor: editor, fromPath: c, toPath: d });
-    expect((await getRedirect(deps, a))?.toPath).toBe(d);
-    expect((await getRedirect(deps, b))?.toPath).toBe(d);
-  });
-
-  it("recusa laço, origem duplicada, origem fora de conteúdo e destino externo", async () => {
-    const a = path("la-");
-    const b = path("lb-");
-    await createManualRedirect(deps, { actor: editor, fromPath: a, toPath: b });
-    await expect(
-      createManualRedirect(deps, { actor: editor, fromPath: b, toPath: a }),
-    ).rejects.toMatchObject({ code: "VALIDATION", fieldErrors: { toPath: expect.any(Array) } });
-    await expect(
-      createManualRedirect(deps, { actor: editor, fromPath: a, toPath: path("x-") }),
-    ).rejects.toMatchObject({ code: "VALIDATION", fieldErrors: { fromPath: expect.any(Array) } });
-    await expect(
-      createManualRedirect(deps, { actor: editor, fromPath: "/contato", toPath: "/blog" }),
-    ).rejects.toMatchObject({ code: "VALIDATION" });
-    await expect(
-      createManualRedirect(deps, { actor: editor, fromPath: path("e-"), toPath: "//golpe.test" }),
-    ).rejects.toMatchObject({ code: "VALIDATION" });
-  });
-
-  it("AUTHOR não gerencia; remoção fica na auditoria", async () => {
-    await expect(listRedirects(deps, author)).rejects.toMatchObject({ code: "FORBIDDEN" });
-    const from = path("rm-");
-    const { id } = await createManualRedirect(deps, {
-      actor: admin,
-      fromPath: from,
-      toPath: "/blog",
-    });
-    await deleteRedirect(deps, { actor: admin, id });
-    expect(await getRedirect(deps, from)).toBeNull();
-    expect(await auditCount("redirect.deleted", id)).toBe(1);
   });
 });

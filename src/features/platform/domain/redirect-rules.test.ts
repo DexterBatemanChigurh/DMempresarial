@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isRedirectSource, normalizePath, validateManualRedirect } from "./redirect-rules";
+import { isRedirectSource, normalizePath } from "./redirect-rules";
 
 describe("isRedirectSource", () => {
   it("aceita só caminhos de conteúdo com slug (os que o Proxy consulta)", () => {
@@ -26,30 +26,5 @@ describe("normalizePath", () => {
   it("tira espaços, barra final, query e fragmento", () => {
     expect(normalizePath(" /blog/x/?utm=1#topo ")).toBe("/blog/x");
     expect(normalizePath("/")).toBe("/");
-  });
-});
-
-describe("validateManualRedirect", () => {
-  it("aceita origem de conteúdo e destino interno", () => {
-    expect(validateManualRedirect({ fromPath: "/blog/velho/", toPath: "/blog/novo" })).toEqual({
-      fromPath: "/blog/velho",
-      toPath: "/blog/novo",
-      errors: {},
-    });
-  });
-
-  it("recusa destino externo ou disfarçado (open redirect)", () => {
-    for (const toPath of ["https://golpe.test", "//golpe.test", "/\\golpe.test", "blog/x", "/ a"]) {
-      expect(
-        validateManualRedirect({ fromPath: "/blog/a", toPath }).errors.toPath,
-        toPath,
-      ).toBeDefined();
-    }
-  });
-
-  it("recusa laço para si mesmo", () => {
-    expect(
-      validateManualRedirect({ fromPath: "/blog/a", toPath: "/blog/a/" }).errors.toPath,
-    ).toBeDefined();
   });
 });

@@ -27,7 +27,6 @@ const EXPECTED: Record<Role, Partial<Record<Action, boolean>>> = {
     "media:upload": true,
     "media:manage": true,
     "media:delete": true,
-    "redirect:manage": true,
     "post:delete-draft": false,
     "lead:view": false,
     "lead:update": false,
@@ -50,7 +49,6 @@ const EXPECTED: Record<Role, Partial<Record<Action, boolean>>> = {
     "lead:erase": false,
     "user:manage": false,
     "settings:manage": false,
-    "redirect:manage": false,
     "audit:view": false,
   },
 };
