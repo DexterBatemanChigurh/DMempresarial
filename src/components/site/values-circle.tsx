@@ -1,14 +1,13 @@
 /**
- * Círculo com os valores da DM escritos em volta (página Sobre). Os nomes vêm do CMS
- * (`about.values`) e se dividem em dois anéis: o de fora na cor do texto, o de dentro em
- * terracota. Decorativo para leitor de tela: a lista de valores logo abaixo na página diz o mesmo
- * de forma linear.
+ * Círculo com os valores da DM escritos em volta ("Sobre nós" da Home). Os nomes vêm de
+ * src/content/dm.ts (`ABOUT.values`) e se dividem em dois anéis: o de fora na cor do texto, o de
+ * dentro em teal. Decorativo para leitor de tela: a página /sobre lista os mesmos valores.
  */
 const VIEW = 500;
 const CENTER = VIEW / 2;
 const RINGS = [
   { radius: 210, maxFont: 16.5, tracking: 0.25, className: "fill-text font-medium" },
-  { radius: 160, maxFont: 19, tracking: 0.16, className: "fill-terracota font-bold" },
+  { radius: 160, maxFont: 19, tracking: 0.16, className: "fill-azul-marca-escuro font-bold" },
 ] as const;
 
 /** Caminho circular que começa às 9 horas e corre no sentido horário (texto de pé no topo). */

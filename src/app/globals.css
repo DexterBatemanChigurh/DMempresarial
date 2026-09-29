@@ -18,34 +18,43 @@
   --color-transparent: transparent;
   --color-current: currentColor;
 
-  --color-papel: #f6f2ea;
-  --color-papel-elevado: #fcfaf6;
-  --color-areia: #e9e0cf;
-  --color-tinta: #18201c;
-  --color-tinta-secundaria: #46514b;
-  --color-tinta-suave: #66706a;
-  --color-verde-tinta: #1f3b33;
-  --color-azul-marca: #5c6c9d;
-  --color-azul-marca-escuro: #4a5780;
-  --color-azul-marca-claro: #8aa0d4;
+  --color-papel: #ffffff;
+  --color-papel-elevado: #ffffff;
+  --color-areia: #f3efe6;
+  --color-tinta: #22262f;
+  --color-tinta-secundaria: #525864;
+  --color-tinta-suave: #6b7080;
+  --color-verde-tinta: #1c2130;
+  --color-azul-marca: #2f7b86;
+  --color-azul-marca-escuro: #256770;
+  --color-azul-marca-claro: #4a9aa5;
   --color-terracota: #a8482a;
   --color-terracota-escura: #8f3b20;
-  --color-linha: #d8cfbd;
+  --color-linha: #ded8cb;
   --color-borda-campo: #857e6e;
   --color-sucesso: #2c6a45;
   --color-aviso: #7f5300;
   --color-erro: #a01e3c;
 
+  /* Paleta do site da DM (dmempresarial.com.br, 28/09/2026): os nomes acima foram mantidos, só
+   * os valores mudaram (papel = branco, areia = creme, verde-tinta = navy, azul-marca = teal).
+   * Ouro: só detalhe decorativo (2,35:1 sobre branco, nunca texto em fundo claro). WhatsApp:
+   * o verde exato só em elemento sem texto (3,09:1); com texto, o tom escuro (4,82:1). */
+  --color-ouro: #c6a55a;
+  --color-whatsapp: #1fa855;
+  --color-whatsapp-texto: #16833f;
+  --color-whatsapp-texto-escuro: #127036;
+
   /* Seção "O que fazemos" da Home (roda de serviços): paleta própria, definida pelo usuário. */
   --color-roda-branco: #ffffff;
-  --color-roda-marinho: #17345f;
-  --color-roda-turquesa: #13aeb0;
-  --color-roda-azul: #2287df;
-  --color-roda-texto: #60718c;
-  --color-roda-texto-card: #64748b;
-  --color-roda-linha: #dce6ef;
-  --color-roda-linha-suave: #e9eff5;
-  --color-roda-raio: #e3ebf2;
+  --color-roda-marinho: #1c2130;
+  --color-roda-turquesa: #4a9aa5;
+  --color-roda-azul: #2f7b86;
+  --color-roda-texto: #525864;
+  --color-roda-texto-card: #525864;
+  --color-roda-linha: #ded8cb;
+  --color-roda-linha-suave: #ebe7de;
+  --color-roda-raio: #e6e1d7;
 
   /* Espaçamento: escala de base 4 px com nomes (Blueprint 2, seção 06). */
   --spacing-2xs: 0.25rem;
@@ -67,10 +76,10 @@
 
   /* Sombra: uma só, para elementos sobrepostos. Profundidade vem de espaço e contraste. */
   --shadow-*: initial;
-  --shadow-overlay: 0 1px 2px rgb(24 32 28 / 0.06), 0 8px 24px rgb(24 32 28 / 0.08);
-  --shadow-roda-centro: 0 20px 60px rgb(23 52 95 / 0.08);
-  --shadow-roda-icone: 0 10px 30px rgb(23 52 95 / 0.08);
-  --shadow-roda-icone-ativo: 0 15px 35px rgb(23 52 95 / 0.12);
+  --shadow-overlay: 0 1px 2px rgb(28 33 48 / 0.06), 0 8px 24px rgb(28 33 48 / 0.08);
+  --shadow-roda-centro: 0 20px 60px rgb(28 33 48 / 0.08);
+  --shadow-roda-icone: 0 10px 30px rgb(28 33 48 / 0.08);
+  --shadow-roda-icone-ativo: 0 15px 35px rgb(28 33 48 / 0.12);
 
   /* Larguras de container (Blueprint 2, seção 05). */
   --container-narrow: 35rem;
@@ -197,7 +206,7 @@
   --action-contrast: var(--color-papel);
   --link: var(--color-azul-marca-claro);
   --focus: var(--color-azul-marca-claro);
-  --border: rgb(246 242 234 / 0.28);
+  --border: rgb(243 239 230 / 0.16);
   --border-strong: var(--color-papel);
 }
 

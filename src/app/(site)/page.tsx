@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Paragraphs } from "@/components/content/paragraphs";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
-import { ArrowRightIcon, ClockIcon, UsersIcon } from "@/components/ui/icons";
+import { ArrowRightIcon, ClockIcon, UsersIcon, WhatsAppIcon } from "@/components/ui/icons";
 
 /** Colunas do grid do blog por quantidade real de artigos: menos de 4 nunca deixa um card
  * solitário boiando num grid de 4 (docs/02 §04, grid consistente). */
@@ -92,7 +92,14 @@ export default async function HomePage() {
                 {HOME.description}
               </Text>
               <div className="mt-2xl flex flex-wrap gap-sm">
-                <Button href={WHATSAPP_URL} size="lg" target="_blank" rel="noopener noreferrer">
+                <Button
+                  href={WHATSAPP_URL}
+                  variant="whatsapp"
+                  size="lg"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <WhatsAppIcon aria-hidden="true" className="size-5" />
                   Conversar pelo WhatsApp
                   <span className="sr-only"> (abre em nova aba)</span>
                 </Button>

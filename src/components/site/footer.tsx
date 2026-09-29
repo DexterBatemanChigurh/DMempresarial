@@ -139,7 +139,7 @@ export function Footer({ settings, year }: { settings: FooterSettings | null; ye
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Conversar com a DM pelo WhatsApp (abre em nova aba)"
-          className="fixed right-lg bottom-lg z-40 flex size-14 items-center justify-center rounded-full bg-action text-action-contrast shadow-overlay transition-colors duration-150 ease-standard hover:bg-action-hover"
+          className="fixed right-lg bottom-lg z-40 flex size-14 items-center justify-center rounded-full bg-whatsapp text-papel shadow-overlay transition-colors duration-150 ease-standard hover:bg-whatsapp-texto"
         >
           <WhatsAppIcon className="size-8" />
         </a>

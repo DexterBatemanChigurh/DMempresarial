@@ -19,25 +19,25 @@ function ratio(fg: string, bg: string): number {
   return contrastRatio(color(fg), color(bg));
 }
 
-describe("paleta: valores da tabela de contraste do Blueprint 2 (seção 10)", () => {
+describe("paleta: valores da tabela de contraste (paleta do site da DM, 28/09/2026)", () => {
   // [texto, fundo, razão documentada]
   const documented: [string, string, number][] = [
-    ["tinta", "papel", 14.9],
-    ["tinta", "areia", 12.7],
-    ["tinta-secundaria", "papel", 7.41],
-    ["tinta-secundaria", "areia", 6.31],
-    ["tinta-suave", "papel", 4.6],
-    ["verde-tinta", "papel", 10.86],
-    ["papel", "verde-tinta", 10.86],
-    ["areia", "verde-tinta", 9.26],
-    ["papel", "terracota", 5.19],
-    ["papel", "terracota-escura", 6.68],
-    ["papel", "azul-marca", 4.6],
-    ["papel", "azul-marca-escuro", 6.34],
-    ["azul-marca-escuro", "areia", 5.4],
-    ["azul-marca-claro", "verde-tinta", 4.65],
-    ["erro", "papel", 6.85],
-    ["borda-campo", "papel", 3.61],
+    ["tinta", "papel", 15.15],
+    ["tinta", "areia", 13.2],
+    ["tinta-secundaria", "papel", 7.15],
+    ["tinta-secundaria", "areia", 6.23],
+    ["tinta-suave", "papel", 4.94],
+    ["verde-tinta", "papel", 16.04],
+    ["papel", "verde-tinta", 16.04],
+    ["areia", "verde-tinta", 13.97],
+    ["papel", "terracota", 5.79],
+    ["papel", "terracota-escura", 7.46],
+    ["papel", "azul-marca", 4.89],
+    ["papel", "azul-marca-escuro", 6.46],
+    ["azul-marca-escuro", "areia", 5.63],
+    ["azul-marca-claro", "verde-tinta", 4.93],
+    ["erro", "papel", 7.65],
+    ["borda-campo", "papel", 4.03],
   ];
   for (const [fg, bg, expected] of documented) {
     it(`${fg} sobre ${bg} = ${expected}:1 (como no documento)`, () => {
@@ -97,7 +97,7 @@ describe("paleta: mínimos WCAG dos usos previstos", () => {
     expect(ratio("terracota", "verde-tinta")).toBeLessThan(WCAG.aaLargeOrUi);
     // Azul (cor de ação) sobre areia (3,92): em faixa areia o link usa o azul-escuro.
     expect(ratio("azul-marca", "areia")).toBeLessThan(WCAG.aaText);
-    // Papel sobre azul-claro (2,33): o azul-claro nunca é fundo de botão.
+    // Papel sobre azul-claro (3,25): o azul-claro nunca é fundo de botão.
     expect(ratio("papel", "azul-marca-claro")).toBeLessThan(WCAG.aaText);
   });
 });

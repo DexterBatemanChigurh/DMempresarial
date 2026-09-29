@@ -24,6 +24,9 @@ const VARIANT = {
     "border-[1.5px] border-text text-text hover:bg-text/10 disabled:border-transparent disabled:bg-surface-disabled disabled:text-text-disabled",
   tertiary:
     "min-h-11 px-0 text-link underline-offset-4 hover:underline disabled:text-text-disabled",
+  // Canal do WhatsApp: verde da marca do app no tom que passa AA com texto branco (globals.css).
+  whatsapp:
+    "bg-whatsapp-texto text-papel hover:bg-whatsapp-texto-escuro disabled:bg-surface-disabled disabled:text-text-disabled",
 } as const;
 
 export type ButtonVariant = keyof typeof VARIANT;
