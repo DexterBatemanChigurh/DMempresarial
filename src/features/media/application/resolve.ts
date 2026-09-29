@@ -43,3 +43,44 @@ export async function getMediaPreviewForRoute(
   if (!row) return null;
   return { url: getStorage().publicUrl(row.storageKey), alt: row.altText ?? "" };
 }
+
+import { cacheLife, cacheTag } from "next/cache";
+
+type MediaInfo = { id: string; url: string; alt: string; width: number; height: number };
+
+/** Dados públicos das mídias, em cache (páginas públicas são pré-renderizadas). A etiqueta
+ * "posts" é a mesma dos artigos: salvar um artigo (e trocar a capa) invalida junto. */
+async function getPublicMediaInfo(ids: readonly string[]): Promise<MediaInfo[]> {
+  "use cache";
+  cacheTag("posts", "media");
+  cacheLife("hours");
+  if (ids.length === 0) return [];
+  const rows = await findManyMediaByIds(getDb(), [...ids]);
+  const storage = getStorage();
+  return rows.map((row) => ({
+    id: row.id,
+    url: storage.publicUrl(row.storageKey),
+    alt: row.altText ?? "",
+    width: row.width,
+    height: row.height,
+  }));
+}
+
+/** Resolvedor síncrono para `<RichText>`/capas nas páginas públicas: uma consulta, em cache. */
+export async function buildPublicMediaResolverForRoute(
+  mediaIds: readonly (string | null | undefined)[],
+): Promise<MediaResolver> {
+  const ids = [...new Set(mediaIds.filter((id): id is string => typeof id === "string"))].sort();
+  const byId = new Map((await getPublicMediaInfo(ids)).map((m) => [m.id, m]));
+  return (mediaId) => {
+    const m = byId.get(mediaId);
+    return m ? { url: m.url, alt: m.alt, width: m.width, height: m.height } : null;
+  };
+}
+
+/** Capas de uma lista de artigos (Home, /blog, categorias). */
+export function buildCoverResolverForRoute(
+  coverIds: readonly (string | null)[],
+): Promise<MediaResolver> {
+  return buildPublicMediaResolverForRoute(coverIds);
+}

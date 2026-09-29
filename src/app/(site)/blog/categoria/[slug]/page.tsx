@@ -5,6 +5,8 @@ import { Container, Heading, Section, SectionLabel, Text } from "@/components/ui
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
 import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
 import { publicMetadata } from "@/components/site/seo";
+import { PostCover } from "@/components/content/post-cover";
+import { buildCoverResolverForRoute } from "@/features/media/application/resolve";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -33,6 +35,7 @@ export default async function CategoryPage({ params }: Params) {
   // TODO o blog seriam candidatos, e uma categoria com posts mais antigos apareceria vazia.
   const postsPage = await listPublicPostsForRoute({ pageSize: 24, categorySlug: slug });
   const posts = postsPage.items;
+  const coverResolver = await buildCoverResolverForRoute(posts.map((p) => p.coverMediaId));
 
   return (
     <>
@@ -58,12 +61,13 @@ export default async function CategoryPage({ params }: Params) {
             </Heading>
             <ul className="mt-xl grid grid-cols-1 gap-xl md:grid-cols-2 lg:grid-cols-3">
               {posts.map((post) => (
-                <li key={post.slug} className="border-t border-border pt-lg">
+                <li key={post.slug}>
                   <Link
                     href={`/blog/${post.slug}`}
                     className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
                   >
-                    <Text size="metadata" tone="secondary">
+                    <PostCover mediaId={post.coverMediaId} resolve={coverResolver} />
+                    <Text size="metadata" tone="secondary" className="mt-md">
                       {post.authorName} · {post.readingMinutes} min
                     </Text>
                     <Heading

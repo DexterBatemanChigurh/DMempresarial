@@ -13,9 +13,9 @@ const BLOG_GRID_COLS: Record<1 | 2 | 3 | 4, string> = {
   4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
 };
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
-import { buildMediaResolverForRoute } from "@/features/media/application/resolve";
+import { buildCoverResolverForRoute } from "@/features/media/application/resolve";
+import { PostCover } from "@/components/content/post-cover";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
-import type { RichDoc } from "@/lib/rich-text";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { ServicesWheel } from "@/components/site/services-wheel";
 import { ValuesCircle } from "@/components/site/values-circle";
@@ -50,12 +50,7 @@ export default async function HomePage() {
   const posts = postsPage.items;
 
   // Capas dos artigos do blog: resolvidas em lote (uma consulta).
-  const coverIds = posts.map((p) => p.coverMediaId).filter((id): id is string => id !== null);
-  const coverDoc: RichDoc | null =
-    coverIds.length > 0
-      ? { type: "doc", content: coverIds.map((mediaId) => ({ type: "image", attrs: { mediaId } })) }
-      : null;
-  const coverResolver = coverDoc ? await buildMediaResolverForRoute(coverDoc) : null;
+  const coverResolver = await buildCoverResolverForRoute(posts.map((p) => p.coverMediaId));
 
   return (
     <>
@@ -159,9 +154,6 @@ export default async function HomePage() {
         </Container>
       </Section>
 
-      {/* O QUE FAZEMOS — roda com as quatro frentes (texto e paleta definidos pelo usuário). */}
-      <ServicesWheel />
-
       {/* 3 BLOG — artigos reais do CMS, nunca placeholder. */}
       {posts.length > 0 ? (
         <Section tone="muted" spacing="loose" aria-labelledby="home-blog">
@@ -175,28 +167,17 @@ export default async function HomePage() {
               className={`mt-2xl grid gap-xl ${BLOG_GRID_COLS[Math.min(posts.length, 4) as 1 | 2 | 3 | 4]}`}
             >
               {posts.map((post) => {
-                const cover = post.coverMediaId ? coverResolver?.(post.coverMediaId) : null;
                 return (
                   <li key={post.slug}>
                     <Link
                       href={`/blog/${post.slug}`}
                       className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
                     >
-                      <div className="relative aspect-[16/10] overflow-hidden rounded-[12px] border border-border bg-surface-muted">
-                        {cover ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={cover.url}
-                            alt={cover.alt}
-                            loading="lazy"
-                            decoding="async"
-                            className="h-full w-full object-cover transition-transform duration-base group-hover:scale-[1.03]"
-                          />
-                        ) : null}
+                      <PostCover mediaId={post.coverMediaId} resolve={coverResolver}>
                         <span className="absolute bottom-sm left-sm rounded-control bg-action px-sm py-2xs font-sans text-caption font-semibold text-action-contrast">
                           Ler artigo
                         </span>
-                      </div>
+                      </PostCover>
                       <Text size="metadata" tone="secondary" className="mt-md">
                         {post.authorName} · {post.readingMinutes} min
                       </Text>
@@ -230,6 +211,9 @@ export default async function HomePage() {
           </Container>
         </Section>
       ) : null}
+
+      {/* O QUE FAZEMOS — roda com as quatro frentes (texto e paleta definidos pelo usuário). */}
+      <ServicesWheel />
 
       {/* SOBRE NÓS — composição de uma referência do usuário: título centralizado, texto à
           esquerda e, à direita, os valores escritos em volta de um círculo. Texto em

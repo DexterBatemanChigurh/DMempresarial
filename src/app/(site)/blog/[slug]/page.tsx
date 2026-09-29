@@ -10,6 +10,9 @@ import {
   listPublicPostsForRoute,
 } from "@/features/content/application/public-posts";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
+import { buildPublicMediaResolverForRoute } from "@/features/media/application/resolve";
+import { extractMediaIds } from "@/lib/rich-text";
+import type { RichDoc } from "@/lib/rich-text";
 import { env } from "@/server/env";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -54,6 +57,16 @@ export default async function BlogPostPage({ params }: Params) {
         await listPublicPostsForRoute({ pageSize: 4, categorySlug: post.primaryCategorySlug })
       ).items.filter((p) => p.slug !== slug)
     : [];
+
+  // Capa + imagens do corpo resolvidas numa só consulta. Sem isso, <RichText> não mostra imagem.
+  const coverDoc: RichDoc = {
+    type: "doc",
+    content: post.coverMediaId ? [{ type: "image", attrs: { mediaId: post.coverMediaId } }] : [],
+  };
+  const resolveMedia = await buildPublicMediaResolverForRoute([
+    post.coverMediaId,
+    ...extractMediaIds(post.body as RichDoc),
+  ]);
 
   return (
     <>
@@ -108,17 +121,7 @@ export default async function BlogPostPage({ params }: Params) {
 
           {post.coverMediaId ? (
             <div className="mt-xl">
-              <RichText
-                value={{
-                  type: "doc",
-                  content: [
-                    {
-                      type: "image",
-                      attrs: { mediaId: post.coverMediaId, caption: null },
-                    },
-                  ],
-                }}
-              />
+              <RichText value={coverDoc} resolveMedia={resolveMedia} />
             </div>
           ) : null}
         </Container>
@@ -128,7 +131,7 @@ export default async function BlogPostPage({ params }: Params) {
         <Container>
           <SectionLabel>Artigo</SectionLabel>
           <div className="mt-lg max-w-reading">
-            <RichText value={post.body} />
+            <RichText value={post.body} resolveMedia={resolveMedia} />
           </div>
         </Container>
       </Section>

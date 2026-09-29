@@ -7,6 +7,8 @@ import {
 } from "@/features/content/application/public-posts";
 import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
 import { publicMetadata } from "@/components/site/seo";
+import { PostCover } from "@/components/content/post-cover";
+import { buildCoverResolverForRoute } from "@/features/media/application/resolve";
 
 export const metadata: Metadata = publicMetadata({
   title: "Blog",
@@ -40,6 +42,7 @@ export default async function BlogIndexPage({
   ]);
 
   const posts = postsPage.items;
+  const coverResolver = await buildCoverResolverForRoute(posts.map((p) => p.coverMediaId));
   const hasPosts = posts.length > 0;
   // Destaque só faz sentido na primeira página do índice normal — busca é sempre lista simples.
   const featured = !isSearch && page === 1 ? posts[0] : undefined;
@@ -85,32 +88,35 @@ export default async function BlogIndexPage({
                   <article className="mt-xl">
                     <Link
                       href={`/blog/${featured.slug}`}
-                      className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
+                      className="group grid gap-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link md:grid-cols-2 md:items-center"
                     >
-                      <Text size="metadata" tone="secondary">
-                        {featured.authorName} ·{" "}
-                        {featured.publishedAt?.toLocaleDateString("pt-BR", {
-                          day: "2-digit",
-                          month: "long",
-                          year: "numeric",
-                        })}{" "}
-                        · {featured.readingMinutes} min
-                      </Text>
-                      <Heading
-                        as="h3"
-                        variant="h2"
-                        className="mt-sm text-link group-hover:underline group-focus-visible:underline"
-                      >
-                        {featured.title}
-                      </Heading>
-                      {featured.excerpt ? (
-                        <Text tone="secondary" className="mt-sm max-w-reading">
-                          {featured.excerpt}
+                      <PostCover mediaId={featured.coverMediaId} resolve={coverResolver} />
+                      <div>
+                        <Text size="metadata" tone="secondary">
+                          {featured.authorName} ·{" "}
+                          {featured.publishedAt?.toLocaleDateString("pt-BR", {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          })}{" "}
+                          · {featured.readingMinutes} min
                         </Text>
-                      ) : null}
-                      <Text as="span" size="sm" className="mt-md inline-block text-link">
-                        Ler artigo →
-                      </Text>
+                        <Heading
+                          as="h3"
+                          variant="h2"
+                          className="mt-sm text-link group-hover:underline group-focus-visible:underline"
+                        >
+                          {featured.title}
+                        </Heading>
+                        {featured.excerpt ? (
+                          <Text tone="secondary" className="mt-sm max-w-reading">
+                            {featured.excerpt}
+                          </Text>
+                        ) : null}
+                        <Text as="span" size="sm" className="mt-md inline-block text-link">
+                          Ler artigo →
+                        </Text>
+                      </div>
                     </Link>
                   </article>
                 </>
@@ -139,12 +145,13 @@ export default async function BlogIndexPage({
                   )}
                   <ul className="mt-xl grid grid-cols-1 gap-xl md:grid-cols-2 lg:grid-cols-3">
                     {secondary.map((post) => (
-                      <li key={post.slug} className="border-t border-border pt-lg">
+                      <li key={post.slug}>
                         <Link
                           href={`/blog/${post.slug}`}
                           className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
                         >
-                          <Text size="metadata" tone="secondary">
+                          <PostCover mediaId={post.coverMediaId} resolve={coverResolver} />
+                          <Text size="metadata" tone="secondary" className="mt-md">
                             {post.authorName} · {post.readingMinutes} min
                           </Text>
                           <Heading
