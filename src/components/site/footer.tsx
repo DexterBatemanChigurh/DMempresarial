@@ -118,7 +118,7 @@ export function Footer({ settings, year }: { settings: FooterSettings | null; ye
           >
             <p>
               © {year} {settings?.legalName ?? "DM Empresarial"}
-              {settings?.cnpj ? ` · CNPJ ${settings.cnpj}` : ""}
+              {settings?.cnpj ? ` · CNPJ ${settings.cnpj}` : ""}. Todos os direitos reservados.
             </p>
             {LEGAL.map((item) => (
               <Link

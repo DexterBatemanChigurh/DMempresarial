@@ -1,8 +1,8 @@
 import "server-only";
+import { CONTACT } from "@/content/dm";
 import type { Database } from "@/db/client";
 import { AppError } from "@/lib/errors";
 import { recordAudit } from "@/features/platform/infrastructure/audit";
-import { getPublicSettings } from "@/features/settings/application/settings-crud";
 import { getEmail, type EmailPort } from "@/server/email";
 import { env } from "@/server/env";
 import { hashIpForToday } from "@/server/security/ip-hash";
@@ -127,9 +127,8 @@ export async function submitLead(
   });
 
   // Lead marcado como spam (heurística) nunca notifica (docs/03 §22). Destino: LEAD_NOTIFY_TO
-  // (caixa interna) ou, na falta dela, o e-mail público de Configurações; sem nenhum dos dois não
-  // há para quem notificar.
-  const notifyTo = env().LEAD_NOTIFY_TO ?? (await getPublicSettings({ db }))?.email;
+  // (caixa interna) ou, na falta dela, o e-mail público da DM (src/content/dm.ts).
+  const notifyTo = env().LEAD_NOTIFY_TO ?? CONTACT.email;
   if (!isLikelySpam && notifyTo) {
     try {
       await (email ?? getEmail()).send({

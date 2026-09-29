@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Paragraphs } from "@/components/content/paragraphs";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
-import { ArrowRightIcon, ChartIcon, ClockIcon, UsersIcon } from "@/components/ui/icons";
+import { ArrowRightIcon, ClockIcon, UsersIcon } from "@/components/ui/icons";
 
 /** Colunas do grid do blog por quantidade real de artigos: menos de 4 nunca deixa um card
  * solitário boiando num grid de 4 (docs/02 §04, grid consistente). */
@@ -19,7 +19,7 @@ import type { RichDoc } from "@/lib/rich-text";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { ServicesWheel } from "@/components/site/services-wheel";
 import { ValuesCircle } from "@/components/site/values-circle";
-import { ABOUT, HOME, SOLUTIONS } from "@/content/dm";
+import { ABOUT, CONTACT, HOME, SOLUTIONS, WHATSAPP_URL } from "@/content/dm";
 import { env } from "@/server/env";
 
 const homeMetadata = publicMetadata({
@@ -35,15 +35,12 @@ export const metadata: Metadata = {
   title: { absolute: "DM Empresarial — Consultoria empresarial em Frutal/MG" },
 };
 
-/**
- * Números reais confirmados pela DM (26–27/09/2026): nunca inventar prova social (Prompt 1 §20).
- * Aparecem resumidos sob o CTA do hero e ampliados na faixa de autoridade.
- */
-const AUTHORITY_STATS = [
-  { value: "+300", label: "empresas atendidas", Icon: UsersIcon },
-  { value: "14 anos", label: "no mercado", Icon: ClockIcon },
-  { value: "+R$ 2 Bi", label: "administrados para nossos clientes", Icon: ChartIcon },
-] as const;
+/** Números da faixa de autoridade (texto em src/content/dm.ts), cada um com o seu ícone. */
+const STAT_ICONS = [UsersIcon, ClockIcon];
+const AUTHORITY_STATS = HOME.stats.map((stat, i) => ({
+  ...stat,
+  Icon: STAT_ICONS[i] ?? UsersIcon,
+}));
 
 // As duas únicas cores usadas no gráfico de soluções — tons já existentes da paleta da DM
 // (docs/02 §15: paleta contida, nunca cor nova só para "colorir um gráfico").
@@ -96,20 +93,15 @@ export default async function HomePage() {
           "@type": "Organization",
           name: settings?.legalName ?? "DM Empresarial",
           url: env().SITE_URL,
-          // SEO local (docs/03 §22): só o que site_settings já confirma — nada inventado, e some
-          // sozinho quando o campo estiver vazio (mesma regra do rodapé).
-          ...(settings?.address
-            ? {
-                address: {
-                  "@type": "PostalAddress",
-                  streetAddress: settings.address,
-                  addressRegion: "MG",
-                  addressCountry: "BR",
-                },
-              }
-            : {}),
-          ...(settings?.phone ? { telephone: settings.phone } : {}),
-          ...(settings?.email ? { email: settings.email } : {}),
+          // SEO local (docs/03 §22): dados de contato confirmados (src/content/dm.ts).
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: CONTACT.address,
+            addressRegion: "MG",
+            addressCountry: "BR",
+          },
+          telephone: CONTACT.phone,
+          email: CONTACT.email,
         }}
       />
 
@@ -128,13 +120,17 @@ export default async function HomePage() {
                 {HOME.description}
               </Text>
               <div className="mt-2xl flex flex-wrap gap-sm">
-                <Button href="/contato" size="lg">
-                  Fale com a DM →
+                <Button href={WHATSAPP_URL} size="lg" target="_blank" rel="noopener noreferrer">
+                  Conversar pelo WhatsApp
+                  <span className="sr-only"> (abre em nova aba)</span>
                 </Button>
-                <Button href="/solucoes" variant="secondary" size="lg">
-                  Conheça nossas soluções
+                <Button href="#home-o-que-fazemos" variant="secondary" size="lg">
+                  Ver o que fazemos
                 </Button>
               </div>
+              <Text size="sm" tone="secondary" className="mt-md">
+                {HOME.note}
+              </Text>
             </div>
 
             <div className="overflow-hidden rounded-[16px] border border-border bg-surface-muted lg:mt-[3px]">
@@ -419,7 +415,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Fale com um especialista — arredonda só a ponta esquerda; título e texto lado a
+            {/* Vamos conversar — arredonda só a ponta esquerda; título e texto lado a
                 lado (não empilhados); botão circular flutuando na costura de baixo. */}
             <div className="relative rounded-[28px] bg-action p-2xl pb-3xl lg:rounded-r-[28px] lg:rounded-l-[999px] lg:py-3xl lg:pr-2xl lg:pl-4xl">
               <div className="grid grid-cols-1 gap-lg lg:grid-cols-[minmax(0,22rem)_minmax(0,24rem)] lg:items-center">
@@ -428,11 +424,9 @@ export default async function HomePage() {
                     MESMAS classes tipográficas dos componentes, evitando a disputa entre duas
                     classes de cor no mesmo elemento (`cn` só concatena, não resolve prioridade). */}
                 <h3 className="font-serif text-h2 font-medium text-action-contrast">
-                  Fale com um especialista
+                  {CONTACT.title}
                 </h3>
-                <p className="font-sans text-body text-action-contrast/85">
-                  Conte o contexto da sua empresa e a DM explica como pode ajudar.
-                </p>
+                <p className="font-sans text-body text-action-contrast/85">{CONTACT.intro}</p>
               </div>
 
               <Link

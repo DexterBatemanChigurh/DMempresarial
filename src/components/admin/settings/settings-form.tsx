@@ -58,31 +58,9 @@ export function SettingsForm({ action, initial }: Props) {
         defaultValue={initial.cnpj}
         error={fieldErrors?.cnpj?.[0]}
       />
-      <TextField
-        id="address"
-        label="Endereço"
-        defaultValue={initial.address}
-        error={fieldErrors?.address?.[0]}
-      />
-      <TextField
-        id="phone"
-        label="Telefone"
-        defaultValue={initial.phone}
-        error={fieldErrors?.phone?.[0]}
-      />
-      <TextField
-        id="email"
-        label="E-mail"
-        type="email"
-        defaultValue={initial.email}
-        error={fieldErrors?.email?.[0]}
-      />
-      <TextField
-        id="whatsapp"
-        label="WhatsApp"
-        defaultValue={initial.whatsapp}
-        error={fieldErrors?.whatsapp?.[0]}
-      />
+      <FormMessage tone="info">
+        Endereço, telefone, e-mail e WhatsApp ficam fixos no código, em src/content/dm.ts.
+      </FormMessage>
 
       <fieldset className="space-y-md">
         <legend>Redes sociais</legend>

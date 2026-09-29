@@ -11,10 +11,17 @@ export const PLACEHOLDER = "Texto em preparação.";
 
 export const HOME = {
   /** O título do topo tem duas partes: a segunda sai em destaque (cor de ação). */
-  headlineStart: "Consultoria empresarial com",
-  headlineHighlight: "método, acompanhamento e gente de verdade",
+  headlineStart: "Quando o caixa aperta,",
+  headlineHighlight: "a decisão certa tem prazo",
   description:
-    "Diagnóstico claro, plano prático e alguém acompanhando de perto — da decisão até o resultado.",
+    "Somos a consultoria que entra na empresa em dificuldade, reorganiza a operação e senta com o banco junto com você. Em Frutal e região, há mais de dez anos.",
+  /** Linha pequena abaixo dos botões do topo. */
+  note: "Primeira conversa sem compromisso. Atendemos todos os dias.",
+  /** Faixa de números: só o que a DM confirmou. */
+  stats: [
+    { value: "+100", label: "empresas atendidas desde a fundação" },
+    { value: "10 anos", label: "sentando à mesa de negociação com bancos" },
+  ],
   /** Foto do topo: caminho de uma imagem em /public (ex.: "/home/equipe.jpg"); null = espaço vazio. */
   heroImage: null as { src: string; alt: string } | null,
 };
@@ -25,11 +32,21 @@ export const ABOUT = {
   title: "Sobre a DM",
   intro:
     "Consultoria empresarial em Frutal/MG. Método, acompanhamento e gente de verdade por trás de cada decisão.",
-  whoWeAre: [PLACEHOLDER],
+  whoWeAre: [
+    "A DM Empresarial desenvolve pessoas e empresas por meio de uma consultoria personalizada e orientada a resultados concretos. Entramos no negócio para identificar os pontos críticos, reorganizar a estratégia e destravar o crescimento.",
+    "Também atuamos na recuperação de crédito, negociando diretamente com bancos para reorganizar dívidas e devolver fôlego financeiro ao negócio. Quem conduz o trabalho é Dino Marques de Oliveira, fundador da consultoria.",
+  ],
   howWeThink: [PLACEHOLDER],
   howWeWork: [PLACEHOLDER],
-  /** Até 5. Os nomes giram em volta do círculo da Home; sem nenhum, o círculo usa dados da DM. */
-  values: [] as { name: string; practice: string }[],
+  /** "Como trabalhamos". Até 5: os nomes giram em volta do círculo da Home. `practice` é a
+   * explicação que aparece em /sobre (vazia: só o nome). */
+  values: [
+    { name: "Diagnóstico antes de proposta", practice: "" },
+    { name: "Transparência em cada etapa", practice: "" },
+    { name: "Plano com prazo e responsável", practice: "" },
+    { name: "Disponibilidade todos os dias", practice: "" },
+    { name: "Discrição sobre a situação do cliente", practice: "" },
+  ] as { name: string; practice: string }[],
 };
 
 // ------------------------------------------------------------------------------ Soluções
@@ -58,7 +75,7 @@ export const SOLUTIONS: Solution[] = [
     type: "SERVICO",
     title: "Recuperação de crédito",
     summary:
-      "Negociamos diretamente com os bancos para reorganizar dívidas, alongar prazos e devolver fôlego financeiro ao negócio.",
+      "Negociamos diretamente com os bancos para reorganizar dívidas, alongar prazos e devolver fôlego financeiro ao negócio. Preparamos a proposta antes de você sentar na mesa.",
     isFeatured: false,
     context: [PLACEHOLDER],
     approach: [PLACEHOLDER],
@@ -71,7 +88,7 @@ export const SOLUTIONS: Solution[] = [
     type: "SERVICO",
     title: "Reorganização de dívidas",
     summary:
-      "Mapeamento de tudo que a empresa deve, prioridades de pagamento e um plano compatível com o caixa real.",
+      "Mapeamento de tudo que a empresa deve, ordem de prioridade de pagamento e um plano financeiro que cabe no caixa real, não no caixa desejado.",
     isFeatured: false,
     context: [PLACEHOLDER],
     approach: [PLACEHOLDER],
@@ -84,7 +101,7 @@ export const SOLUTIONS: Solution[] = [
     type: "CONSULTORIA",
     title: "Consultoria estratégica",
     summary:
-      "Identificamos o que está travando o crescimento e montamos um plano de ação com prazo e responsável.",
+      "Identificamos o que está travando o crescimento e montamos um plano de ação com prazo e responsável. Sem relatório de cem páginas que ninguém lê.",
     isFeatured: false,
     context: [PLACEHOLDER],
     approach: [PLACEHOLDER],
@@ -97,7 +114,7 @@ export const SOLUTIONS: Solution[] = [
     type: "CONSULTORIA",
     title: "Reestruturação de gestão",
     summary:
-      "Reorganizamos processos, estrutura e indicadores para recuperar o controle da operação.",
+      "Reorganizamos processos, estrutura e indicadores para que a empresa volte a funcionar com controle, e não no susto de cada boleto.",
     isFeatured: false,
     context: [PLACEHOLDER],
     approach: [PLACEHOLDER],
@@ -147,8 +164,18 @@ export function authorName(slug: string): string {
 // -------------------------------------------------------------------------------- Contato
 
 export const CONTACT = {
-  intro: "Conte o contexto da sua empresa e a DM explica como pode ajudar.",
+  title: "Vamos conversar",
+  intro:
+    "A primeira conversa é para entender a situação e dizer com honestidade se podemos ajudar. Não cobramos por ela.",
+  phone: "(34) 99665-3600",
+  /** Só dígitos, com DDI: usado no link wa.me. */
+  whatsapp: "5534996653600",
+  email: "contato@dmempresarial.com.br",
+  address: "Avenida C. Delfino Nunes, 1111, Frutal — MG",
+  hours: "Atendimento todos os dias.",
 };
+
+export const WHATSAPP_URL = `https://wa.me/${CONTACT.whatsapp}`;
 
 // ------------------------------------------------------------------------------- Legais
 

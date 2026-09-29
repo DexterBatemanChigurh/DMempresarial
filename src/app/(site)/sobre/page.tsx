@@ -86,9 +86,11 @@ export default function AboutPage() {
                   <Heading as="h3" variant="h3">
                     {value.name}
                   </Heading>
-                  <Text tone="secondary" className="mt-sm">
-                    {value.practice}
-                  </Text>
+                  {value.practice ? (
+                    <Text tone="secondary" className="mt-sm">
+                      {value.practice}
+                    </Text>
+                  ) : null}
                 </li>
               ))}
             </ul>

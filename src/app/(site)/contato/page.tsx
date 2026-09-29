@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { ContactForm } from "@/components/site/contact-form";
-import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
 import { CONTACT } from "@/content/dm";
 import { publicMetadata } from "@/components/site/seo";
 import { mintFormToken } from "@/server/security/form-token";
@@ -22,7 +21,8 @@ export default async function ContactPage() {
   // `mintFormToken()` usa `new Date()`: sem um ponto explícito de dado de requisição, o Next
   // tenta chamá-la no prerender estático do build, onde não existe "agora" de verdade.
   await connection();
-  const settings = await getPublicSettingsForRoute();
+  // Contato fixo em src/content/dm.ts (mesmo formato de antes, quando vinha das Configurações).
+  const settings = CONTACT;
   const formToken = mintFormToken();
 
   const hasAddress = Boolean(settings?.address);
@@ -104,6 +104,9 @@ export default async function ContactPage() {
                         </li>
                       ) : null}
                     </ul>
+                    <Text size="sm" tone="secondary" className="mt-sm">
+                      {CONTACT.hours}
+                    </Text>
                   </div>
                 ) : null}
 
