@@ -46,7 +46,7 @@ const input = (over: Partial<SubmitLeadInput> = {}): SubmitLeadInput => ({
   name: "Pessoa de Teste",
   email: `${uniq("lead-")}@dom-it.example.test`,
   message: "Preciso de ajuda com a gestão financeira da minha empresa.",
-  phone: undefined,
+  phone: "(34) 99999-0000",
   company: undefined,
   jobTitle: undefined,
   segment: undefined,

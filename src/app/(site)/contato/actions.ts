@@ -20,7 +20,7 @@ export async function submitLeadAction(
       name: str(formData, "name"),
       email: str(formData, "email"),
       message: str(formData, "message"),
-      phone: str(formData, "phone") || undefined,
+      phone: str(formData, "phone"),
       company: str(formData, "company") || undefined,
       jobTitle: str(formData, "jobTitle") || undefined,
       segment: str(formData, "segment") || undefined,

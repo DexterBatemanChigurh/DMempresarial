@@ -11,15 +11,24 @@ export const LEAD_CONSENT_VERSION = "2026-09-23";
 const EMAIL_FORMAT = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 /**
- * Obrigatórios: nome, e-mail, mensagem, consentimento (docs/01 §14, D3). O resto é opcional —
+ * Obrigatórios: nome, e-mail, WhatsApp, mensagem, consentimento (docs/01 §14, D3; WhatsApp
+ * obrigatório desde 29/09/2026, pedido do usuário). O resto é opcional —
  * "mínimo necessário" (docs/03 §22). Sem `interesse`/atribuição: são explicitamente opcionais no
  * blueprint e a atribuição fica atrás de uma flag "desligada até decisão jurídica" — nem começa.
  */
 export const leadFormSchema = z.object({
   name: z.string().trim().min(1, "Informe seu nome.").max(120),
-  email: z.string().trim().toLowerCase().regex(EMAIL_FORMAT, "E-mail inválido.").max(254),
-  message: z.string().trim().min(1, "Escreva sua mensagem.").max(5000),
-  phone: z.string().trim().max(30).optional(),
+  email: z.string().trim().toLowerCase().regex(EMAIL_FORMAT, "Informe um e-mail válido.").max(254),
+  message: z
+    .string()
+    .trim()
+    .min(1, "Conte brevemente sobre o que gostaria de conversar.")
+    .max(5000),
+  phone: z
+    .string()
+    .trim()
+    .max(30)
+    .refine((v) => v.replace(/\D/g, "").length >= 10, "Informe seu WhatsApp com DDD."),
   company: z.string().trim().max(120).optional(),
   jobTitle: z.string().trim().max(120).optional(),
   segment: z.string().trim().max(80).optional(),
