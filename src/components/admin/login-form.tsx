@@ -16,17 +16,13 @@ export function LoginForm({ next }: { next: string }) {
     const form = new FormData(event.currentTarget);
     setPending(true);
     setError(null);
-    const { data, error: failure } = await authClient.signIn.email({
+    const { error: failure } = await authClient.signIn.email({
       email: String(form.get("email") ?? ""),
       password: String(form.get("password") ?? ""),
     });
     setPending(false);
 
     if (failure) return setError(loginErrorMessage(failure));
-    // Com 2FA ativo a senha sozinha NÃO cria sessão: segue para o código.
-    if (data && "twoFactorRedirect" in data && data.twoFactorRedirect) {
-      return router.replace(`/admin/login/verificar?next=${encodeURIComponent(next)}`);
-    }
     router.replace(next);
     router.refresh();
   }

@@ -15,25 +15,6 @@ export function loginErrorMessage(error: AuthErrorLike): string {
   return GENERIC;
 }
 
-export function twoFactorErrorMessage(
-  error: AuthErrorLike,
-  kind: "totp" | "backup" = "totp",
-): string {
-  if (!error) return GENERIC;
-  if (
-    error.status === 429 ||
-    error.code === "ACCOUNT_TEMPORARILY_LOCKED" ||
-    error.code === "TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE"
-  ) {
-    return "Muitas tentativas. Aguarde alguns minutos e tente de novo.";
-  }
-  if (error.code === "INVALID_TWO_FACTOR_COOKIE") {
-    return "A verificação expirou. Volte e entre com e-mail e senha de novo.";
-  }
-  if (kind === "backup") return "Código de backup inválido ou já usado.";
-  return "Código incorreto. Confira o app autenticador e tente de novo.";
-}
-
 export function passwordChangeErrorMessage(error: AuthErrorLike): string {
   if (!error) return "Não foi possível alterar a senha agora.";
   if (error.status === 429) return "Muitas tentativas. Aguarde alguns minutos.";

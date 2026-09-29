@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  loginErrorMessage,
-  passwordChangeErrorMessage,
-  twoFactorErrorMessage,
-} from "./auth-messages";
+import { loginErrorMessage, passwordChangeErrorMessage } from "./auth-messages";
 
 describe("loginErrorMessage", () => {
   it("senha errada e e-mail inexistente mostram a MESMA mensagem (sem enumeração)", () => {
@@ -21,24 +17,6 @@ describe("loginErrorMessage", () => {
     });
     expect(generic).not.toMatch(/SQL|relation|users/);
     expect(loginErrorMessage(null)).toBe(loginErrorMessage({ status: 500 }));
-  });
-});
-
-describe("twoFactorErrorMessage", () => {
-  it("bloqueio e limite dão a mesma orientação; código errado é específico", () => {
-    for (const error of [
-      { status: 429 },
-      { code: "ACCOUNT_TEMPORARILY_LOCKED" },
-      { code: "TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE" },
-    ]) {
-      expect(twoFactorErrorMessage(error)).toMatch(/Muitas tentativas/);
-    }
-    expect(twoFactorErrorMessage({ code: "INVALID_CODE" })).toMatch(/Código incorreto/);
-    expect(twoFactorErrorMessage({ code: "INVALID_BACKUP_CODE" }, "backup")).toMatch(/backup/);
-  });
-
-  it("cookie de verificação expirado orienta a recomeçar o login", () => {
-    expect(twoFactorErrorMessage({ code: "INVALID_TWO_FACTOR_COOKIE" })).toMatch(/expirou/);
   });
 });
 

@@ -17,7 +17,7 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const next = safeNextPath((await searchParams).next);
-  // Quem já tem sessão válida vai direto ao painel (o layout do painel cobra o 2FA).
+  // Quem já tem sessão válida vai direto ao painel.
   if (await getActor()) redirect(next);
 
   return (

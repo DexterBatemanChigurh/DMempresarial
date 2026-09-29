@@ -10,7 +10,7 @@ Legenda: 🟢 pronta · 🟡 parcial · 🔴 pendente
 
 | # | Fase             | Estado | O que existe (evidência) | O que falta |
 |---|------------------|:------:|--------------------------|-------------|
-| 1 | Fundação técnica | 🟢 | TS estrito, lint, env validado (falha rápida), logger com redação, role `dm_app` sem DDL, Better Auth, `can()`, 2FA | — |
+| 1 | Fundação técnica | 🟢 | TS estrito, lint, env validado (falha rápida), logger com redação, role `dm_app` sem DDL, Better Auth, `can()` | — |
 | 2 | Design System    | 🟢 | Tokens, fontes (Newsreader + Instrument Sans), componentes, contraste testado. **Cor de ação = azul da marca `#5c6c9d`** (revisão registrada em `docs/02` §09) | — |
 | 3 | Banco e domínio  | 🟢 | Migrations 0000–0006, auditoria append-only, máquinas de estado | — |
 | 4 | CMS              | 🟢 | Artigos, categorias, especialistas, soluções, páginas, configurações, mídia, usuários, auditoria, preview, cron. **Novas telas:** Leads, Redirecionamentos | — |
@@ -18,7 +18,7 @@ Legenda: 🟢 pronta · 🟡 parcial · 🔴 pendente
 | 6 | Blog/editorial   | 🟢 | Índice, categoria, artigo, busca, relacionados | — |
 | 7 | Leads            | 🟢 | Pipeline de lead; aviso de lead para `LEAD_NOTIFY_TO`. Newsletter **removida** em 28/09 a pedido (tabela `newsletter_subscribers` continua no banco, sem uso) | Atribuição de origem (UTM) segue desligada até decisão jurídica |
 | 8 | SEO              | 🟢 | Metadata, sitemap (inclui /servicos), JSON-LD, redirecionamentos 301 em blog/soluções/especialistas | — |
-| 9 | Segurança        | 🟡 | CSP 2 camadas, HSTS, COOP, 2FA, upload seguro, rate limits (login, lead, upload), CSV sem injeção de fórmula, gitleaks com regras padrão | **Trocar as senhas vazadas** (Neon `neondb_owner` e admin); teste de intrusão formal |
+| 9 | Segurança        | 🟡 | CSP 2 camadas, HSTS, COOP, (2FA removido em 28/09 a pedido; volta depois), upload seguro, rate limits (login, lead, upload), CSV sem injeção de fórmula, gitleaks com regras padrão | **Trocar as senhas vazadas** (Neon `neondb_owner` e admin); teste de intrusão formal |
 | 10 | Performance     | 🔴 | Orçamentos definidos, Lighthouse CI configurado | Medir e registrar |
 | 11 | Testes          | 🟡 | 453 unitários + 308 de integração passando; navegador real verificado em 26/09 | Suíte E2E (Playwright) nunca rodou no CI |
 | 12 | Deploy          | 🟡 | CI corrigido (banco migrado antes do build; reproduzido localmente); adaptadores de produção prontos (Resend e S3/R2); cron no `vercel.json` | Escolher e contratar storage (R2/S3) e Resend; domínio, DNS, SPF/DKIM/DMARC; staging; testar backup/restore |

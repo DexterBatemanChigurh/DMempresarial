@@ -19,7 +19,7 @@ try {
   if (!provided) {
     console.log(`Senha inicial (mostrada só agora, guarde-a): ${password}`);
   }
-  console.log("No primeiro acesso, configure o 2FA (obrigatório) e troque a senha.");
+  console.log("No primeiro acesso, troque a senha em Segurança.");
 } catch (error) {
   console.error(`Falha: ${error instanceof Error ? error.message : "erro desconhecido"}`);
   process.exitCode = 1;

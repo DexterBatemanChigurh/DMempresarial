@@ -8,7 +8,7 @@ import { requireAdminSession } from "@/server/auth/admin-guard";
 // marca o segmento como "permitido a bloquear" e desativa a validação (docs do Next 16).
 export const instant = false;
 
-// Todo o painel exige sessão válida no servidor e, para ADMIN e EDITOR, o 2FA ativo.
+// Todo o painel exige sessão válida no servidor.
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const { actor, user } = await requireAdminSession();
   return (
