@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { publicMetadata } from "@/components/site/seo";
-import { listPublicSolutionsForRoute } from "@/features/catalog/application/public-solutions";
+import { SOLUTIONS } from "@/content/dm";
 
 export const metadata: Metadata = publicMetadata({
   title: "Serviços",
@@ -15,8 +15,8 @@ export const metadata: Metadata = publicMetadata({
  * Cada serviço continua tendo uma única URL canônica, em `/solucoes/<slug>`; `/servicos/<slug>`
  * redireciona para lá (next.config.ts).
  */
-export default async function ServicesPage() {
-  const services = (await listPublicSolutionsForRoute()).filter((s) => s.type === "SERVICO");
+export default function ServicesPage() {
+  const services = SOLUTIONS.filter((s) => s.type === "SERVICO");
 
   return (
     <Section spacing="loose">

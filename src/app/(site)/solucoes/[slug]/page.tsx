@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { RichText } from "@/components/content/rich-text";
+import { Paragraphs } from "@/components/content/paragraphs";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
-import { getPublicSolutionBySlugForRoute } from "@/features/catalog/application/public-solutions";
+import { findSolution } from "@/content/dm";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { env } from "@/server/env";
 
@@ -14,41 +14,28 @@ type Params = { params: Promise<{ slug: string }> };
 // static shell (os dados vêm do banco a cada requisição, com cache e revalidação por tag).
 export const instant = false;
 
-const KIND_LABEL = {
-  SITUATION: "Problemas atendidos",
-  STEP: "Processo",
-  GOAL: "Objetivos e benefícios",
-} as const;
-
 const TYPE_LABEL = {
   CONSULTORIA: "Consultoria",
   SERVICO: "Serviço",
 } as const;
 
-// `KIND_LABEL` documenta o mapeamento de `items.kind` para os rótulos das seções. As seções são
-// renderizadas por filtro (`situations`, `steps`, `goals`) com títulos fixos, então o rótulo por
-// item não é usado diretamente — mantido para referência de leitura do modelo de dados.
-void KIND_LABEL;
-
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const solution = await getPublicSolutionBySlugForRoute(slug);
+  const solution = findSolution(slug);
   if (!solution) return { title: "Solução não encontrada" };
   return publicMetadata({
-    title: solution.seoTitle ?? solution.title,
-    description: solution.seoDescription ?? solution.summary,
+    title: solution.title,
+    description: solution.summary,
     path: `/solucoes/${solution.slug}`,
   });
 }
 
 export default async function SolutionDetailPage({ params }: Params) {
   const { slug } = await params;
-  const solution = await getPublicSolutionBySlugForRoute(slug);
+  const solution = findSolution(slug);
   if (!solution) notFound();
 
-  const situations = solution.items.filter((i) => i.kind === "SITUATION");
-  const steps = solution.items.filter((i) => i.kind === "STEP");
-  const goals = solution.items.filter((i) => i.kind === "GOAL");
+  const { situations, steps, goals } = solution;
 
   return (
     <>
@@ -89,7 +76,7 @@ export default async function SolutionDetailPage({ params }: Params) {
             O que está acontecendo
           </Heading>
           <div className="mt-lg max-w-reading">
-            <RichText value={solution.context} />
+            <Paragraphs items={solution.context} />
           </div>
         </Container>
       </Section>
@@ -103,14 +90,14 @@ export default async function SolutionDetailPage({ params }: Params) {
             </Heading>
             <ul className="mt-lg space-y-md">
               {situations.map((item) => (
-                <li key={`${item.kind}-${item.position}`} className="max-w-reading">
+                <li key={item.title} className="max-w-reading">
                   <Heading as="h3" variant="h4">
                     {item.title}
                   </Heading>
                   {item.body ? (
-                    <div className="mt-xs">
-                      <RichText value={item.body} />
-                    </div>
+                    <Text tone="secondary" className="mt-xs">
+                      {item.body}
+                    </Text>
                   ) : null}
                 </li>
               ))}
@@ -126,7 +113,7 @@ export default async function SolutionDetailPage({ params }: Params) {
             Como a DM atua
           </Heading>
           <div className="mt-lg max-w-reading">
-            <RichText value={solution.approach} />
+            <Paragraphs items={solution.approach} />
           </div>
         </Container>
       </Section>
@@ -140,7 +127,7 @@ export default async function SolutionDetailPage({ params }: Params) {
             </Heading>
             <ol className="mt-xl grid grid-cols-1 gap-xl md:grid-cols-2 lg:grid-cols-3">
               {steps.map((item, index) => (
-                <li key={`${item.kind}-${item.position}`} className="border-t border-border pt-lg">
+                <li key={item.title} className="border-t border-border pt-lg">
                   <p
                     aria-hidden="true"
                     className="font-serif text-display-m font-normal text-text-secondary"
@@ -151,9 +138,9 @@ export default async function SolutionDetailPage({ params }: Params) {
                     {item.title}
                   </Heading>
                   {item.body ? (
-                    <div className="mt-xs">
-                      <RichText value={item.body} />
-                    </div>
+                    <Text tone="secondary" className="mt-xs">
+                      {item.body}
+                    </Text>
                   ) : null}
                 </li>
               ))}
@@ -171,14 +158,14 @@ export default async function SolutionDetailPage({ params }: Params) {
             </Heading>
             <ul className="mt-lg space-y-md">
               {goals.map((item) => (
-                <li key={`${item.kind}-${item.position}`} className="max-w-reading">
+                <li key={item.title} className="max-w-reading">
                   <Heading as="h3" variant="h4">
                     {item.title}
                   </Heading>
                   {item.body ? (
-                    <div className="mt-xs">
-                      <RichText value={item.body} />
-                    </div>
+                    <Text tone="secondary" className="mt-xs">
+                      {item.body}
+                    </Text>
                   ) : null}
                 </li>
               ))}

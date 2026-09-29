@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
-import { listPublicSpecialistsForRoute } from "@/features/people/application/public-specialists";
+import { SPECIALISTS } from "@/content/dm";
 import { publicMetadata } from "@/components/site/seo";
 
 // Rota própria do diretório (docs/01 §05, separada de /sobre) — grade de retratos.
@@ -11,12 +11,8 @@ export const metadata: Metadata = publicMetadata({
   path: "/sobre/especialistas",
 });
 
-function mediaUrl(storageKey: string): string {
-  return `/media/${storageKey}`;
-}
-
-export default async function SpecialistsDirectoryPage() {
-  const specialists = await listPublicSpecialistsForRoute();
+export default function SpecialistsDirectoryPage() {
+  const specialists = SPECIALISTS;
 
   return (
     <>
@@ -47,10 +43,10 @@ export default async function SpecialistsDirectoryPage() {
                     className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
                   >
                     <div className="aspect-[4/5] w-full overflow-hidden bg-surface-muted">
-                      {person.photoStorageKey ? (
+                      {person.photo ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={mediaUrl(person.photoStorageKey)}
+                          src={person.photo}
                           alt={`Foto de ${person.name}`}
                           width={800}
                           height={1000}

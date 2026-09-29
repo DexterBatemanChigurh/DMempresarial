@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
-import { listPublicSolutionsForRoute } from "@/features/catalog/application/public-solutions";
+import { SOLUTIONS } from "@/content/dm";
 import { publicMetadata } from "@/components/site/seo";
 
 export const metadata: Metadata = publicMetadata({
@@ -21,8 +21,8 @@ const TYPE_LABEL = {
   SERVICO: "Serviços",
 } as const;
 
-export default async function SolutionsIndexPage() {
-  const solutions = await listPublicSolutionsForRoute();
+export default function SolutionsIndexPage() {
+  const solutions = SOLUTIONS;
 
   const groups: Group[] = (["CONSULTORIA", "SERVICO"] as const)
     .map((type) => ({

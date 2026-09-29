@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { RichText } from "@/components/content/rich-text";
+import { Paragraphs } from "@/components/content/paragraphs";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
-import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
-import { listPublicSpecialistsForRoute } from "@/features/people/application/public-specialists";
-import { aboutDataSchema } from "@/features/pages/domain/page-schemas";
+import { ABOUT, SPECIALISTS } from "@/content/dm";
 import { publicMetadata } from "@/components/site/seo";
 
 export const metadata: Metadata = publicMetadata({
@@ -14,19 +12,10 @@ export const metadata: Metadata = publicMetadata({
   path: "/sobre",
 });
 
-function mediaUrl(storageKey: string): string {
-  return `/media/${storageKey}`;
-}
-
-export default async function AboutPage() {
-  const [page, specialists] = await Promise.all([
-    getPublishedPageForRoute("about"),
-    listPublicSpecialistsForRoute(),
-  ]);
-
-  const parsed = page ? aboutDataSchema.safeParse(page.data) : null;
-  const data = parsed?.success ? parsed.data : null;
-  const values = data?.values ?? [];
+export default function AboutPage() {
+  const data = ABOUT;
+  const values = ABOUT.values;
+  const specialists = SPECIALISTS;
 
   return (
     <>
@@ -34,16 +23,15 @@ export default async function AboutPage() {
         <Container>
           <SectionLabel>Sobre</SectionLabel>
           <Heading as="h1" variant="display-l" className="mt-md">
-            {page?.title ?? "DM Empresarial"}
+            {ABOUT.title}
           </Heading>
           <Text size="lg" tone="secondary" className="mt-lg max-w-reading">
-            Consultoria empresarial em Frutal/MG. Método, acompanhamento e gente de verdade por trás
-            de cada decisão.
+            {ABOUT.intro}
           </Text>
         </Container>
       </Section>
 
-      {data?.whoWeAre ? (
+      {data.whoWeAre.length > 0 ? (
         <Section tone="muted" spacing="loose" aria-labelledby="quem-somos">
           <Container>
             <SectionLabel>Quem somos</SectionLabel>
@@ -51,13 +39,13 @@ export default async function AboutPage() {
               Quem somos
             </Heading>
             <div className="mt-lg max-w-reading">
-              <RichText value={data.whoWeAre} />
+              <Paragraphs items={data.whoWeAre} />
             </div>
           </Container>
         </Section>
       ) : null}
 
-      {data?.howWeThink ? (
+      {data.howWeThink.length > 0 ? (
         <Section spacing="loose" aria-labelledby="como-pensamos">
           <Container>
             <SectionLabel>Como pensamos</SectionLabel>
@@ -65,13 +53,13 @@ export default async function AboutPage() {
               Como pensamos
             </Heading>
             <div className="mt-lg max-w-reading">
-              <RichText value={data.howWeThink} />
+              <Paragraphs items={data.howWeThink} />
             </div>
           </Container>
         </Section>
       ) : null}
 
-      {data?.howWeWork ? (
+      {data.howWeWork.length > 0 ? (
         <Section tone="muted" spacing="loose" aria-labelledby="como-trabalhamos">
           <Container>
             <SectionLabel>Como trabalhamos</SectionLabel>
@@ -79,7 +67,7 @@ export default async function AboutPage() {
               Como trabalhamos
             </Heading>
             <div className="mt-lg max-w-reading">
-              <RichText value={data.howWeWork} />
+              <Paragraphs items={data.howWeWork} />
             </div>
           </Container>
         </Section>
@@ -123,10 +111,10 @@ export default async function AboutPage() {
                     className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
                   >
                     <div className="aspect-[4/5] w-full overflow-hidden bg-surface-muted">
-                      {person.photoStorageKey ? (
+                      {person.photo ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={mediaUrl(person.photoStorageKey)}
+                          src={person.photo}
                           alt={`Foto de ${person.name}`}
                           width={800}
                           height={1000}

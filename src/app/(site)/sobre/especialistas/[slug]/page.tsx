@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { RichText } from "@/components/content/rich-text";
+import { Paragraphs } from "@/components/content/paragraphs";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
-import { getPublicSpecialistBySlugForRoute } from "@/features/people/application/public-specialists";
+import { findSpecialist } from "@/content/dm";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { env } from "@/server/env";
 
@@ -12,24 +12,20 @@ type Params = { params: Promise<{ slug: string }> };
 // Rota dinâmica que lê `params` (dado de requisição); `instant = false` como em `/solucoes/[slug]`.
 export const instant = false;
 
-function mediaUrl(storageKey: string): string {
-  return `/media/${storageKey}`;
-}
-
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const person = await getPublicSpecialistBySlugForRoute(slug);
+  const person = findSpecialist(slug);
   if (!person) return { title: "Especialista não encontrado" };
   return publicMetadata({
-    title: person.seoTitle ?? `${person.name} — ${person.roleTitle}`,
-    description: person.seoDescription ?? person.summary ?? undefined,
+    title: `${person.name} — ${person.roleTitle}`,
+    description: person.summary ?? undefined,
     path: `/sobre/especialistas/${person.slug}`,
   });
 }
 
 export default async function SpecialistProfilePage({ params }: Params) {
   const { slug } = await params;
-  const person = await getPublicSpecialistBySlugForRoute(slug);
+  const person = findSpecialist(slug);
   if (!person) notFound();
 
   return (
@@ -51,10 +47,10 @@ export default async function SpecialistProfilePage({ params }: Params) {
           <div className="grid grid-cols-1 gap-2xl lg:grid-cols-12">
             <div className="lg:col-span-5">
               <div className="aspect-[4/5] w-full overflow-hidden bg-surface-muted">
-                {person.photoStorageKey ? (
+                {person.photo ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={mediaUrl(person.photoStorageKey)}
+                    src={person.photo}
                     alt={`Foto de ${person.name}`}
                     width={800}
                     height={1000}
@@ -101,7 +97,7 @@ export default async function SpecialistProfilePage({ params }: Params) {
         </Container>
       </Section>
 
-      {person.bio ? (
+      {person.bio.length > 0 ? (
         <Section tone="muted" spacing="loose" aria-labelledby="biografia">
           <Container>
             <SectionLabel>Biografia</SectionLabel>
@@ -109,7 +105,7 @@ export default async function SpecialistProfilePage({ params }: Params) {
               Sobre {person.name.split(" ")[0]}
             </Heading>
             <div className="mt-lg max-w-reading">
-              <RichText value={person.bio} />
+              <Paragraphs items={person.bio} />
             </div>
           </Container>
         </Section>

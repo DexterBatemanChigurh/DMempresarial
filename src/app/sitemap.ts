@@ -1,8 +1,7 @@
 import type { MetadataRoute } from "next";
 import { connection } from "next/server";
-import { listPublicSolutionsForRoute } from "@/features/catalog/application/public-solutions";
+import { SOLUTIONS, SPECIALISTS } from "@/content/dm";
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
-import { listPublicSpecialistsForRoute } from "@/features/people/application/public-specialists";
 import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
 import { env } from "@/server/env";
 
@@ -13,9 +12,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = env().SITE_URL;
   const url = (path: string) => `${base}${path}`;
 
-  const [solutions, specialists, posts, categories] = await Promise.all([
-    listPublicSolutionsForRoute(),
-    listPublicSpecialistsForRoute(),
+  const solutions = SOLUTIONS;
+  const specialists = SPECIALISTS;
+  const [posts, categories] = await Promise.all([
     listPublicPostsForRoute({ pageSize: 50 }),
     listPublicCategoriesForRoute(),
   ]);

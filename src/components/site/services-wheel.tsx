@@ -2,11 +2,12 @@
 
 import { useState, type ComponentType, type SVGProps } from "react";
 import { LandmarkIcon, SlidersIcon, TargetIcon, WalletCardsIcon } from "@/components/ui/icons";
+import { findSolution } from "@/content/dm";
 
 /**
  * "O que fazemos": quatro frentes em volta de uma roda. Passar o mouse (ou focar pelo teclado,
- * ou tocar) num ícone ou num card acende o par correspondente. Texto e paleta definidos pelo
- * usuário; a paleta vive em globals.css (`--color-roda-*`).
+ * ou tocar) num ícone ou num card acende o par correspondente. Títulos e textos vêm das
+ * soluções em src/content/dm.ts; a paleta vive em globals.css (`--color-roda-*`).
  */
 type Position = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 type Accent = "teal" | "blue";
@@ -20,44 +21,30 @@ type Service = {
   accent: Accent;
 };
 
-const SERVICES: Service[] = [
+/** Ícone, posição e cor de cada frente; título e texto vêm de src/content/dm.ts. */
+const LAYOUT: {
+  slug: string;
+  Icon: Service["Icon"];
+  position: Position;
+  accent: Accent;
+}[] = [
+  { slug: "recuperacao-de-credito", Icon: LandmarkIcon, position: "top-left", accent: "teal" },
   {
-    id: 1,
-    title: "Recuperação de crédito",
-    short:
-      "Negociamos diretamente com os bancos para reorganizar dívidas, alongar prazos e devolver fôlego financeiro ao negócio.",
-    Icon: LandmarkIcon,
-    position: "top-left",
-    accent: "teal",
-  },
-  {
-    id: 2,
-    title: "Reorganização de dívidas",
-    short:
-      "Mapeamento de tudo que a empresa deve, prioridades de pagamento e um plano compatível com o caixa real.",
+    slug: "reorganizacao-de-dividas",
     Icon: WalletCardsIcon,
     position: "top-right",
     accent: "blue",
   },
-  {
-    id: 3,
-    title: "Consultoria estratégica",
-    short:
-      "Identificamos o que está travando o crescimento e montamos um plano de ação com prazo e responsável.",
-    Icon: TargetIcon,
-    position: "bottom-left",
-    accent: "blue",
-  },
-  {
-    id: 4,
-    title: "Reestruturação de gestão",
-    short:
-      "Reorganizamos processos, estrutura e indicadores para recuperar o controle da operação.",
-    Icon: SlidersIcon,
-    position: "bottom-right",
-    accent: "teal",
-  },
+  { slug: "consultoria-estrategica", Icon: TargetIcon, position: "bottom-left", accent: "blue" },
+  { slug: "reestruturacao-de-gestao", Icon: SlidersIcon, position: "bottom-right", accent: "teal" },
 ];
+
+const SERVICES: Service[] = LAYOUT.flatMap((item, index) => {
+  const solution = findSolution(item.slug);
+  return solution
+    ? [{ ...item, id: index + 1, title: solution.title, short: solution.summary }]
+    : [];
+});
 
 const ACCENT_TEXT: Record<Accent, string> = {
   teal: "text-roda-turquesa",

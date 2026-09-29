@@ -1,30 +1,17 @@
-import { RichText } from "@/components/content/rich-text";
-import { Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
-import type { PublicPage } from "@/features/pages/infrastructure/page-repository";
+import { Paragraphs } from "@/components/content/paragraphs";
+import { Container, Heading, Section, SectionLabel } from "@/components/ui";
+import type { LegalDocument } from "@/content/dm";
 
-/** Corpo comum às páginas institucionais servidas por chave (LEGAL: só o campo `body`). */
-export function InstitutionalPage({ page }: { page: PublicPage }) {
-  const body =
-    typeof page.data === "object" && page.data !== null && "body" in page.data
-      ? (page.data as { body: unknown }).body
-      : null;
-
+/** Corpo das páginas legais (Política de Privacidade, Termos de Uso): texto em src/content/dm.ts. */
+export function InstitutionalPage({ document }: { document: LegalDocument }) {
   return (
     <Section spacing="loose">
       <Container>
         <SectionLabel>Legal</SectionLabel>
         <Heading as="h1" variant="display-l" className="mt-md">
-          {page.title}
+          {document.title}
         </Heading>
-        {body ? (
-          <div className="mt-xl max-w-reading">
-            <RichText value={body} />
-          </div>
-        ) : (
-          <Text tone="secondary" className="mt-lg max-w-reading">
-            Este documento ainda não tem conteúdo publicado.
-          </Text>
-        )}
+        <Paragraphs items={document.paragraphs} className="mt-xl max-w-reading" />
       </Container>
     </Section>
   );

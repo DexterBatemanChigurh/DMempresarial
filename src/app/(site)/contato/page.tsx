@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { RichText } from "@/components/content/rich-text";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { ContactForm } from "@/components/site/contact-form";
-import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
-import { contactDataSchema } from "@/features/pages/domain/page-schemas";
+import { CONTACT } from "@/content/dm";
 import { publicMetadata } from "@/components/site/seo";
 import { mintFormToken } from "@/server/security/form-token";
 import { submitLeadAction } from "./actions";
@@ -24,14 +22,8 @@ export default async function ContactPage() {
   // `mintFormToken()` usa `new Date()`: sem um ponto explícito de dado de requisição, o Next
   // tenta chamá-la no prerender estático do build, onde não existe "agora" de verdade.
   await connection();
-  const [page, settings] = await Promise.all([
-    getPublishedPageForRoute("contact"),
-    getPublicSettingsForRoute(),
-  ]);
+  const settings = await getPublicSettingsForRoute();
   const formToken = mintFormToken();
-
-  const parsed = page ? contactDataSchema.safeParse(page.data) : null;
-  const intro = parsed?.success ? parsed.data.intro : null;
 
   const hasAddress = Boolean(settings?.address);
   const hasChannels = Boolean(settings?.phone || settings?.email || settings?.whatsapp);
@@ -49,15 +41,9 @@ export default async function ContactPage() {
               <Heading as="h1" variant="display-l" className="mt-md">
                 Fale com a DM
               </Heading>
-              {intro ? (
-                <div className="mt-lg max-w-reading">
-                  <RichText value={intro} />
-                </div>
-              ) : (
-                <Text size="lg" tone="secondary" className="mt-lg max-w-reading">
-                  Conte o contexto da sua empresa e a DM explica como pode ajudar.
-                </Text>
-              )}
+              <Text size="lg" tone="secondary" className="mt-lg max-w-reading">
+                {CONTACT.intro}
+              </Text>
 
               <div className="mt-2xl space-y-xl">
                 {hasAddress ? (

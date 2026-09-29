@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { RichText } from "@/components/content/rich-text";
+import { Paragraphs } from "@/components/content/paragraphs";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { ArrowRightIcon, ChartIcon, ClockIcon, UsersIcon } from "@/components/ui/icons";
 
@@ -12,16 +12,14 @@ const BLOG_GRID_COLS: Record<1 | 2 | 3 | 4, string> = {
   3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
   4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
 };
-import { listPublicSolutionsForRoute } from "@/features/catalog/application/public-solutions";
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
 import { buildMediaResolverForRoute } from "@/features/media/application/resolve";
-import { getPublishedPageForRoute } from "@/features/pages/application/public-page";
-import { aboutDataSchema, homeDataSchema } from "@/features/pages/domain/page-schemas";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
 import type { RichDoc } from "@/lib/rich-text";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { ServicesWheel } from "@/components/site/services-wheel";
 import { ValuesCircle } from "@/components/site/values-circle";
+import { ABOUT, HOME, SOLUTIONS } from "@/content/dm";
 import { env } from "@/server/env";
 
 const homeMetadata = publicMetadata({
@@ -59,39 +57,20 @@ const SOLUTION_TYPE_LABEL: Record<"CONSULTORIA" | "SERVICO", string> = {
 };
 
 export default async function HomePage() {
-  const [homePage, aboutPage, solutions, postsPage, settings] = await Promise.all([
-    getPublishedPageForRoute("home"),
-    getPublishedPageForRoute("about"),
-    listPublicSolutionsForRoute(),
+  const [postsPage, settings] = await Promise.all([
     listPublicPostsForRoute({ pageSize: 4 }),
     getPublicSettingsForRoute(),
   ]);
-
-  const parsed = homePage ? homeDataSchema.safeParse(homePage.data) : null;
-  // "Sobre nós" da Home reaproveita o conteúdo da página Sobre do CMS (quem somos + valores).
-  const aboutParsed = aboutPage ? aboutDataSchema.safeParse(aboutPage.data) : null;
-  const about = aboutParsed?.success ? aboutParsed.data : null;
-  const homeData = parsed?.success ? parsed.data : null;
-
-  const description = homeData?.description ?? null;
+  const solutions = SOLUTIONS;
   const posts = postsPage.items;
 
-  // Foto do hero (docs/03, parte 21): sem uma escolhida em /admin/paginas ainda, a home mostra um
-  // estado vazio (nunca um "headshot corporativo genérico", Prompt 2 §18).
-  const heroImageDoc: RichDoc | null = homeData?.heroImageId
-    ? { type: "doc", content: [{ type: "image", attrs: { mediaId: homeData.heroImageId } }] }
-    : null;
-
-  // Capas dos artigos do blog: resolvidas em lote (uma consulta), mesma técnica da foto do hero.
+  // Capas dos artigos do blog: resolvidas em lote (uma consulta).
   const coverIds = posts.map((p) => p.coverMediaId).filter((id): id is string => id !== null);
   const coverDoc: RichDoc | null =
     coverIds.length > 0
       ? { type: "doc", content: coverIds.map((mediaId) => ({ type: "image", attrs: { mediaId } })) }
       : null;
-  const [heroResolver, coverResolver] = await Promise.all([
-    heroImageDoc ? buildMediaResolverForRoute(heroImageDoc) : Promise.resolve(null),
-    coverDoc ? buildMediaResolverForRoute(coverDoc) : Promise.resolve(null),
-  ]);
+  const coverResolver = coverDoc ? await buildMediaResolverForRoute(coverDoc) : null;
 
   // Gráfico de soluções: fatias iguais por solução publicada, coloridas pelo tipo (só 2 tons da
   // paleta da DM — nunca uma cor nova só para decorar um gráfico).
@@ -142,26 +121,12 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 items-start gap-2xl lg:grid-cols-[5fr_4fr] lg:gap-x-[120px]">
             <div className="min-w-0">
               <SectionLabel>Consultoria empresarial · Frutal, MG</SectionLabel>
-              {homeData?.headline ? (
-                <h1 className="mt-lg font-serif text-[2.25rem] leading-[1.05] font-bold tracking-[-0.02em] text-text sm:text-[2.75rem] lg:text-[58px] lg:leading-[1.02]">
-                  {homeData.headline}
-                </h1>
-              ) : (
-                <h1 className="mt-lg font-serif text-[2.25rem] leading-[1.05] font-bold tracking-[-0.02em] text-text sm:text-[2.75rem] lg:text-[58px] lg:leading-[1.02]">
-                  Consultoria empresarial com{" "}
-                  <span className="text-action">método, acompanhamento e gente de verdade</span>.
-                </h1>
-              )}
-              {description ? (
-                <div className="mt-lg max-w-[570px]">
-                  <RichText value={description} />
-                </div>
-              ) : (
-                <Text size="lg" tone="secondary" className="mt-lg max-w-[570px]">
-                  Diagnóstico claro, plano prático e alguém acompanhando de perto — da decisão até o
-                  resultado.
-                </Text>
-              )}
+              <h1 className="mt-lg font-serif text-[2.25rem] leading-[1.05] font-bold tracking-[-0.02em] text-text sm:text-[2.75rem] lg:text-[58px] lg:leading-[1.02]">
+                {HOME.headlineStart} <span className="text-action">{HOME.headlineHighlight}</span>.
+              </h1>
+              <Text size="lg" tone="secondary" className="mt-lg max-w-[570px]">
+                {HOME.description}
+              </Text>
               <div className="mt-2xl flex flex-wrap gap-sm">
                 <Button href="/contato" size="lg">
                   Fale com a DM →
@@ -173,13 +138,19 @@ export default async function HomePage() {
             </div>
 
             <div className="overflow-hidden rounded-[16px] border border-border bg-surface-muted lg:mt-[3px]">
-              {heroImageDoc && heroResolver ? (
-                <RichText value={heroImageDoc} resolveMedia={heroResolver} />
+              {HOME.heroImage ? (
+                // Imagem estática de /public, escolhida em src/content/dm.ts.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={HOME.heroImage.src}
+                  alt={HOME.heroImage.alt}
+                  className="aspect-[467/460] w-full object-cover"
+                />
               ) : (
                 <div className="flex aspect-[467/460] flex-col items-center justify-center gap-md p-xl text-center">
                   <UsersIcon aria-hidden="true" className="size-9 text-text-muted" />
                   <Text size="sm" tone="secondary" className="max-w-[220px]">
-                    A foto da equipe da DM aparece aqui assim que for publicada em Configurações.
+                    A foto da equipe da DM aparece aqui.
                   </Text>
                 </div>
               )}
@@ -286,9 +257,8 @@ export default async function HomePage() {
       ) : null}
 
       {/* SOBRE NÓS — composição de uma referência do usuário: título centralizado, texto à
-          esquerda e, à direita, os valores escritos em volta de um círculo. Sempre aparece: sem a
-          página Sobre publicada, o texto vira um aviso e o círculo usa só dados reais da DM
-          (nunca valores inventados). */}
+          esquerda e, à direita, os valores escritos em volta de um círculo. Texto em
+          src/content/dm.ts; sem valores cadastrados, o círculo usa só dados reais da DM. */}
       <Section
         tone="muted"
         spacing="loose"
@@ -308,11 +278,7 @@ export default async function HomePage() {
           </Heading>
           <div className="mt-3xl grid grid-cols-1 items-center gap-3xl lg:grid-cols-2">
             <div className="max-w-reading">
-              {about?.whoWeAre ? (
-                <RichText value={about.whoWeAre} />
-              ) : (
-                <Text tone="secondary">A apresentação completa da DM está sendo escrita.</Text>
-              )}
+              <Paragraphs items={ABOUT.whoWeAre} />
               <div className="mt-xl">
                 <Button href="/sobre" variant="secondary">
                   Conheça a DM
@@ -321,8 +287,8 @@ export default async function HomePage() {
             </div>
             <ValuesCircle
               names={
-                about && about.values.length > 0
-                  ? about.values.map((v) => v.name)
+                ABOUT.values.length > 0
+                  ? ABOUT.values.map((v) => v.name)
                   : ["DM Empresarial", "Consultoria empresarial", "Frutal, MG"]
               }
             />
