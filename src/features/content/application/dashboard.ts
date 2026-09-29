@@ -1,5 +1,5 @@
 import "server-only";
-import { count, eq } from "drizzle-orm";
+import { and, asc, count, eq } from "drizzle-orm";
 import { getDb, type Database } from "@/db/client";
 import { posts } from "@/db/schema";
 import type { Actor } from "@/server/permissions";
@@ -27,4 +27,26 @@ export async function postCountsFor(db: Database, actor: Actor): Promise<PostSta
 /** Versão para as rotas: usa o banco da aplicação (rotas nunca importam o cliente do banco). */
 export function getPostCounts(actor: Actor): Promise<PostStatusCounts> {
   return postCountsFor(getDb(), actor);
+}
+
+export type UpcomingPost = { id: string; title: string; scheduledFor: Date };
+
+/** Próximos artigos agendados (mesmo escopo por papel da contagem acima). */
+export async function upcomingScheduledFor(
+  db: Database,
+  actor: Actor,
+  limit = 5,
+): Promise<UpcomingPost[]> {
+  const scheduled = eq(posts.status, "SCHEDULED");
+  const rows = await db
+    .select({ id: posts.id, title: posts.title, scheduledFor: posts.scheduledFor })
+    .from(posts)
+    .where(actor.role === "AUTHOR" ? and(scheduled, eq(posts.createdBy, actor.id)) : scheduled)
+    .orderBy(asc(posts.scheduledFor))
+    .limit(limit);
+  return rows.flatMap((r) => (r.scheduledFor ? [{ ...r, scheduledFor: r.scheduledFor }] : []));
+}
+
+export function getUpcomingScheduled(actor: Actor, limit?: number): Promise<UpcomingPost[]> {
+  return upcomingScheduledFor(getDb(), actor, limit);
 }
