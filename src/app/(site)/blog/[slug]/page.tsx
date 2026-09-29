@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { CtaCard } from "@/components/site/cta-card";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { draftMode } from "next/headers";
 import { RichText } from "@/components/content/rich-text";
-import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
+import { Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import {
   getPublicPostBySlugForRoute,
   getPostBySlugForPreviewRoute,
@@ -100,7 +101,10 @@ export default async function BlogPostPage({ params }: Params) {
             aria-label="Trilha"
             className="flex flex-wrap items-center gap-xs font-sans text-label font-semibold tracking-[0.08em] uppercase"
           >
-            <Link href="/blog" className="text-text-secondary hover:text-link">
+            <Link
+              href="/blog"
+              className="inline-flex min-h-11 items-center text-text-secondary hover:text-link"
+            >
               Blog
             </Link>
             {post.primaryCategorySlug ? (
@@ -110,7 +114,7 @@ export default async function BlogPostPage({ params }: Params) {
                 </span>
                 <Link
                   href={`/blog/categoria/${post.primaryCategorySlug}`}
-                  className="text-link hover:underline"
+                  className="inline-flex min-h-11 items-center text-link hover:underline"
                 >
                   {categoryName.get(post.primaryCategorySlug) ?? post.primaryCategorySlug}
                 </Link>
@@ -132,7 +136,7 @@ export default async function BlogPostPage({ params }: Params) {
             {author ? (
               <Link
                 href={`/sobre/especialistas/${author.slug}`}
-                className="font-semibold text-text hover:text-link"
+                className="inline-flex min-h-11 items-center font-semibold text-text hover:text-link"
               >
                 {author.name}
               </Link>
@@ -204,21 +208,13 @@ export default async function BlogPostPage({ params }: Params) {
         </Section>
       ) : null}
 
-      <Section spacing="loose" aria-labelledby="cta-artigo">
-        <Container>
-          <Heading as="h2" variant="h2" id="cta-artigo">
-            Quer conversar sobre isso?
-          </Heading>
-          <Text tone="secondary" className="mt-md max-w-reading">
-            Conte o contexto da sua empresa e a DM explica como pode ajudar.
-          </Text>
-          <div className="mt-xl">
-            <Button href="/contato" size="lg">
-              Fale com a DM
-            </Button>
-          </div>
-        </Container>
-      </Section>
+      <CtaCard
+        id="cta-artigo"
+        title="Quer conversar sobre isso?"
+        text="Conte o contexto da sua empresa e a DM explica como pode ajudar."
+        primary={{ href: "/contato", label: "Conversar com a DM →" }}
+        secondary={{ href: "/solucoes", label: "Conhecer nossas soluções →" }}
+      />
     </>
   );
 }

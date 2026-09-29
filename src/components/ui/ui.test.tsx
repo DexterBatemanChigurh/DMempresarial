@@ -82,10 +82,10 @@ describe("Button", () => {
     expect(tertiary).toContain('aria-hidden="true"');
   });
 
-  it("alturas de toque: padrão 48 px e mínimo de 40 px só no tamanho compacto", () => {
+  it("alturas de toque: padrão 48 px e nunca abaixo de 44 px, nem no tamanho compacto", () => {
     expect(html(<Button>x</Button>)).toContain("h-12");
     expect(html(<Button size="lg">x</Button>)).toContain("h-14");
-    expect(html(<Button size="sm">x</Button>)).toContain("h-10");
+    expect(html(<Button size="sm">x</Button>)).toContain("h-11");
   });
 });
 

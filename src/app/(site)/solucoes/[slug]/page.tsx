@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { CtaCard } from "@/components/site/cta-card";
 import { notFound } from "next/navigation";
 import { Paragraphs } from "@/components/content/paragraphs";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
@@ -174,29 +174,13 @@ export default async function SolutionDetailPage({ params }: Params) {
         </Section>
       ) : null}
 
-      <Section spacing="loose" aria-labelledby="cta-solucao">
-        <Container>
-          <Heading as="h2" variant="h2" id="cta-solucao">
-            Vamos conversar sobre o seu caso
-          </Heading>
-          <Text tone="secondary" className="mt-md max-w-reading">
-            Conte o contexto da sua empresa e a DM explica como pode atuar nesta solução.
-          </Text>
-          <div className="mt-xl flex flex-wrap gap-md">
-            <Button href="/contato" size="lg">
-              Fale com a DM
-            </Button>
-            <Button href="/solucoes" variant="secondary" size="lg">
-              Ver todas as soluções
-            </Button>
-          </div>
-          <Text size="sm" tone="secondary" className="mt-lg">
-            <Link href="/solucoes" className="text-link underline underline-offset-4">
-              ← Voltar para Soluções
-            </Link>
-          </Text>
-        </Container>
-      </Section>
+      <CtaCard
+        id="cta-solucao"
+        title="Vamos conversar sobre o seu caso"
+        text="Conte o contexto da sua empresa e a DM explica como pode atuar nesta solução."
+        primary={{ href: "/contato", label: "Conversar com a DM →" }}
+        secondary={{ href: "/solucoes", label: "Ver todas as soluções" }}
+      />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CtaCard } from "@/components/site/cta-card";
 import Link from "next/link";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { ArrowRightIcon } from "@/components/ui/icons";
@@ -22,7 +23,10 @@ export const metadata: Metadata = publicMetadata({
 // Lê `searchParams` (paginação e busca) — dado de requisição, mesmo padrão das rotas `[slug]`.
 export const instant = false;
 
-const PAGE_SIZE = 9;
+/** Busca: 9 por página (grade de 3). Listagem: 10 por página — na primeira, o destaque + 9. */
+const SEARCH_PAGE_SIZE = 9;
+const LIST_PAGE_SIZE = 10;
+const LATEST_ON_FIRST_PAGE = 9;
 
 function first(value: string | string[] | undefined): string {
   return (Array.isArray(value) ? value[0] : value) ?? "";
@@ -59,16 +63,18 @@ export default async function BlogIndexPage({
     isSearch
       ? searchPublicPostsForRoute(query, {
           page,
-          pageSize: PAGE_SIZE,
+          pageSize: SEARCH_PAGE_SIZE,
           categorySlug: filterCategory,
         })
-      : listPublicPostsForRoute({ page, pageSize: PAGE_SIZE }),
+      : listPublicPostsForRoute({ page, pageSize: LIST_PAGE_SIZE }),
     isSearch ? Promise.resolve(null) : listPublicPostsForRoute({ featuredOnly: true, pageSize: 4 }),
   ]);
 
   // Destaque principal: o escolhido no painel mais recente; sem escolha, o último publicado.
   const featured = !isSearch && page === 1 ? (featuredPage?.items[0] ?? listing.items[0]) : null;
-  const latest = listing.items.filter((p) => p.slug !== featured?.slug);
+  const latest = listing.items
+    .filter((p) => p.slug !== featured?.slug)
+    .slice(0, featured ? LATEST_ON_FIRST_PAGE : undefined);
   const editorial = (featuredPage?.items ?? [])
     .filter((p) => p.slug !== featured?.slug)
     .slice(0, 3);
@@ -349,24 +355,13 @@ export default async function BlogIndexPage({
       </Section>
 
       {/* 7 CTA */}
-      <Section spacing="loose" aria-labelledby="blog-cta">
-        <Container>
-          <div className="rounded-[28px] border border-border bg-surface-muted px-lg py-2xl text-center md:px-2xl md:py-3xl">
-            <Heading as="h2" variant="h2" id="blog-cta" className="mx-auto max-w-[36rem]">
-              {BLOG_PAGE.cta.title}
-            </Heading>
-            <Text tone="secondary" className="mx-auto mt-md max-w-reading">
-              {BLOG_PAGE.cta.text}
-            </Text>
-            <div className="mt-xl flex flex-col items-center justify-center gap-md sm:flex-row">
-              <Button href="/contato">Conversar com a DM →</Button>
-              <Button href="/solucoes" variant="secondary">
-                Conhecer nossas soluções →
-              </Button>
-            </div>
-          </div>
-        </Container>
-      </Section>
+      <CtaCard
+        id="blog-cta"
+        title={BLOG_PAGE.cta.title}
+        text={BLOG_PAGE.cta.text}
+        primary={{ href: "/contato", label: "Conversar com a DM →" }}
+        secondary={{ href: "/solucoes", label: "Conhecer nossas soluções →" }}
+      />
     </>
   );
 }

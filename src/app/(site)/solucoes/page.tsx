@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CtaCard } from "@/components/site/cta-card";
 import Link from "next/link";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { ArrowRightIcon } from "@/components/ui/icons";
@@ -293,24 +294,13 @@ export default async function SolutionsIndexPage() {
       ) : null}
 
       {/* 9 CTA FINAL */}
-      <Section spacing="loose" aria-labelledby="solucoes-cta">
-        <Container>
-          <div className="rounded-[28px] border border-border bg-surface-muted px-lg py-2xl text-center md:px-2xl md:py-3xl">
-            <Heading as="h2" variant="h2" id="solucoes-cta" className="mx-auto max-w-[36rem]">
-              {page.cta.title}
-            </Heading>
-            <Text tone="secondary" className="mx-auto mt-md max-w-reading">
-              {page.cta.text}
-            </Text>
-            <div className="mt-xl flex flex-col items-center justify-center gap-md sm:flex-row">
-              <Button href="/contato">Conversar com a DM →</Button>
-              <Button href="/sobre/especialistas" variant="secondary">
-                Conhecer os especialistas →
-              </Button>
-            </div>
-          </div>
-        </Container>
-      </Section>
+      <CtaCard
+        id="solucoes-cta"
+        title={page.cta.title}
+        text={page.cta.text}
+        primary={{ href: "/contato", label: "Conversar com a DM →" }}
+        secondary={{ href: "/sobre/especialistas", label: "Conhecer os especialistas →" }}
+      />
     </>
   );
 }

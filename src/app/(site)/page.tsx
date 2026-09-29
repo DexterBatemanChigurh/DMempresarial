@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { CtaCard } from "@/components/site/cta-card";
 import { Paragraphs } from "@/components/content/paragraphs";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { ClockIcon, UsersIcon, WhatsAppIcon } from "@/components/ui/icons";
@@ -14,7 +14,8 @@ const BLOG_GRID_COLS: Record<1 | 2 | 3 | 4, string> = {
 };
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
 import { buildCoverResolverForRoute } from "@/features/media/application/resolve";
-import { PostCover } from "@/components/content/post-cover";
+import { PostCard } from "@/components/content/post-card";
+import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
 import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { ServicesWheel } from "@/components/site/services-wheel";
@@ -51,6 +52,9 @@ export default async function HomePage() {
 
   // Capas dos artigos do blog: resolvidas em lote (uma consulta).
   const coverResolver = await buildCoverResolverForRoute(posts.map((p) => p.coverMediaId));
+  const categoryName = new Map(
+    (await listPublicCategoriesForRoute()).map((c) => [c.slug, c.name] as const),
+  );
 
   return (
     <>
@@ -86,7 +90,7 @@ export default async function HomePage() {
               <Text size="lg" tone="secondary" className="mt-lg max-w-[570px]">
                 {HOME.description}
               </Text>
-              <div className="mt-2xl flex flex-wrap gap-sm">
+              <div className="mt-2xl flex flex-col gap-sm sm:flex-row sm:flex-wrap">
                 <Button
                   href={WHATSAPP_URL}
                   variant="whatsapp"
@@ -166,41 +170,15 @@ export default async function HomePage() {
             <ul
               className={`mt-2xl grid gap-xl ${BLOG_GRID_COLS[Math.min(posts.length, 4) as 1 | 2 | 3 | 4]}`}
             >
-              {posts.map((post) => {
-                return (
-                  <li key={post.slug}>
-                    <Link
-                      href={`/blog/${post.slug}`}
-                      className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
-                    >
-                      <PostCover mediaId={post.coverMediaId} resolve={coverResolver}>
-                        <span className="absolute bottom-sm left-sm rounded-control bg-action px-sm py-2xs font-sans text-caption font-semibold text-action-contrast">
-                          Ler artigo
-                        </span>
-                      </PostCover>
-                      <Text size="metadata" tone="secondary" className="mt-md">
-                        {post.authorName} · {post.readingMinutes} min
-                      </Text>
-                      <Heading
-                        as="h3"
-                        variant="h4"
-                        className="mt-xs text-link group-hover:underline group-focus-visible:underline"
-                      >
-                        {post.title}
-                      </Heading>
-                      {post.publishedAt ? (
-                        <Text size="sm" tone="secondary" className="mt-xs">
-                          {post.publishedAt.toLocaleDateString("pt-BR", {
-                            day: "2-digit",
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </Text>
-                      ) : null}
-                    </Link>
-                  </li>
-                );
-              })}
+              {posts.map((post) => (
+                <li key={post.slug}>
+                  <PostCard
+                    post={post}
+                    resolve={coverResolver}
+                    categoryName={categoryName.get(post.primaryCategorySlug ?? "")}
+                  />
+                </li>
+              ))}
             </ul>
 
             <div className="mt-2xl">
@@ -244,25 +222,13 @@ export default async function HomePage() {
       </Section>
 
       {/* CTA final — texto e botões definidos pelo usuário. */}
-      <Section spacing="loose" aria-labelledby="home-cta">
-        <Container>
-          <div className="rounded-[28px] border border-border bg-surface-muted px-lg py-2xl text-center md:px-2xl md:py-3xl">
-            <Heading as="h2" variant="h2" id="home-cta" className="mx-auto max-w-[36rem]">
-              Sua empresa pode estar pronta para o próximo passo.
-            </Heading>
-            <Text tone="secondary" className="mx-auto mt-md max-w-reading">
-              Conte-nos o que está acontecendo. A partir disso, podemos entender o cenário e
-              conversar sobre os caminhos possíveis.
-            </Text>
-            <div className="mt-xl flex flex-col items-center justify-center gap-md sm:flex-row">
-              <Button href="/contato">Conversar com a DM</Button>
-              <Button href="/solucoes" variant="secondary">
-                Conhecer nossas soluções
-              </Button>
-            </div>
-          </div>
-        </Container>
-      </Section>
+      <CtaCard
+        id="home-cta"
+        title="Sua empresa pode estar pronta para o próximo passo."
+        text="Conte-nos o que está acontecendo. A partir disso, podemos entender o cenário e conversar sobre os caminhos possíveis."
+        primary={{ href: "/contato", label: "Conversar com a DM" }}
+        secondary={{ href: "/solucoes", label: "Conhecer nossas soluções" }}
+      />
     </>
   );
 }

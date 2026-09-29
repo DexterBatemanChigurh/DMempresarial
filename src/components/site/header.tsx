@@ -65,7 +65,10 @@ export function Header() {
       )}
     >
       <div className="mx-auto flex w-full max-w-wide items-center justify-between px-5 sm:px-6 md:px-8 lg:px-10">
-        <Link href="/" className="font-serif text-h4 font-medium text-text">
+        <Link
+          href="/"
+          className="inline-flex min-h-11 items-center font-serif text-h4 font-medium text-text"
+        >
           DM Empresarial
         </Link>
 
@@ -76,7 +79,7 @@ export function Header() {
               href={item.href}
               aria-current={isActive(item.href) ? "page" : undefined}
               className={cn(
-                "font-sans text-body font-medium text-text-secondary transition-colors hover:text-text",
+                "inline-flex min-h-11 items-center font-sans text-body font-medium text-text-secondary transition-colors hover:text-text",
                 isActive(item.href) && "text-text underline underline-offset-8",
               )}
             >

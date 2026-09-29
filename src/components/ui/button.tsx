@@ -12,7 +12,8 @@ const BASE =
   "inline-flex items-center justify-center gap-xs rounded-control font-sans font-semibold transition-colors duration-150 ease-standard";
 
 const SIZE = {
-  sm: "h-10 px-md text-sm",
+  // 44 px: alvo mínimo de toque, mesmo no tamanho pequeno.
+  sm: "h-11 px-md text-sm",
   md: "h-12 px-lg text-base",
   lg: "h-14 px-xl text-base",
 } as const;
