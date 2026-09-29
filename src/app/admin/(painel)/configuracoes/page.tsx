@@ -27,9 +27,9 @@ export default async function SettingsPage() {
       <Heading as="h1" variant="h1">
         Configurações
       </Heading>
-      <Text tone="secondary" className="mt-md mb-xl max-w-reading">
-        Dados reais da DM: o que ficar em branco some do rodapé e do JSON-LD público, não aparece
-        como &ldquo;em breve&rdquo;.
+      <Text tone="secondary" className="mt-sm mb-xl max-w-reading">
+        Gerencie as informações da DM Empresarial exibidas no site. O que ficar em branco some do
+        site, não aparece como &ldquo;em breve&rdquo;.
       </Text>
       <SettingsForm action={updateSettingsAction} initial={initial} />
     </>
