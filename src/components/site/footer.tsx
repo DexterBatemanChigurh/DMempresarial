@@ -1,13 +1,8 @@
 import Link from "next/link";
 import type { ComponentType, SVGProps } from "react";
 import { Container } from "@/components/ui";
-import {
-  ArrowRightIcon,
-  FacebookIcon,
-  InstagramIcon,
-  LinkedInIcon,
-  WhatsAppIcon,
-} from "@/components/ui/icons";
+import { WhatsAppFloat } from "./whatsapp-float";
+import { ArrowRightIcon, FacebookIcon, InstagramIcon, LinkedInIcon } from "@/components/ui/icons";
 
 /**
  * Rodapé público (composição definida pelo usuário): marca com chamada, quatro colunas de links
@@ -186,17 +181,7 @@ export function Footer({ settings, year }: { settings: FooterSettings | null; ye
         </Container>
       </footer>
 
-      {whatsapp ? (
-        <a
-          href={`https://wa.me/${whatsapp}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Conversar com a DM pelo WhatsApp (abre em nova aba)"
-          className="fixed right-lg bottom-lg z-40 flex size-14 items-center justify-center rounded-full bg-whatsapp text-papel shadow-overlay transition-colors duration-150 ease-standard hover:bg-whatsapp-texto"
-        >
-          <WhatsAppIcon className="size-8" />
-        </a>
-      ) : null}
+      {whatsapp ? <WhatsAppFloat number={whatsapp} /> : null}
     </>
   );
 }

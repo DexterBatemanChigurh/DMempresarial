@@ -29,23 +29,139 @@ export const HOME = {
 // ---------------------------------------------------------------------------------- Sobre
 
 export const ABOUT = {
-  title: "Sobre a DM",
-  intro:
-    "Consultoria empresarial em Frutal/MG. Método, acompanhamento e gente de verdade por trás de cada decisão.",
+  /** Abertura de /sobre: identidade da DM, sem serviços. Só fatos já documentados no site. */
+  hero: {
+    eyebrow: "DM Empresarial · Frutal, MG",
+    /** O título tem duas partes: a segunda sai em destaque (cor de ação). */
+    titleStart: "Consultoria empresarial feita de perto, por",
+    titleHighlight: "gente de verdade",
+    text: "Entramos no negócio, entendemos o que está acontecendo antes de propor qualquer coisa e acompanhamos cada decisão com método.",
+    founderLabel: "Fundador",
+    founderName: "Dino Marques de Oliveira",
+    link: "Continuar lendo",
+  },
+  /** Seção "Quem somos" de /sobre: identidade e forma de presença. Só fatos já documentados
+   * (whoWeAre, Home e Contato). `whoWeAre` segue intacto porque a Home e /solucoes o usam. */
+  identity: {
+    label: "Quem somos",
+    title: "Uma consultoria de Frutal que entra na realidade de cada empresa.",
+    lead: "A DM Empresarial desenvolve pessoas e empresas por meio de uma consultoria personalizada, orientada a resultados concretos.",
+    body: [
+      "O trabalho começa dentro do negócio: a DM entra na empresa para identificar os pontos críticos e reorganizar a estratégia, antes de propor qualquer caminho.",
+      "Quando a pressão é financeira, a presença da DM chega à mesa de negociação. Ela negocia diretamente com os bancos para reorganizar dívidas e devolver fôlego ao negócio.",
+    ],
+    note: "A primeira conversa é para entender a situação e dizer com honestidade se a DM pode ajudar.",
+  },
   whoWeAre: [
     "A DM Empresarial desenvolve pessoas e empresas por meio de uma consultoria personalizada e orientada a resultados concretos. Entramos no negócio para identificar os pontos críticos, reorganizar a estratégia e destravar o crescimento.",
     "Também atuamos na recuperação de crédito, negociando diretamente com bancos para reorganizar dívidas e devolver fôlego financeiro ao negócio. Quem conduz o trabalho é Dino Marques de Oliveira, fundador da consultoria.",
   ],
-  howWeThink: [PLACEHOLDER],
-  howWeWork: [PLACEHOLDER],
-  /** "Como trabalhamos". Até 5: os nomes giram em volta do círculo da Home. `practice` é a
-   * explicação que aparece em /sobre (vazia: só o nome). */
+  /** Seção "Como pensamos" de /sobre: a lógica de raciocínio da DM, sem etapas de serviço.
+   * Cada par vem de texto já publicado (diagnóstico antes de proposta, caixa real, plano com
+   * prazo e responsável, "sem relatório de cem páginas que ninguém lê"). */
+  thinking: {
+    label: "Como pensamos",
+    title: "Decidir só depois de enxergar a empresa como ela é.",
+    text: "A DM não parte de uma solução pronta para encaixar no negócio. Primeiro procura entender o que está acontecendo e o que está travando a empresa; só então decide o que precisa ser feito.",
+    pairs: [
+      {
+        from: "Uma solução pronta, pensada antes de conhecer a empresa.",
+        to: "O que está acontecendo de fato, dentro do negócio.",
+      },
+      {
+        from: "O sintoma que aparece primeiro.",
+        to: "O que está travando a empresa por trás dele.",
+      },
+      {
+        from: "O caixa que se gostaria de ter.",
+        to: "O caixa real, no qual o plano precisa caber.",
+      },
+      {
+        from: "Um relatório extenso que ninguém lê.",
+        to: "Uma decisão transformada em plano, com prazo e responsável.",
+      },
+    ],
+    fromLabel: "Não parte de",
+    toLabel: "Parte de",
+  },
+  /** Seção "Como trabalhamos" de /sobre: como é trabalhar com a DM (relação e rotina), sem as
+   * etapas do processo de /solucoes. Cada trecho vem de texto já publicado: proposta preparada
+   * antes da mesa com o banco, plano com prazo e responsável, "sem relatório que ninguém lê",
+   * atendimento todos os dias, avaliação da evolução e discrição sobre a situação do cliente. */
+  working: {
+    label: "Como trabalhamos",
+    title: "Perto da empresa, sem perder a objetividade.",
+    intro:
+      "Não é um manual de procedimentos. É o que a empresa encontra no dia a dia ao trabalhar com a DM.",
+    items: [
+      {
+        lead: "A DM trabalha por dentro do negócio.",
+        text: "Conhece a realidade da empresa antes de propor qualquer coisa. Quando o assunto é crédito, prepara a proposta antes de você sentar à mesa com o banco e senta junto com você.",
+      },
+      {
+        lead: "Você sabe o que foi combinado.",
+        text: "O que precisa ser feito tem prazo e responsável definidos, e fica claro em cada etapa. Sem relatório extenso que ninguém lê.",
+      },
+      {
+        lead: "A conversa não termina com o plano.",
+        text: "A DM atende todos os dias, acompanha a evolução do que foi definido e avalia com a empresa os próximos passos.",
+      },
+      {
+        lead: "A situação da empresa fica com quem precisa saber.",
+        text: "O que a empresa atravessa é tratado com discrição, sem exposição.",
+      },
+    ],
+  },
+  /** Encerramento de /sobre: consequência da apresentação, sem oferta. O botão leva a /contato,
+   * que é um formulário de mensagem; o texto segue o que aquela página já diz acontecer depois. */
+  cta: {
+    eyebrow: "Para continuar",
+    title: "Se fez sentido até aqui, a conversa pode começar.",
+    text: "Conte como está a sua empresa. A DM analisa o que for apresentado e um responsável pode retornar para entender melhor a situação.",
+    label: "Escrever para a DM",
+  },
+  /** Seção "Quem está por trás" de /sobre. Fontes: o texto de "Quem somos" deste projeto
+   * (fundador; quem conduz o trabalho) e o site publicado dmempresarial.com.br (autor do livro).
+   * Não há foto nem biografia no projeto: nada além disso deve ser escrito aqui. */
+  founder: {
+    label: "Quem está por trás",
+    name: "Dino Marques de Oliveira",
+    role: "Fundador da DM Empresarial",
+    text: [
+      "Dino Marques de Oliveira fundou a DM Empresarial e conduz o trabalho junto às empresas. A forma de pensar e de trabalhar descrita nesta página passa por ele.",
+    ],
+    bookLabel: "Autor do livro",
+    bookTitle: "Manual de Gestão em Tempos de Crise e Austeridade",
+  },
+  /** "O que nos orienta" em /sobre: a postura da DM diante do cliente. Os nomes (os cinco
+   * princípios já publicados) giram em volta do círculo da Home e não mudam; `practice` diz o
+   * que o cliente pode esperar de cada um, sem repetir as cenas de "Como trabalhamos". */
+  valuesIntro: {
+    title: "O que nos orienta",
+    text: "Cinco princípios que definem a postura da DM diante do cliente, em qualquer trabalho.",
+  },
   values: [
-    { name: "Diagnóstico antes de proposta", practice: "" },
-    { name: "Transparência em cada etapa", practice: "" },
-    { name: "Plano com prazo e responsável", practice: "" },
-    { name: "Disponibilidade todos os dias", practice: "" },
-    { name: "Discrição sobre a situação do cliente", practice: "" },
+    {
+      name: "Diagnóstico antes de proposta",
+      practice: "Nenhuma proposta chega antes de a DM entender o caixa e a realidade da empresa.",
+    },
+    {
+      name: "Transparência em cada etapa",
+      practice:
+        "O cliente sabe o que está sendo feito, inclusive quando a resposta honesta é que a DM não pode ajudar.",
+    },
+    {
+      name: "Plano com prazo e responsável",
+      practice: "Uma decisão só está tomada quando tem prazo e alguém responsável por ela.",
+    },
+    {
+      name: "Disponibilidade todos os dias",
+      practice: "A DM atende todos os dias: quando algo muda na empresa, há com quem falar.",
+    },
+    {
+      name: "Discrição sobre a situação do cliente",
+      practice: "O que o cliente conta sobre a empresa não circula fora da conversa.",
+    },
   ] as { name: string; practice: string }[],
 };
 
@@ -245,9 +361,11 @@ export const CATEGORY_SOLUTION: Record<string, { label: string; href: string }> 
 /** Página /contato (texto definido pelo usuário em 29/09/2026). */
 export const CONTACT_PAGE = {
   hero: {
-    title: "Vamos conversar sobre sua empresa.",
+    title: "Você não precisa ter todas as respostas.",
+    /** Só fatos da própria página: o assunto do formulário é opcional e a DM analisa o que for
+     * enviado antes de conversar (ver `afterSend`). Também é a description da página. */
     description:
-      "Conte brevemente o que está acontecendo. A partir dessas informações, podemos entender o seu cenário e os caminhos possíveis.",
+      "Explique a situação da empresa com as suas palavras, sem precisar escolher um serviço antes. A DM analisa o contexto e depois conversa com você sobre os caminhos possíveis.",
   },
   /** Assunto do contato: gravado em `leads.segment` para a DM classificar o lead. */
   subjects: [
@@ -259,22 +377,47 @@ export const CONTACT_PAGE = {
     { value: "marketing", label: "Marketing" },
     { value: "outro", label: "Outro assunto" },
   ],
-  /** Sem prazo prometido: a DM não definiu um tempo de resposta. */
-  nextSteps: [
-    {
-      name: "Recebemos sua mensagem",
-      text: "As informações são encaminhadas para a equipe responsável.",
-    },
-    { name: "Entendemos o cenário", text: "A DM analisa as informações apresentadas." },
-    {
-      name: "Entramos em contato",
-      text: "Um responsável pode retornar para entender melhor a situação.",
-    },
-    {
-      name: "Conversamos sobre os caminhos",
-      text: "A partir do contexto, são discutidas as possibilidades.",
-    },
-  ],
+  /** Localização (lateral do formulário). O endereço vem de CONTACT.address; o link abre a busca
+   * desse endereço no Google Maps (sem mapa incorporado nem coordenadas). */
+  location: {
+    title: "Onde a DM fica",
+    action: "Abrir no Google Maps",
+  },
+  /** "Prefere não preencher o formulário?": só os canais reais de CONTACT (WhatsApp e e-mail).
+   * O endereço fica na lateral do formulário, com o mapa; não se repete aqui. */
+  direct: {
+    title: "Prefere não preencher o formulário?",
+    text: "Você também pode falar com a DM por um destes dois canais.",
+    whatsappLabel: "WhatsApp",
+    whatsappAction: "Abrir conversa no WhatsApp",
+    emailLabel: "E-mail",
+    emailAction: "Escrever por e-mail",
+  },
+  /** "E depois do envio?". Só o que acontece de fato (submit-lead.ts): a mensagem é registrada e a
+   * DM é avisada por e-mail com o endereço da pessoa como resposta; não há e-mail de confirmação
+   * para quem enviou nem prazo definido. Por isso nenhum prazo, reunião ou proposta aqui. */
+  afterSend: {
+    title: "E depois do envio?",
+    intro: "Sem etapas complicadas. É isso que acontece com a sua mensagem.",
+    steps: [
+      {
+        when: "Agora",
+        name: "Sua mensagem é registrada.",
+        text: "Ela chega à equipe da DM com o que você contou e os dados para retorno.",
+      },
+      {
+        when: "Em seguida",
+        name: "A DM lê o que você escreveu.",
+        text: "Antes de qualquer conversa, a DM analisa o contexto que você apresentou.",
+      },
+      {
+        when: "Depois",
+        name: "Um responsável pode retornar.",
+        text: "Pelos dados que você informou, para entender melhor a situação e dizer com honestidade se a DM pode ajudar.",
+      },
+    ],
+    note: "Não há prazo fixo de retorno. Se preferir falar agora, os canais diretos estão logo abaixo.",
+  },
 };
 
 export type Specialist = {

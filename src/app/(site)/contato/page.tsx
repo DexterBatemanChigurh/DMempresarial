@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
+import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
 import { ArrowRightIcon } from "@/components/ui/icons";
 import { ContactForm } from "@/components/site/contact-form";
 import { CONTACT, CONTACT_PAGE, WHATSAPP_URL } from "@/content/dm";
@@ -9,7 +9,7 @@ import { mintFormToken } from "@/server/security/form-token";
 import { submitLeadAction } from "./actions";
 
 export const metadata: Metadata = publicMetadata({
-  title: "Contato",
+  title: "Contato: conte a situação da sua empresa",
   description: CONTACT_PAGE.hero.description,
   path: "/contato",
 });
@@ -18,148 +18,163 @@ export const metadata: Metadata = publicMetadata({
 // no build (mesmo motivo das rotas `[slug]`).
 export const instant = false;
 
-const pad = (n: number) => String(n).padStart(2, "0");
-
 export default async function ContactPage() {
   // `mintFormToken()` usa `new Date()`: sem um ponto explícito de dado de requisição, o Next
   // tenta chamá-la no prerender estático do build, onde não existe "agora" de verdade.
   await connection();
   const formToken = mintFormToken();
   // Contato fixo em src/content/dm.ts: só dado confirmado, nada inventado.
+  // Rua e cidade, separadas na última vírgula do endereço real (nada é escrito à mão aqui).
+  const cut = CONTACT.address.lastIndexOf(", ");
+  const street = CONTACT.address.slice(0, cut);
+  const city = CONTACT.address.slice(cut + 2);
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONTACT.address)}`;
 
   return (
     <>
-      {/* 1 HERO */}
-      <Section spacing="loose">
+      {/* 1 HERO — curto e sem botão: prepara o preenchimento e deixa o formulário logo abaixo. */}
+      <Section tone="dark" spacing="none" className="pt-xl pb-2xl md:pt-2xl md:pb-2xl">
         <Container>
           <SectionLabel>Contato</SectionLabel>
-          <Heading as="h1" variant="display-l" className="mt-md max-w-[20ch]">
+          <Heading as="h1" variant="h1" className="mt-lg max-w-[22ch] text-balance">
             {CONTACT_PAGE.hero.title}
           </Heading>
-          <Text size="lg" tone="secondary" className="mt-lg max-w-reading">
+          <Text size="lg" tone="secondary" className="mt-md max-w-[40rem]">
             {CONTACT_PAGE.hero.description}
           </Text>
         </Container>
       </Section>
 
       {/* 2 FORMULÁRIO + INFORMAÇÕES */}
-      <Section tone="muted" spacing="loose" aria-labelledby="formulario">
+      <Section
+        tone="muted"
+        spacing="none"
+        className="py-2xl md:py-3xl"
+        aria-labelledby="formulario"
+      >
         <Container>
           <h2 id="formulario" className="sr-only">
             Formulário de contato
           </h2>
           <div className="grid gap-2xl lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:gap-3xl">
-            <div className="rounded-[20px] border border-border bg-surface p-lg md:p-2xl">
+            <div className="max-w-[40rem]">
               <ContactForm action={submitLeadAction} formToken={formToken} />
             </div>
 
-            <aside aria-label="DM Empresarial" className="space-y-xl lg:pt-lg">
-              <div>
-                <p className="font-sans text-label font-semibold tracking-[0.12em] text-text uppercase">
-                  DM Empresarial
-                </p>
-                <p className="mt-md font-serif text-h4 font-medium text-text">Frutal — MG</p>
-                <Text tone="secondary" className="mt-xs">
-                  {CONTACT.address}
-                </Text>
-                <a
+            {/* LOCALIZAÇÃO — endereço em texto real (rua e cidade, sem repetir), um link que abre o
+                endereço no Google Maps e nada mais: sem mapa desenhado nem coordenadas. */}
+            <aside aria-labelledby="localizacao" className="lg:pt-lg">
+              <Heading as="h2" variant="h4" id="localizacao">
+                {CONTACT_PAGE.location.title}
+              </Heading>
+              <address className="mt-md font-serif text-h4 leading-snug font-medium text-text not-italic">
+                <span className="block">{street}</span>
+                <span className="block">{city}</span>
+              </address>
+              <div className="mt-lg">
+                <Button
                   href={mapUrl}
+                  variant="secondary"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-md flex aspect-[4/3] flex-col items-center justify-center gap-xs rounded-[16px] border border-border bg-surface font-sans text-sm font-semibold text-link transition-colors duration-150 ease-standard hover:border-link"
+                  className="w-full sm:w-auto"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="32"
-                    height="32"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 21s-7-6.3-7-11.5A7 7 0 0 1 19 9.5C19 14.7 12 21 12 21z" />
-                    <circle cx="12" cy="9.5" r="2.5" />
-                  </svg>
-                  Ver localização no mapa
+                  {CONTACT_PAGE.location.action}
                   <span className="sr-only"> (abre em nova aba)</span>
-                </a>
+                </Button>
               </div>
-              <Text size="sm" tone="secondary">
-                {CONTACT.hours}
-              </Text>
             </aside>
           </div>
         </Container>
       </Section>
 
-      {/* 3 O QUE ACONTECE DEPOIS */}
-      <Section spacing="loose" aria-labelledby="depois">
+      {/* 3 E DEPOIS DO ENVIO? — o que acontece com a mensagem, em três momentos curtos (Agora,
+          Em seguida, Depois), só com o que o sistema faz de verdade. Lista simples com rótulo de
+          tempo à esquerda: sem números, cards nem etapas de consultoria. */}
+      <Section
+        tone="dark"
+        spacing="none"
+        className="border-t-[3px] border-ouro py-2xl md:py-3xl"
+        aria-labelledby="depois"
+      >
         <Container>
-          <Heading as="h2" variant="h2" id="depois">
-            E depois do envio?
+          <Heading as="h2" variant="h2" id="depois" className="scroll-mt-24">
+            {CONTACT_PAGE.afterSend.title}
           </Heading>
-          <ol className="mt-2xl grid gap-xl sm:grid-cols-2 lg:grid-cols-4">
-            {CONTACT_PAGE.nextSteps.map((step, i) => (
-              <li key={step.name} className="border-t-2 border-action pt-md">
-                <span className="font-sans text-label font-semibold text-text-secondary tabular-nums">
-                  {pad(i + 1)}
-                </span>
-                <Heading as="h3" variant="h4" className="mt-xs">
-                  {step.name}
-                </Heading>
-                <Text size="sm" tone="secondary" className="mt-xs">
-                  {step.text}
-                </Text>
+          <Text tone="secondary" className="mt-sm max-w-reading">
+            {CONTACT_PAGE.afterSend.intro}
+          </Text>
+          <ol className="mt-xl max-w-[46rem] border-t border-border-strong">
+            {CONTACT_PAGE.afterSend.steps.map((step) => (
+              <li
+                key={step.name}
+                className="grid gap-xs border-b border-border py-lg sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-lg"
+              >
+                <p className="font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
+                  {step.when}
+                </p>
+                <div>
+                  <Heading as="h3" variant="h4">
+                    {step.name}
+                  </Heading>
+                  <Text tone="secondary" className="mt-xs">
+                    {step.text}
+                  </Text>
+                </div>
               </li>
             ))}
           </ol>
+          <Text size="sm" tone="secondary" className="mt-lg max-w-[46rem]">
+            {CONTACT_PAGE.afterSend.note}
+          </Text>
         </Container>
       </Section>
 
-      {/* 4 OUTRAS FORMAS DE FALAR COM A DM */}
-      <Section tone="muted" spacing="loose" aria-labelledby="direto">
+      {/* 4 CANAIS DIRETOS — alternativa ao formulário: duas linhas em que o próprio número e o
+          próprio e-mail são o link (visíveis, sem esconder atrás de botão). Sem cards; o endereço
+          já está na lateral do formulário. Dados só de CONTACT / WHATSAPP_URL. */}
+      <Section tone="muted" spacing="none" className="py-2xl md:py-3xl" aria-labelledby="direto">
         <Container>
-          <Heading as="h2" variant="h2" id="direto">
-            Prefere falar diretamente?
+          <Heading as="h2" variant="h2" id="direto" className="scroll-mt-24">
+            {CONTACT_PAGE.direct.title}
           </Heading>
-          <ul className="mt-2xl grid gap-md md:grid-cols-3">
-            <li className="rounded-[16px] border border-border bg-surface p-lg">
-              <p className="font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
-                WhatsApp
-              </p>
+          <Text tone="secondary" className="mt-sm max-w-reading text-balance">
+            {CONTACT_PAGE.direct.text} {CONTACT.hours}
+          </Text>
+          <ul className="mt-xl grid max-w-[46rem] gap-0 lg:max-w-none lg:grid-cols-2 lg:gap-2xl">
+            <li className="border-t border-border-strong">
               <a
                 href={WHATSAPP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-sm inline-flex min-h-11 items-center gap-xs font-sans text-body font-semibold text-link hover:underline"
+                className="group block min-h-11 py-lg"
               >
-                Falar com a DM <ArrowRightIcon className="size-5" />
-                <span className="sr-only"> (abre em nova aba)</span>
+                <span className="block font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
+                  {CONTACT_PAGE.direct.whatsappLabel}
+                </span>
+                <span className="mt-sm block font-serif text-h3 font-medium text-text">
+                  {CONTACT.phone}
+                </span>
+                <span className="mt-xs inline-flex items-center gap-xs font-sans text-body font-semibold text-link underline-offset-4 group-hover:underline">
+                  {CONTACT_PAGE.direct.whatsappAction}
+                  <ArrowRightIcon className="size-5 shrink-0" />
+                  <span className="sr-only"> (abre em nova aba)</span>
+                </span>
               </a>
-              <Text size="sm" tone="secondary">
-                {CONTACT.phone}
-              </Text>
             </li>
-            <li className="rounded-[16px] border border-border bg-surface p-lg">
-              <p className="font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
-                E-mail
-              </p>
-              <a
-                href={`mailto:${CONTACT.email}`}
-                className="mt-sm inline-flex min-h-11 items-center gap-xs font-sans text-body font-semibold text-link hover:underline"
-              >
-                Enviar e-mail <ArrowRightIcon className="size-5" />
+            <li className="border-t border-border-strong">
+              <a href={`mailto:${CONTACT.email}`} className="group block min-h-11 py-lg">
+                <span className="block font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
+                  {CONTACT_PAGE.direct.emailLabel}
+                </span>
+                <span className="mt-sm block font-serif text-[1.25rem] font-medium break-words text-text sm:text-h3">
+                  {CONTACT.email}
+                </span>
+                <span className="mt-xs inline-flex items-center gap-xs font-sans text-body font-semibold text-link underline-offset-4 group-hover:underline">
+                  {CONTACT_PAGE.direct.emailAction}
+                  <ArrowRightIcon className="size-5 shrink-0" />
+                </span>
               </a>
-              <Text size="sm" tone="secondary" className="break-words">
-                {CONTACT.email}
-              </Text>
-            </li>
-            <li className="rounded-[16px] border border-border bg-surface p-lg">
-              <p className="font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
-                Endereço
-              </p>
-              <Text className="mt-sm">{CONTACT.address}</Text>
             </li>
           </ul>
         </Container>

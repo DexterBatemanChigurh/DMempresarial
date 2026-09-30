@@ -19,8 +19,8 @@ export default function ObrigadoPage() {
             Mensagem recebida.
           </Heading>
           <Text size="lg" tone="secondary" className="mt-md">
-            Obrigado por entrar em contato com a DM Empresarial. Recebemos suas informações e
-            entraremos em contato.
+            Obrigado por escrever para a DM Empresarial. Sua mensagem foi registrada e um
+            responsável pode retornar pelos dados que você informou.
           </Text>
           <div className="mt-xl flex flex-col items-center justify-center gap-md sm:flex-row">
             <Button href="/">Voltar ao site</Button>
