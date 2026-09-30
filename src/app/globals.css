@@ -41,6 +41,7 @@
    * Ouro: só detalhe decorativo (2,35:1 sobre branco, nunca texto em fundo claro). WhatsApp:
    * o verde exato só em elemento sem texto (3,09:1); com texto, o tom escuro (4,82:1). */
   --color-ouro: #c6a55a;
+  --color-ouro-claro: #e2cf98;
   --color-whatsapp: #1fa855;
   --color-whatsapp-texto: #16833f;
   --color-whatsapp-texto-escuro: #127036;

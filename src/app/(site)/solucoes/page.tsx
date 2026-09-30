@@ -1,160 +1,189 @@
 import type { Metadata } from "next";
-import { CtaCard } from "@/components/site/cta-card";
-import Link from "next/link";
-import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
+import { JsonLd, publicMetadata } from "@/components/site/seo";
+import { Button, Container, Heading, Section, SectionLabel, Text, TextLink } from "@/components/ui";
 import { ArrowRightIcon } from "@/components/ui/icons";
-import { SOLUTIONS_PAGE, SPECIALISTS, type SolutionLink } from "@/content/dm";
-import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
-import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
-import { publicMetadata } from "@/components/site/seo";
+import { ABOUT, HOME, SOLUTIONS, SOLUTIONS_PAGE, findSolution } from "@/content/dm";
+import { env } from "@/server/env";
 
 export const metadata: Metadata = publicMetadata({
-  title: "Soluções",
-  description: SOLUTIONS_PAGE.hero.description,
+  title: "Soluções: dívidas, crédito, estratégia e gestão",
+  description:
+    "Recuperação de crédito, reorganização de dívidas, consultoria estratégica e reestruturação de gestão. A DM Empresarial entende o caixa e faz o diagnóstico antes de propor, em Frutal/MG.",
   path: "/solucoes",
 });
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-/** Nome da solução: com página própria vira link; sem página, só o nome (nunca link vazio). */
-function SolutionName({ item, className = "" }: { item: SolutionLink; className?: string }) {
-  if (!item.slug) {
-    return <span className={`font-sans text-body text-text ${className}`}>{item.label}</span>;
-  }
-  return (
-    <Link
-      href={`/solucoes/${item.slug}`}
-      className={`inline-flex min-h-11 items-center gap-xs font-sans text-body font-semibold text-link underline-offset-4 hover:underline ${className}`}
-    >
-      {item.label}
-      <ArrowRightIcon className="size-5" />
-    </Link>
-  );
-}
+const TYPE_LABEL = { CONSULTORIA: "Consultoria", SERVICO: "Serviço" } as const;
 
-export default async function SolutionsIndexPage() {
+export default function SolutionsIndexPage() {
   const page = SOLUTIONS_PAGE;
-  const [postsPage, categories] = await Promise.all([
-    listPublicPostsForRoute({ pageSize: 3 }),
-    listPublicCategoriesForRoute(),
-  ]);
-  const posts = postsPage.items;
-  const categoryName = new Map(categories.map((c) => [c.slug, c.name]));
+  const anchorOf = new Map(
+    page.groups.flatMap((g) => g.fronts.map((f) => [f.slug, f.anchor] as const)),
+  );
 
   return (
     <>
-      {/* 1 HERO */}
-      <Section spacing="loose">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: SOLUTIONS.map((s, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            item: {
+              "@type": "Service",
+              name: s.title,
+              description: s.summary,
+              serviceType: TYPE_LABEL[s.type],
+              provider: { "@type": "Organization", name: "DM Empresarial", url: env().SITE_URL },
+              areaServed: "Frutal e região, MG",
+            },
+          })),
+        }}
+      />
+
+      {/* 1 HERO — mesma geometria do Hero da Home (contêiner largo, título com destaque). */}
+      <Section tone="dark" spacing="none" className="pt-2xl pb-3xl md:pt-3xl md:pb-4xl">
         <Container>
-          <SectionLabel>Soluções</SectionLabel>
-          <Heading as="h1" variant="display-l" className="mt-md max-w-[20ch]">
-            {page.hero.title}
-          </Heading>
-          <Text size="lg" tone="secondary" className="mt-lg max-w-reading">
+          <SectionLabel>Soluções · DM Empresarial</SectionLabel>
+          <h1 className="mt-lg max-w-[20ch] font-serif text-[2.25rem] leading-[1.05] font-bold tracking-[-0.02em] text-text sm:text-[2.75rem] lg:max-w-[24ch] lg:text-[58px] lg:leading-[1.02]">
+            {page.hero.titleStart} <span className="text-link">{page.hero.titleHighlight}</span>.
+          </h1>
+          <Text size="lg" tone="secondary" className="mt-lg max-w-[570px]">
             {page.hero.description}
           </Text>
-          <div className="mt-2xl">
-            <Button href="/contato" size="lg">
-              Falar com a DM →
+          <div className="mt-2xl flex flex-col gap-sm sm:flex-row sm:flex-wrap">
+            <Button
+              href="/contato"
+              size="lg"
+              className="bg-ouro! text-verde-tinta! hover:bg-ouro-claro!"
+            >
+              Conversar com a DM
+            </Button>
+            <Button href="#solucoes" variant="secondary" size="lg">
+              Ver as quatro frentes
             </Button>
           </div>
+          <Text size="sm" tone="secondary" className="mt-md">
+            {HOME.note}
+          </Text>
         </Container>
       </Section>
 
-      {/* 2 PROBLEMA → SOLUÇÃO */}
-      <Section tone="muted" spacing="loose" aria-labelledby="avancar">
+      {/* 2 IDENTIFICAÇÃO — situações reais; cada uma leva à frente correspondente. */}
+      <Section tone="muted" spacing="default" aria-labelledby="situacoes">
         <Container>
-          <Heading as="h2" variant="h2" id="avancar">
-            Onde sua empresa precisa avançar?
+          <Heading as="h2" variant="h2" id="situacoes" className="scroll-mt-24">
+            Se isso acontece na sua empresa, é aqui que começamos.
           </Heading>
-          <ul className="mt-xl border-t border-border">
-            {page.problems.map((row) => (
-              <li key={row.problem} className="border-b border-border">
-                <a
-                  href={`#${row.anchor}`}
-                  className="group grid min-h-11 gap-2xs py-md md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-center md:gap-lg"
-                >
-                  <span className="font-sans text-body text-text-secondary">{row.problem}</span>
-                  <span className="font-serif text-h4 font-medium text-text group-hover:text-link">
-                    {row.solution}
-                  </span>
-                  <ArrowRightIcon className="hidden size-5 text-link md:block" />
-                </a>
-              </li>
-            ))}
-          </ul>
-        </Container>
-      </Section>
-
-      {/* 3a CONSULTORIAS — bloco editorial por área */}
-      <Section spacing="loose" aria-labelledby="consultorias">
-        <Container>
-          <SectionLabel>Consultorias</SectionLabel>
-          <Heading as="h2" variant="h2" id="consultorias" className="mt-md">
-            Começam pelo diagnóstico do seu negócio.
-          </Heading>
-          <ol className="mt-2xl border-t border-border">
-            {page.areas.map((area, i) => (
-              <li
-                key={area.id}
-                id={area.id}
-                className="grid scroll-mt-24 gap-md border-b border-border py-xl md:grid-cols-[5rem_minmax(0,1fr)_minmax(0,1fr)] md:gap-xl"
-              >
-                <span className="font-serif text-h3 text-text-secondary tabular-nums">
-                  {pad(i + 1)}
-                </span>
-                <div>
-                  <Heading as="h3" variant="h3">
-                    {area.name}
-                  </Heading>
-                  <Text tone="secondary" className="mt-xs">
-                    {area.tagline}
-                  </Text>
-                </div>
-                <ul className="space-y-2xs md:pt-xs">
-                  {area.links.map((item) => (
-                    <li key={item.label}>
-                      <SolutionName item={item} />
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
+          <ol className="mt-xl border-t border-border">
+            {page.situations.map((row, i) => {
+              const front = findSolution(row.slug);
+              if (!front) return null;
+              return (
+                <li key={row.slug} className="border-b border-border">
+                  <a
+                    href={`#${anchorOf.get(row.slug)}`}
+                    className="group grid min-h-11 gap-sm py-lg md:grid-cols-[3rem_minmax(0,1.2fr)_minmax(0,1fr)] md:items-center md:gap-lg"
+                  >
+                    <span className="font-sans text-label font-semibold text-text-secondary tabular-nums">
+                      {pad(i + 1)}
+                    </span>
+                    <span className="font-serif text-h4 font-medium text-text">{row.text}</span>
+                    <span className="flex flex-col gap-2xs">
+                      <span className="font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
+                        Frente da DM
+                      </span>
+                      <span className="inline-flex items-center gap-xs font-sans text-body font-semibold text-link underline-offset-4 group-hover:underline">
+                        {front.title}
+                        <ArrowRightIcon className="size-5 shrink-0" />
+                      </span>
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
           </ol>
         </Container>
       </Section>
 
-      {/* 3b SERVIÇOS — soluções específicas e direcionadas */}
-      <Section tone="muted" spacing="loose" aria-labelledby="servicos-titulo">
+      {/* 3 SOLUÇÕES — as quatro frentes da Home, agrupadas pelo tipo de problema. */}
+      <Section spacing="loose" aria-labelledby="solucoes">
         <Container>
-          <div id="servicos" className="scroll-mt-24" />
-          <SectionLabel>Serviços</SectionLabel>
-          <Heading as="h2" variant="h2" id="servicos-titulo" className="mt-md">
-            Soluções específicas e direcionadas.
+          {/* Destino antigo dos artigos de marketing do blog: cai no início das frentes. */}
+          <span id="marketing" className="block scroll-mt-24" />
+          <SectionLabel>Soluções</SectionLabel>
+          <Heading as="h2" variant="h2" id="solucoes" className="mt-md scroll-mt-40">
+            Quatro frentes, aplicadas na ordem que o seu caso exigir.
           </Heading>
-          <ul className="mt-2xl grid gap-md sm:grid-cols-2">
-            {page.services.map((item) => (
-              <li key={item.label} className="rounded-[12px] border border-border bg-surface p-lg">
-                <SolutionName item={item} />
-              </li>
+
+          <div className="mt-2xl space-y-3xl">
+            {page.groups.map((group) => (
+              <div key={group.id} id={group.id} className="scroll-mt-24">
+                <Heading as="h3" variant="h4" id={group.headingId} className="scroll-mt-24">
+                  {group.title}
+                </Heading>
+                <Text tone="secondary" className="mt-xs max-w-reading">
+                  {group.text}
+                </Text>
+                <ul className="mt-xl grid gap-xl md:grid-cols-2 md:gap-2xl">
+                  {group.fronts.map((front) => {
+                    const solution = findSolution(front.slug);
+                    if (!solution) return null;
+                    return (
+                      <li
+                        key={front.slug}
+                        id={front.anchor}
+                        className="scroll-mt-24 border-t-2 border-action pt-md transition-colors target:bg-surface-muted"
+                      >
+                        <span className="font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
+                          {TYPE_LABEL[solution.type]}
+                        </span>
+                        <Heading as="h4" variant="h3" className="mt-xs">
+                          {solution.title}
+                        </Heading>
+                        <Text tone="secondary" className="mt-sm">
+                          {solution.summary}
+                        </Text>
+                        <p className="mt-xs">
+                          <TextLink href="/contato" className="inline-flex min-h-11 items-center">
+                            Conversar sobre esta frente
+                          </TextLink>
+                        </p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         </Container>
       </Section>
 
-      {/* 5 COMO TRABALHAMOS */}
-      <Section spacing="loose" aria-labelledby="como-trabalhamos">
+      {/* 4 COMO A DM ESCOLHE — diagnóstico antes de proposta (Como trabalhamos). */}
+      <Section
+        tone="dark"
+        spacing="loose"
+        className="border-t-[3px] border-ouro"
+        aria-labelledby="como-trabalhamos"
+      >
         <Container>
           <SectionLabel>Como trabalhamos</SectionLabel>
-          <Heading as="h2" variant="h2" id="como-trabalhamos" className="mt-md">
-            Entendemos antes de propor.
+          <Heading
+            as="h2"
+            variant="h2"
+            id="como-trabalhamos"
+            className="mt-md max-w-[24ch] scroll-mt-24"
+          >
+            {page.process.title}
           </Heading>
           <Text tone="secondary" className="mt-md max-w-reading">
-            A abordagem geral da DM. Cada projeto se ajusta ao cenário da empresa.
+            {page.process.text}
           </Text>
           <ol className="mt-2xl grid gap-xl sm:grid-cols-2 lg:grid-cols-5 lg:gap-lg">
-            {page.steps.map((step, i) => (
-              <li key={step.name} className="border-t-2 border-action pt-md">
+            {page.process.steps.map((step, i) => (
+              <li key={step.name} className="border-t-2 border-ouro pt-md">
                 <span className="font-sans text-label font-semibold text-text-secondary tabular-nums">
                   {pad(i + 1)}
                 </span>
@@ -170,137 +199,67 @@ export default async function SolutionsIndexPage() {
         </Container>
       </Section>
 
-      {/* 6 ESCOLHA POR NECESSIDADE */}
-      <Section tone="muted" spacing="loose" aria-labelledby="necessidade">
+      {/* 5 AUTORIDADE — só números confirmados e quem conduz o trabalho. */}
+      <Section spacing="default" aria-labelledby="quem-conduz">
         <Container>
-          <Heading as="h2" variant="h2" id="necessidade">
-            O que sua empresa precisa neste momento?
-          </Heading>
-          <ul className="mt-2xl grid gap-md sm:grid-cols-2 lg:grid-cols-3">
-            {page.needs.map((item) => {
-              const talk = item.href === "/contato";
-              return (
-                <li key={item.need}>
-                  <Link
-                    href={item.href}
-                    className={`group flex h-full flex-col justify-between gap-md rounded-[12px] border p-lg transition-colors duration-150 ease-standard ${
-                      talk
-                        ? "border-action bg-action text-action-contrast hover:bg-action-hover"
-                        : "border-border bg-surface text-text hover:border-link"
-                    }`}
-                  >
-                    <span className="font-serif text-h4 font-medium">{item.need}</span>
-                    <span
-                      className={`inline-flex items-center gap-xs font-sans text-sm font-semibold ${
-                        talk ? "" : "text-link"
-                      }`}
-                    >
-                      {item.answer}
-                      <ArrowRightIcon className="size-5" />
-                    </span>
-                  </Link>
+          <div className="grid gap-2xl lg:grid-cols-2 lg:items-center lg:gap-3xl">
+            <div>
+              <SectionLabel>Experiência</SectionLabel>
+              <Heading as="h2" variant="h2" id="quem-conduz" className="mt-md">
+                Quem conduz o trabalho.
+              </Heading>
+              <Text tone="secondary" className="mt-md max-w-reading">
+                {ABOUT.whoWeAre[1]}
+              </Text>
+              <div className="mt-xl">
+                <Button href="/sobre" variant="secondary">
+                  Conheça a DM
+                </Button>
+              </div>
+            </div>
+            <ul className="space-y-lg">
+              {HOME.stats.map((stat) => (
+                <li key={stat.label} className="border-t border-border pt-md">
+                  <span className="font-serif text-[2.75rem] leading-none font-medium text-text">
+                    {stat.value}
+                  </span>
+                  <Text tone="secondary" className="mt-2xs">
+                    {stat.label}
+                  </Text>
                 </li>
-              );
-            })}
-          </ul>
+              ))}
+            </ul>
+          </div>
         </Container>
       </Section>
 
-      {/* 7 ESPECIALISTAS */}
-      {SPECIALISTS.length > 0 ? (
-        <Section spacing="loose" aria-labelledby="especialistas">
-          <Container>
-            <SectionLabel>Especialistas</SectionLabel>
-            <Heading as="h2" variant="h2" id="especialistas" className="mt-md">
-              Experiência aplicada ao seu negócio.
-            </Heading>
-            <ul className="mt-2xl grid gap-xl sm:grid-cols-2 lg:grid-cols-3">
-              {SPECIALISTS.map((person) => (
-                <li key={person.slug}>
-                  <Link href={`/sobre/especialistas/${person.slug}`} className="group block">
-                    <div className="aspect-[4/5] overflow-hidden rounded-[12px] bg-surface-muted">
-                      {person.photo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={person.photo}
-                          alt={`Foto de ${person.name}`}
-                          loading="lazy"
-                          decoding="async"
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div
-                          aria-hidden="true"
-                          className="flex h-full items-center justify-center font-serif text-display-m text-text-secondary"
-                        >
-                          {person.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .slice(0, 2)
-                            .join("")}
-                        </div>
-                      )}
-                    </div>
-                    <Heading as="h3" variant="h4" className="mt-md">
-                      {person.name}
-                    </Heading>
-                    <Text size="sm" tone="secondary" className="mt-2xs">
-                      {person.roleTitle}
-                    </Text>
-                    <span className="mt-sm inline-flex items-center gap-xs font-sans text-sm font-semibold text-link group-hover:underline">
-                      Ver especialista <ArrowRightIcon className="size-5" />
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Container>
-        </Section>
-      ) : null}
-
-      {/* 8 CONTEÚDO RELACIONADO — artigos reais, nunca placeholder */}
-      {posts.length > 0 ? (
-        <Section tone="muted" spacing="loose" aria-labelledby="conteudo">
-          <Container>
-            <SectionLabel>Blog</SectionLabel>
-            <Heading as="h2" variant="h2" id="conteudo" className="mt-md">
-              Conhecimento para tomar decisões melhores.
-            </Heading>
-            <ul className="mt-2xl grid gap-xl md:grid-cols-3">
-              {posts.map((post) => (
-                <li key={post.slug} className="border-t border-border pt-lg">
-                  <Link href={`/blog/${post.slug}`} className="group block">
-                    {post.primaryCategorySlug ? (
-                      <span className="font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
-                        {categoryName.get(post.primaryCategorySlug) ?? post.primaryCategorySlug}
-                      </span>
-                    ) : null}
-                    <Heading
-                      as="h3"
-                      variant="h4"
-                      className="mt-xs group-hover:text-link group-hover:underline"
-                    >
-                      {post.title}
-                    </Heading>
-                    <span className="mt-sm inline-flex items-center gap-xs font-sans text-sm font-semibold text-link">
-                      Ler artigo <ArrowRightIcon className="size-5" />
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Container>
-        </Section>
-      ) : null}
-
-      {/* 9 CTA FINAL */}
-      <CtaCard
-        id="solucoes-cta"
-        title={page.cta.title}
-        text={page.cta.text}
-        primary={{ href: "/contato", label: "Conversar com a DM →" }}
-        secondary={{ href: "/sobre/especialistas", label: "Conhecer os especialistas →" }}
-      />
+      {/* 6 CTA FINAL — fecha a jornada: uma única ação, conversar e apresentar o cenário. */}
+      <Section
+        tone="muted"
+        spacing="none"
+        className="py-3xl md:py-4xl"
+        aria-labelledby="solucoes-cta"
+      >
+        <Container>
+          <SectionLabel>{page.cta.eyebrow}</SectionLabel>
+          <Heading
+            as="h2"
+            variant="h1"
+            id="solucoes-cta"
+            className="mt-md max-w-[20ch] text-balance"
+          >
+            {page.cta.title}
+          </Heading>
+          <Text size="lg" tone="secondary" className="mt-lg max-w-[38rem]">
+            {page.cta.text}
+          </Text>
+          <div className="mt-2xl">
+            <Button href="/contato" size="lg" className="w-full sm:w-auto">
+              {page.cta.label}
+            </Button>
+          </div>
+        </Container>
+      </Section>
     </>
   );
 }

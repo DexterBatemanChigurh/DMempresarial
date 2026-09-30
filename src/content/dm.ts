@@ -130,100 +130,78 @@ export function findSolution(slug: string): Solution | undefined {
 
 // --------------------------------------------------------------------------- Especialistas
 
-/** Link de uma solução na página /solucoes. Sem `slug`, ainda não há página própria: o nome
- * aparece sem link (nunca um link para uma página vazia). */
-export type SolutionLink = { label: string; slug?: string };
-
-/** Página /solucoes (texto definido pelo usuário em 29/09/2026). */
+/**
+ * Página /solucoes. As frentes vêm de SOLUTIONS (as quatro da Home); aqui ficam só a narrativa
+ * da página, as situações de identificação (todas derivadas dos textos já publicados da DM) e
+ * o processo. Marketing não entra: não é uma das quatro frentes da Home.
+ */
 export const SOLUTIONS_PAGE = {
   hero: {
-    title: "Soluções para os desafios que sua empresa enfrenta.",
+    /** O título tem duas partes, como na Home: a segunda sai em destaque (cor de ação). */
+    titleStart: "Caixa apertado, dívida, gestão sem rumo:",
+    titleHighlight: "veja por onde a DM começa",
     description:
-      "Da estratégia à execução, a DM Empresarial atua em diferentes frentes para ajudar empresas a organizar, transformar e desenvolver seus negócios.",
+      "Estas são as quatro frentes em que a DM atua e o critério para escolher entre elas. Começamos sempre por entender o caixa antes de propor qualquer coisa.",
   },
-  problems: [
+  /** Situações de identificação: cada uma aponta para a frente correspondente (slug). */
+  situations: [
     {
-      problem: "Empresa sem direção clara",
-      solution: "Consultoria Estratégica",
-      anchor: "estrategia",
-    },
-    { problem: "Gestão desorganizada", solution: "Gestão e Processos", anchor: "gestao" },
-    { problem: "Dificuldades financeiras", solution: "Soluções Financeiras", anchor: "financas" },
-    {
-      problem: "Dívidas e créditos a recuperar",
-      solution: "Recuperação e Reorganização Financeira",
-      anchor: "servicos",
+      text: "As dívidas com bancos já não cabem no caixa da empresa.",
+      slug: "recuperacao-de-credito",
     },
     {
-      problem: "Necessidade de posicionamento",
-      solution: "Marketing e Estratégia",
-      anchor: "marketing",
-    },
-  ],
-  /** Consultorias: começam com diagnóstico e análise do negócio. */
-  areas: [
-    {
-      id: "estrategia",
-      name: "Estratégia",
-      tagline: "Direção para decisões mais claras.",
-      links: [{ label: "Consultoria Estratégica", slug: "consultoria-estrategica" }],
+      text: "Ninguém sabe ao certo o que a empresa deve, nem o que pagar primeiro.",
+      slug: "reorganizacao-de-dividas",
     },
     {
-      id: "gestao",
-      name: "Gestão",
-      tagline: "Organização para empresas que precisam evoluir.",
-      links: [{ label: "Consultoria em Gestão" }, { label: "Consultoria em Processos" }],
+      text: "A empresa não cresce e falta clareza sobre o que está travando.",
+      slug: "consultoria-estrategica",
     },
     {
-      id: "financas",
-      name: "Finanças",
-      tagline: "Mais clareza para decisões financeiras.",
-      links: [{ label: "Consultoria Financeira" }],
-    },
-    {
-      id: "marketing",
-      name: "Marketing",
-      tagline: "Posicionamento para empresas que querem crescer.",
-      links: [{ label: "Consultoria de Marketing" }],
-    },
-  ] as { id: string; name: string; tagline: string; links: SolutionLink[] }[],
-  /** Serviços: soluções mais específicas e direcionadas. */
-  services: [
-    { label: "Recuperação de Crédito", slug: "recuperacao-de-credito" },
-    { label: "Reorganização Financeira", slug: "reorganizacao-de-dividas" },
-    { label: "Reestruturação de Gestão", slug: "reestruturacao-de-gestao" },
-    { label: "Planejamento Estratégico" },
-  ] as SolutionLink[],
-  steps: [
-    { name: "Entendimento", text: "Conhecemos o cenário e os desafios da empresa." },
-    { name: "Diagnóstico", text: "Identificamos problemas, oportunidades e prioridades." },
-    { name: "Estratégia", text: "Definimos os caminhos possíveis." },
-    { name: "Implementação", text: "Transformamos a estratégia em ação." },
-    { name: "Acompanhamento", text: "Avaliamos a evolução e os próximos passos." },
-  ],
-  needs: [
-    { need: "Preciso organizar minha empresa", answer: "Gestão e Processos", href: "#gestao" },
-    {
-      need: "Preciso melhorar minha situação financeira",
-      answer: "Soluções Financeiras",
-      href: "#financas",
-    },
-    { need: "Preciso definir os próximos passos", answer: "Estratégia", href: "#estrategia" },
-    {
-      need: "Preciso recuperar valores ou reorganizar dívidas",
-      answer: "Recuperação Financeira",
-      href: "#servicos",
-    },
-    { need: "Preciso melhorar meu posicionamento", answer: "Marketing", href: "#marketing" },
-    {
-      need: "Ainda não sei exatamente o que preciso",
-      answer: "Conversar com a DM",
-      href: "/contato",
+      text: "A empresa funciona no susto de cada boleto, sem processos nem indicadores.",
+      slug: "reestruturacao-de-gestao",
     },
   ],
+  /** Frentes agrupadas pelo tipo de problema. `anchor` preserva os endereços já usados no site
+   * (/solucoes#servicos no rodapé; #gestao e #financas nos artigos do blog). */
+  groups: [
+    {
+      id: "servicos",
+      headingId: "financas",
+      title: "Quando o problema é financeiro",
+      text: "Atuação direta sobre dívida e crédito, inclusive na negociação com os bancos.",
+      fronts: [
+        { slug: "recuperacao-de-credito", anchor: "recuperacao-de-credito" },
+        { slug: "reorganizacao-de-dividas", anchor: "reorganizacao-de-dividas" },
+      ],
+    },
+    {
+      id: "consultorias",
+      headingId: "direcao-e-gestao",
+      title: "Quando faltam direção e controle",
+      text: "Consultorias sobre o rumo e a organização da empresa.",
+      fronts: [
+        { slug: "consultoria-estrategica", anchor: "estrategia" },
+        { slug: "reestruturacao-de-gestao", anchor: "gestao" },
+      ],
+    },
+  ],
+  process: {
+    title: "Não existe solução automática: primeiro entendemos, depois propomos.",
+    text: "Nem toda empresa precisa das quatro frentes, e algumas precisam de mais de uma. A ordem depende do que o diagnóstico mostrar.",
+    steps: [
+      { name: "Entendimento", text: "Conhecemos o cenário e os desafios da empresa." },
+      { name: "Diagnóstico", text: "Identificamos problemas, oportunidades e prioridades." },
+      { name: "Estratégia", text: "Definimos os caminhos possíveis." },
+      { name: "Implementação", text: "Transformamos a estratégia em ação." },
+      { name: "Acompanhamento", text: "Avaliamos a evolução e os próximos passos." },
+    ],
+  },
   cta: {
-    title: "Nem todo desafio empresarial tem uma resposta pronta.",
-    text: "Conte à DM o que está acontecendo na sua empresa. A partir do cenário apresentado, podemos entender quais caminhos fazem sentido.",
+    eyebrow: "Próximo passo",
+    title: "Nem todo caso tem resposta pronta. A\u00a0conversa começa pelo seu.",
+    text: "Conte o que está acontecendo na empresa. A DM entende o cenário e diz com honestidade se pode ajudar. A primeira conversa é sem compromisso.",
+    label: "Conversar com a DM",
   },
 };
 
