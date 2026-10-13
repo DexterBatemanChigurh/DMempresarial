@@ -11,8 +11,16 @@ export function JsonLd({ data }: { data: Record<string, unknown> }) {
 
 /**
  * Metadata pública comum (canonical + Open Graph): `metadataBase` no layout raiz resolve `path`
- * para URL absoluta. Sem imagem — não existe asset de marca real ainda (lacuna L-02).
+ * para URL absoluta. Um `openGraph` definido aqui substitui o do layout e o `opengraph-image.png`
+ * da raiz, por isso a imagem, o nome do site e o idioma precisam ser repetidos.
  */
+const OG_IMAGE = {
+  url: "/opengraph-image.png",
+  width: 1200,
+  height: 630,
+  alt: "Logo da DM Empresarial, consultoria empresarial em Frutal, MG",
+};
+
 export function publicMetadata(input: {
   title: string;
   description?: string;
@@ -28,6 +36,9 @@ export function publicMetadata(input: {
       description: input.description,
       url: input.path,
       type: input.type ?? "website",
+      siteName: "DM Empresarial",
+      locale: "pt_BR",
+      images: [OG_IMAGE],
     },
   };
 }
