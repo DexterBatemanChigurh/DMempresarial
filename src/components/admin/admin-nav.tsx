@@ -12,7 +12,6 @@ import {
   InboxIcon,
   LockIcon,
   MenuIcon,
-  SlidersIcon,
   TagIcon,
   UsersIcon,
 } from "@/components/ui/icons";
@@ -25,7 +24,6 @@ const ICONS: Record<string, Icon> = {
   "/admin/artigos": FileTextIcon,
   "/admin/categorias": TagIcon,
   "/admin/leads": InboxIcon,
-  "/admin/configuracoes": SlidersIcon,
   "/admin/usuarios": UsersIcon,
   "/admin/auditoria": ClipboardIcon,
   "/admin/midia": ImageIcon,

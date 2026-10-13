@@ -75,35 +75,50 @@ test.describe("Acessibilidade (WCAG 2.2 AA)", () => {
 });
 
 test.describe("Formulário de contato", () => {
+  // O servidor recusa envio feito menos de 2,5 s depois de a página montar o formulário
+  // (token de tempo mínimo, submit-lead.ts). Gente de verdade nunca é tão rápida; o teste espera.
+  const MIN_SUBMIT_WAIT_MS = 3_000;
+
+  // ATENÇÃO: o envio válido grava um lead no banco do servidor em teste (DATABASE_URL). Rode a
+  // suíte contra um banco local/de teste, nunca contra o de produção.
   test.beforeEach(async ({ page }) => {
     await page.goto("/contato");
   });
 
   test("Valida campos obrigatórios", async ({ page }) => {
+    await page.waitForTimeout(MIN_SUBMIT_WAIT_MS);
     await page.getByRole("button", { name: /enviar/i }).click();
     await expect(page.getByText(/informe seu nome/i)).toBeVisible();
-    await expect(page.getByText(/e-mail inválido/i)).toBeVisible();
-    await expect(page.getByText(/escreva sua mensagem/i)).toBeVisible();
+    await expect(page.getByText(/informe um e-mail válido/i)).toBeVisible();
+    await expect(page.getByText(/informe seu whatsapp/i)).toBeVisible();
+    await expect(page.getByText(/conte brevemente/i)).toBeVisible();
     await expect(page.getByText(/é preciso aceitar/i)).toBeVisible();
   });
 
-  test("Envia formulário válido (honeypot vazio)", async ({ page }) => {
+  test("Envia formulário válido e leva à confirmação", async ({ page }) => {
     await page.fill('[name="name"]', "João Teste");
     await page.fill('[name="email"]', "joao@teste.example.test");
-    await page.fill('[name="message"]', "Preciso de ajuda com gestão financeira da empresa.");
+    await page.fill('[name="phone"]', "(34) 99999-0000");
+    await page.fill('[name="message"]', "Preciso de ajuda com a gestão financeira da empresa.");
     await page.check('[name="consent"]');
+    await page.waitForTimeout(MIN_SUBMIT_WAIT_MS);
     await page.getByRole("button", { name: /enviar/i }).click();
-    await expect(page.getByText(/enviado com sucesso/i)).toBeVisible({ timeout: 10000 });
+    await expect(page).toHaveURL(/\/contato\/obrigado$/, { timeout: 10000 });
+    await expect(page.getByRole("heading", { name: /mensagem recebida/i })).toBeVisible();
   });
 
-  test("Honeypot preenchido não envia", async ({ page }) => {
+  test("Campo isca preenchido finge sucesso (não entrega ao bot que foi detectado)", async ({
+    page,
+  }) => {
     await page.fill('[name="name"]', "Bot");
     await page.fill('[name="email"]', "bot@teste.example.test");
+    await page.fill('[name="phone"]', "(34) 99999-0000");
     await page.fill('[name="message"]', "spam spam spam");
     await page.check('[name="consent"]');
-    await page.fill('[name="honeypot"]', "sou um robô");
+    await page.fill('[name="empresa_confirmacao"]', "sou um robô");
+    await page.waitForTimeout(MIN_SUBMIT_WAIT_MS);
     await page.getByRole("button", { name: /enviar/i }).click();
-    await expect(page.getByText(/enviado com sucesso/i)).toBeVisible({ timeout: 5000 });
+    await expect(page).toHaveURL(/\/contato\/obrigado$/, { timeout: 10000 });
   });
 });
 

@@ -96,25 +96,6 @@ export function ClockIcon(props: IconProps) {
   );
 }
 
-export function ChartIcon(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <path d="M3 3v18h18" />
-      <path d="M7 15l4-4 3 3 5-6" />
-    </Icon>
-  );
-}
-
-export function LayersIcon(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <path d="M12 3l9 5-9 5-9-5 9-5z" />
-      <path d="M3 15l9 5 9-5" />
-      <path d="M3 11l9 5 9-5" />
-    </Icon>
-  );
-}
-
 export function LandmarkIcon(props: IconProps) {
   return (
     <Icon {...props}>

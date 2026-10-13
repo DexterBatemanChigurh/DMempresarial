@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CtaCard } from "@/components/site/cta-card";
 import { Paragraphs } from "@/components/content/paragraphs";
 import { Button, Container, Heading, Section, SectionLabel, Text } from "@/components/ui";
-import { ClockIcon, UsersIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { ClockIcon, UsersIcon, WalletCardsIcon, WhatsAppIcon } from "@/components/ui/icons";
 
 /** Colunas do grid do blog por quantidade real de artigos: menos de 4 nunca deixa um card
  * solitário boiando num grid de 4 (docs/02 §04, grid consistente). */
@@ -16,8 +16,8 @@ import { listPublicPostsForRoute } from "@/features/content/application/public-p
 import { buildCoverResolverForRoute } from "@/features/media/application/resolve";
 import { PostCard } from "@/components/content/post-card";
 import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
-import { getPublicSettingsForRoute } from "@/features/settings/application/settings-crud";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
+import { ClientsGrid } from "@/components/site/clients-grid";
 import { ServicesWheel } from "@/components/site/services-wheel";
 import { ValuesCircle } from "@/components/site/values-circle";
 import { ABOUT, CONTACT, HOME, WHATSAPP_URL } from "@/content/dm";
@@ -37,17 +37,14 @@ export const metadata: Metadata = {
 };
 
 /** Números da faixa de autoridade (texto em src/content/dm.ts), cada um com o seu ícone. */
-const STAT_ICONS = [UsersIcon, ClockIcon];
+const STAT_ICONS = [UsersIcon, ClockIcon, WalletCardsIcon];
 const AUTHORITY_STATS = HOME.stats.map((stat, i) => ({
   ...stat,
   Icon: STAT_ICONS[i] ?? UsersIcon,
 }));
 
 export default async function HomePage() {
-  const [postsPage, settings] = await Promise.all([
-    listPublicPostsForRoute({ pageSize: 4 }),
-    getPublicSettingsForRoute(),
-  ]);
+  const postsPage = await listPublicPostsForRoute({ pageSize: 4 });
   const posts = postsPage.items;
 
   // Capas dos artigos do blog: resolvidas em lote (uma consulta).
@@ -62,7 +59,7 @@ export default async function HomePage() {
         data={{
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: settings?.legalName ?? "DM Empresarial",
+          name: CONTACT.legalName ?? "DM Empresarial",
           url: env().SITE_URL,
           // SEO local (docs/03 §22): dados de contato confirmados (src/content/dm.ts).
           address: {
@@ -192,6 +189,10 @@ export default async function HomePage() {
 
       {/* O QUE FAZEMOS — roda com as quatro frentes (texto e paleta definidos pelo usuário). */}
       <ServicesWheel />
+
+      {/* NOSSOS CLIENTES — grid de logos sobre fundo escuro. Dados em src/content/dm.ts → CLIENTS.
+          Adicione logos reais em public/clients/ e preencha o campo logo de cada item. */}
+      <ClientsGrid />
 
       {/* SOBRE NÓS — composição de uma referência do usuário: título centralizado, texto à
           esquerda e, à direita, os valores escritos em volta de um círculo. Texto em

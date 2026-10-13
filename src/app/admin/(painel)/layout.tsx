@@ -24,9 +24,6 @@ export default async function PanelLayout({ children }: { children: React.ReactN
           ? [{ href: "/admin/categorias", label: "Categorias" }]
           : []),
         ...(can(actor, "lead:view") ? [{ href: "/admin/leads", label: "Leads" }] : []),
-        ...(can(actor, "settings:manage")
-          ? [{ href: "/admin/configuracoes", label: "Configurações" }]
-          : []),
         ...(can(actor, "user:manage") ? [{ href: "/admin/usuarios", label: "Usuários" }] : []),
         ...(can(actor, "audit:view") ? [{ href: "/admin/auditoria", label: "Auditoria" }] : []),
         { href: "/admin/midia", label: "Mídia" },

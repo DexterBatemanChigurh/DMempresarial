@@ -9,6 +9,12 @@ if git diff --cached --name-only --diff-filter=ACMR | grep -E -e '(^|/)\.env(\..
   exit 1
 fi
 
+# Bloqueia dumps do banco (contêm dados pessoais de leads).
+if git diff --cached --name-only --diff-filter=ACMR | grep -E -e '(^|/)backups/' -e '\.dump$'; then
+  echo "pre-commit: dump de banco staged. Remova com: git restore --staged <arquivo>" >&2
+  exit 1
+fi
+
 npm run --silent format:check
 npm run --silent lint
 npm run --silent typecheck

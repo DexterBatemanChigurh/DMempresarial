@@ -1,7 +1,6 @@
 import "server-only";
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import type { Executor, Transaction } from "@/db/client";
-import { authorName } from "@/content/dm";
 import { categories, postCategories, postTags, media, posts } from "@/db/schema";
 import type { PostStatus } from "../domain/post-status";
 
@@ -154,7 +153,10 @@ export async function listPostsForAdmin(
     .limit(pageSize)
     .offset(offset);
   return {
-    items: rows.map(({ authorSlug, ...row }) => ({ ...row, authorName: authorName(authorSlug) })),
+    items: rows.map(({ authorSlug: _authorSlug, ...row }) => ({
+      ...row,
+      authorName: "DM Empresarial",
+    })),
     total: totalRow?.n ?? 0,
     page,
     pageSize,
@@ -224,7 +226,7 @@ function toSummary(row: SummaryRow): PublicPostSummary {
   return {
     ...row,
     publishedAt: row.publishedAt ?? new Date(0),
-    authorName: authorName(row.authorSlug),
+    authorName: "DM Empresarial",
   };
 }
 
@@ -271,10 +273,13 @@ export async function findPublishedPostBySlug(
  * Busca um post por slug independentemente do status (para preview/Draft Mode).
  * Retorna o post completo com corpo rico, mesmo se for DRAFT/REVIEW/SCHEDULED.
  */
+/** Artigo em qualquer estado, com o dono (quem criou) para a checagem de permissão do preview. */
+export type PreviewPost = PublicPost & { createdBy: string | null };
+
 export async function findPostBySlugForPreview(
   executor: Executor,
   slug: string,
-): Promise<PublicPost | null> {
+): Promise<PreviewPost | null> {
   const [row] = await executor
     .select({
       ...summaryColumns,
@@ -287,6 +292,7 @@ export async function findPostBySlugForPreview(
       status: posts.status,
       publishedAt: posts.publishedAt,
       scheduledFor: posts.scheduledFor,
+      createdBy: posts.createdBy,
     })
     .from(posts)
     .leftJoin(
@@ -308,6 +314,7 @@ export async function findPostBySlugForPreview(
         status: row.status,
         publishedAt: row.publishedAt,
         scheduledFor: row.scheduledFor,
+        createdBy: row.createdBy,
       }
     : null;
 }

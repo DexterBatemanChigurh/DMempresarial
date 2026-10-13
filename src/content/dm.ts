@@ -14,13 +14,14 @@ export const HOME = {
   headlineStart: "Quando o caixa aperta,",
   headlineHighlight: "a decisão certa tem prazo",
   description:
-    "Somos a consultoria que entra na empresa em dificuldade, reorganiza a operação e senta com o banco junto com você. Em Frutal e região, há mais de dez anos.",
+    "Somos a consultoria que entra na empresa em dificuldade, reorganiza a operação e senta com o banco junto com você. Em Frutal e região, há 14 anos.",
   /** Linha pequena abaixo dos botões do topo. */
   note: "Primeira conversa sem compromisso. Atendemos todos os dias.",
-  /** Faixa de números: só o que a DM confirmou. */
+  /** Faixa de números: só o que a DM confirmou (atualizados pela DM em 02/10/2026). */
   stats: [
-    { value: "+100", label: "empresas atendidas desde a fundação" },
-    { value: "10 anos", label: "sentando à mesa de negociação com bancos" },
+    { value: "+500", label: "empresas atendidas" },
+    { value: "14 anos", label: "no mercado" },
+    { value: "+R$ 2 bilhões", label: "administrados para nossos clientes" },
   ],
   /** Foto do topo: caminho de uma imagem em /public (ex.: "/home/equipe.jpg"); null = espaço vazio. */
   heroImage: null as { src: string; alt: string } | null,
@@ -171,14 +172,11 @@ export type SolutionType = "CONSULTORIA" | "SERVICO";
 export type SolutionItem = { title: string; body?: string };
 
 export type Solution = {
-  /** Endereço: /solucoes/<slug>. Mudar o slug quebra links antigos. */
   slug: string;
   type: SolutionType;
   title: string;
   summary: string;
   isFeatured: boolean;
-  context: string[];
-  approach: string[];
   situations: SolutionItem[];
   steps: SolutionItem[];
   goals: SolutionItem[];
@@ -193,8 +191,6 @@ export const SOLUTIONS: Solution[] = [
     summary:
       "Negociamos diretamente com os bancos para reorganizar dívidas, alongar prazos e devolver fôlego financeiro ao negócio. Preparamos a proposta antes de você sentar na mesa.",
     isFeatured: false,
-    context: [PLACEHOLDER],
-    approach: [PLACEHOLDER],
     situations: [],
     steps: [],
     goals: [],
@@ -206,8 +202,6 @@ export const SOLUTIONS: Solution[] = [
     summary:
       "Mapeamento de tudo que a empresa deve, ordem de prioridade de pagamento e um plano financeiro que cabe no caixa real, não no caixa desejado.",
     isFeatured: false,
-    context: [PLACEHOLDER],
-    approach: [PLACEHOLDER],
     situations: [],
     steps: [],
     goals: [],
@@ -219,8 +213,6 @@ export const SOLUTIONS: Solution[] = [
     summary:
       "Identificamos o que está travando o crescimento e montamos um plano de ação com prazo e responsável. Sem relatório de cem páginas que ninguém lê.",
     isFeatured: false,
-    context: [PLACEHOLDER],
-    approach: [PLACEHOLDER],
     situations: [],
     steps: [],
     goals: [],
@@ -232,8 +224,6 @@ export const SOLUTIONS: Solution[] = [
     summary:
       "Reorganizamos processos, estrutura e indicadores para que a empresa volte a funcionar com controle, e não no susto de cada boleto.",
     isFeatured: false,
-    context: [PLACEHOLDER],
-    approach: [PLACEHOLDER],
     situations: [],
     steps: [],
     goals: [],
@@ -355,7 +345,6 @@ export const CATEGORY_SOLUTION: Record<string, { label: string; href: string }> 
   gestao: { label: "Conheça as soluções de gestão da DM", href: "/solucoes#gestao" },
   processos: { label: "Conheça as soluções de gestão da DM", href: "/solucoes#gestao" },
   financas: { label: "Conheça as soluções financeiras da DM", href: "/solucoes#financas" },
-  marketing: { label: "Conheça as soluções de marketing da DM", href: "/solucoes#marketing" },
 };
 
 /** Página /contato (texto definido pelo usuário em 29/09/2026). */
@@ -420,36 +409,51 @@ export const CONTACT_PAGE = {
   },
 };
 
-export type Specialist = {
-  /** Endereço: /sobre/especialistas/<slug>. Também é o autor gravado nos artigos do blog. */
-  slug: string;
+// ------------------------------------------------------------------------------ Clientes
+
+export type ClientItem = {
+  /** Nome exibido como alt (com logo) ou como texto tipográfico (sem logo). */
   name: string;
-  roleTitle: string;
-  summary: string | null;
-  bio: string[];
-  /** Caminho de uma imagem em /public (ex.: "/especialistas/nome.jpg"); null mostra iniciais. */
-  photo: string | null;
+  /**
+   * Caminho de uma imagem em /public (ex.: "/clients/empresa.svg").
+   * Prefira SVG ou PNG com fundo transparente; a imagem será invertida para branco no fundo escuro.
+   * null → o nome da empresa é exibido como texto.
+   */
+  logo: string | null;
 };
 
-export const SPECIALISTS: Specialist[] = [
-  {
-    slug: "especialista-dm",
-    name: "Especialista DM",
-    roleTitle: PLACEHOLDER,
-    summary: null,
-    bio: [PLACEHOLDER],
-    photo: null,
-  },
-];
-
-export function findSpecialist(slug: string): Specialist | undefined {
-  return SPECIALISTS.find((s) => s.slug === slug);
-}
-
-/** Nome do autor de um artigo. Se o especialista sair da lista, o artigo passa a ser da DM. */
-export function authorName(slug: string): string {
-  return findSpecialist(slug)?.name ?? "DM Empresarial";
-}
+/**
+ * Seção "Nossos clientes" da Home.
+ * Para adicionar logos reais: coloque o arquivo em public/clients/ e preencha logo: "/clients/nome.svg".
+ * Para remover a seção inteira, esvazie o array `items`.
+ */
+export const CLIENTS = {
+  /** Rótulo de seção acima do título (cor de ação). */
+  label: "Quem confia na DM",
+  heading: "Nossos clientes",
+  items: [
+    { name: "Cliente 1", logo: "/clients/1.webp" },
+    { name: "Cliente 2", logo: "/clients/2.webp" },
+    { name: "Cliente 3", logo: "/clients/3.webp" },
+    { name: "Cliente 4", logo: "/clients/4.webp" },
+    { name: "Cliente 5", logo: "/clients/5.webp" },
+    { name: "Cliente 6", logo: "/clients/6.webp" },
+    { name: "Cliente 7", logo: "/clients/7.webp" },
+    { name: "Cliente 8", logo: "/clients/8.webp" },
+    { name: "Cliente 9", logo: "/clients/9.webp" },
+    { name: "Cliente 10", logo: "/clients/10.webp" },
+    { name: "Cliente 11", logo: "/clients/11.webp" },
+    { name: "Cliente 12", logo: "/clients/12.webp" },
+    { name: "Cliente 13", logo: "/clients/13.webp" },
+    { name: "Cliente 14", logo: "/clients/14.webp" },
+    { name: "Cliente 15", logo: "/clients/15.webp" },
+    { name: "Cliente 16", logo: "/clients/16.webp" },
+    { name: "Cliente 17", logo: "/clients/17.webp" },
+    { name: "Cliente 18", logo: "/clients/18.webp" },
+    { name: "Cliente 19", logo: "/clients/19.webp" },
+    { name: "Cliente 20", logo: "/clients/20.webp" },
+  ] satisfies ClientItem[],
+};
 
 // -------------------------------------------------------------------------------- Contato
 
@@ -463,6 +467,12 @@ export const CONTACT = {
   email: "contato@dmempresarial.com.br",
   address: "Avenida C. Delfino Nunes, 1111, Frutal — MG",
   hours: "Atendimento todos os dias.",
+  /** Rodapé e dados para o Google. null = não aparece no site. */
+  legalName: null as string | null,
+  /** Formato: "00.000.000/0000-00". */
+  cnpj: null as string | null,
+  /** URL completa de cada rede; deixe vazio ("") para esconder o ícone. */
+  social: { instagram: "", linkedin: "", facebook: "" } as Record<string, string>,
 };
 
 export const WHATSAPP_URL = `https://wa.me/${CONTACT.whatsapp}`;
@@ -471,13 +481,58 @@ export const WHATSAPP_URL = `https://wa.me/${CONTACT.whatsapp}`;
 
 export type LegalDocument = { title: string; paragraphs: string[] };
 
-/** ATENÇÃO: o site coleta dados (formulário de contato). Publique o texto real antes de divulgar. */
 export const PRIVACY: LegalDocument = {
   title: "Política de Privacidade",
-  paragraphs: [PLACEHOLDER],
+  paragraphs: [
+    "A DM Empresarial ('DM', 'nós') respeita a sua privacidade. Esta Política explica quais dados pessoais coletamos neste site (dmempresarial.com.br), para que os usamos, por quanto tempo os guardamos e quais são os seus direitos, conforme a Lei Geral de Proteção de Dados (Lei n.º 13.709/2018 — LGPD).",
+
+    "1. Dados que você nos envia. Ao preencher o formulário de contato, coletamos: nome, e-mail, WhatsApp e a mensagem (obrigatórios); e, se você informar, o nome da empresa e o assunto do contato. Também registramos a data e hora em que você aceitou esta Política e a versão do texto aceito.",
+
+    "2. Dados coletados automaticamente. Para evitar envios abusivos (spam), o site gera um código cifrado a partir do endereço IP de quem envia o formulário. O IP em si não é armazenado, e o código muda a cada dia, o que impede identificar a pessoa por ele. Este site não usa cookies de rastreamento, pixels de anúncios nem ferramentas de analytics.",
+
+    "3. Para que usamos os dados. Exclusivamente para: (a) ler a sua mensagem e responder pelo e-mail ou WhatsApp que você informou; (b) entender o contexto da empresa antes da primeira conversa; (c) proteger o formulário contra abuso. Não enviamos propaganda nem incluímos você em listas de e-mail sem pedido expresso.",
+
+    "4. Base legal. O tratamento se baseia no seu consentimento, dado ao marcar a caixa de aceite do formulário (art. 7.º, I, da LGPD), e no legítimo interesse da DM em proteger o site contra abuso (art. 7.º, IX).",
+
+    "5. Compartilhamento. A DM não vende, aluga nem cede seus dados. Eles são processados apenas por fornecedores necessários ao funcionamento do site — hospedagem, banco de dados e envio de e-mail —, que atuam como operadores, seguindo as nossas instruções e obrigados a manter sigilo. Alguns desses fornecedores podem armazenar dados fora do Brasil, com as garantias previstas na LGPD.",
+
+    "6. Por quanto tempo guardamos. O código cifrado do IP é apagado em até 30 dias. Os dados do formulário são mantidos por até 24 meses após o envio, para dar continuidade ao atendimento, e depois são excluídos — salvo se houver relação contratual com a DM ou obrigação legal de guardá-los por mais tempo. Você pode pedir a exclusão antes disso a qualquer momento.",
+
+    "7. Seus direitos (art. 18 da LGPD). Você pode, a qualquer momento e sem custo: confirmar se tratamos seus dados; acessá-los; corrigir dados incompletos ou desatualizados; pedir anonimização, bloqueio ou eliminação; saber com quem os compartilhamos; e revogar o consentimento. Basta escrever para contato@dmempresarial.com.br. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).",
+
+    "8. Segurança. Adotamos medidas técnicas e administrativas para proteger seus dados contra acesso não autorizado, perda ou alteração, como conexão cifrada (HTTPS) e acesso restrito à equipe responsável.",
+
+    "9. Alterações. Esta Política pode ser atualizada. A versão vigente fica sempre nesta página, com a data abaixo. Mudanças relevantes passam a valer para os envios feitos depois da publicação.",
+
+    "Última atualização: 13 de outubro de 2026. Dúvidas ou pedidos: contato@dmempresarial.com.br.",
+  ],
 };
 
 export const TERMS: LegalDocument = {
   title: "Termos de Uso",
-  paragraphs: [PLACEHOLDER],
+  paragraphs: [
+    "Ao acessar e utilizar o site dmempresarial.com.br ('Site'), operado pela DM Empresarial ('DM'), você concorda com os presentes Termos de Uso. Se não concordar com alguma condição, por favor, não utilize o Site.",
+
+    "1. Objeto. Este Site tem finalidade institucional e informativa: apresentar a DM Empresarial, seus serviços de consultoria e conteúdos educativos sobre gestão e finanças empresariais.",
+
+    "2. Uso permitido. O Site é destinado a pessoas físicas e jurídicas interessadas em conhecer ou contratar os serviços da DM. É vedado utilizar o Site para fins ilícitos, disseminar conteúdo falso ou ofensivo, tentar acessar sistemas além do permitido, ou reproduzir conteúdo sem autorização prévia por escrito.",
+
+    "3. Formulário de contato. O formulário de contato disponível no Site é um canal exclusivo para solicitações de informação e diagnóstico inicial. Não constitui prestação de serviço de emergência nem gera, por si só, qualquer vínculo contratual entre as partes.",
+
+    "4. Conteúdo informativo. Os artigos e materiais publicados no Blog da DM têm caráter educativo e informativo. Não substituem consultoria especializada individualizada. A DM não se responsabiliza por decisões tomadas com base exclusivamente no conteúdo do Site.",
+
+    "5. Propriedade intelectual. Todo o conteúdo do Site — textos, logotipos, imagens e estrutura — é de propriedade da DM Empresarial ou está licenciado para seu uso. A reprodução total ou parcial, sem autorização prévia por escrito, é proibida.",
+
+    "6. Links para terceiros. O Site pode conter links para sites de terceiros. A DM não controla nem se responsabiliza pelo conteúdo, práticas de privacidade ou disponibilidade desses sites.",
+
+    "7. Disponibilidade. A DM não garante disponibilidade ininterrupta do Site e pode suspendê-lo temporariamente para manutenção ou atualizações, sem aviso prévio.",
+
+    "8. Limitação de responsabilidade. Na extensão permitida pela lei, a DM não será responsável por danos diretos, indiretos, incidentais ou consequentes decorrentes do uso ou da impossibilidade de uso do Site.",
+
+    "9. Alterações. A DM pode revisar estes Termos a qualquer momento. A versão atualizada será publicada nesta página. O uso contínuo do Site após a publicação de alterações implica a aceitação dos novos termos.",
+
+    "10. Foro. Fica eleito o foro da Comarca de Frutal/MG para dirimir quaisquer controvérsias decorrentes destes Termos, com renúncia a qualquer outro, por mais privilegiado que seja.",
+
+    "Última atualização: 13 de outubro de 2026. Contato: contato@dmempresarial.com.br.",
+  ],
 };

@@ -23,8 +23,8 @@ export async function createUserAction(
   _prevState: ActionResult<UserCreated> | null,
   formData: FormData,
 ): Promise<ActionResult<UserCreated>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const created = await createUserForRoute({
       actor,
       name: str(formData, "name"),
@@ -42,8 +42,8 @@ export async function setRoleAction(
   _prevState: ActionResult<{ userId: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ userId: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const userId = str(formData, "userId");
     await setRoleForRoute({ actor, userId, role: str(formData, "role") as Role });
     revalidatePath("/admin/usuarios");
@@ -57,8 +57,8 @@ export async function setDisabledAction(
   _prevState: ActionResult<{ userId: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ userId: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const userId = str(formData, "userId");
     const disabled = str(formData, "disabled") === "true";
     await setDisabledForRoute({ actor, userId, disabled });
@@ -73,8 +73,8 @@ export async function deleteUserAction(
   _prevState: ActionResult<{ userId: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ userId: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const userId = str(formData, "userId");
     await deleteUserForRoute({ actor, userId });
     revalidatePath("/admin/usuarios");

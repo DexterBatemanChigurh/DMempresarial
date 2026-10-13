@@ -3,6 +3,7 @@ import { hasSessionCookie, safeNextPath } from "@/server/auth/session-cookie";
 import { buildAdminCsp, buildPublicCsp, generateNonce } from "@/server/security/csp";
 import { getRedirectForRoute } from "@/features/platform/application/public-redirects";
 import { isRedirectSource } from "@/features/platform/domain/redirect-rules";
+import { logger } from "@/server/logging/logger";
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
@@ -48,17 +49,25 @@ function publicSite(): NextResponse {
 }
 
 /**
- * Redirecionamento de endereços de conteúdo (docs/03 §20): artigo com slug trocado (automático)
- * e redirecionamentos manuais do painel, em `/blog/<slug>`, `/solucoes/<slug>` e
- * `/sobre/especialistas/<slug>` (`isRedirectSource`). Precisa acontecer aqui, e não dentro
+ * Redirecionamento de artigo com slug trocado (docs/03 §20), em `/blog/<slug>`
+ * (`isRedirectSource`). Precisa acontecer aqui, e não dentro
  * de `/blog/[slug]/page.tsx`: sob Cache Components/PPR, um `permanentRedirect()` que depende de
  * leitura de banco só executa no trecho adiado (streaming) da página — o Next então manda um 200
  * e resolve a navegação por JS no cliente (comportamento documentado do `permanentRedirect`),
  * nunca um 301/308 de verdade. O Proxy roda em runtime Node.js por padrão no Next 16 e decide
  * antes de a página renderizar, então consegue responder com um redirecionamento HTTP real.
+ *
+ * Falha no banco NÃO derruba a página: sem a consulta, a página segue (o artigo atual abre
+ * normalmente; um slug antigo cai no 404 em vez do 301).
  */
 async function contentRedirect(request: NextRequest): Promise<NextResponse | null> {
-  const target = await getRedirectForRoute(request.nextUrl.pathname);
+  let target: Awaited<ReturnType<typeof getRedirectForRoute>>;
+  try {
+    target = await getRedirectForRoute(request.nextUrl.pathname);
+  } catch (error) {
+    logger.error("Falha ao consultar redirecionamentos no Proxy", { error });
+    return null;
+  }
   if (!target) return null;
   const response = NextResponse.redirect(new URL(target.toPath, request.url), target.statusCode);
   response.headers.set("Content-Security-Policy", publicCsp);
@@ -68,7 +77,7 @@ async function contentRedirect(request: NextRequest): Promise<NextResponse | nul
 /**
  * Proxy (o antigo middleware, Next 16). Roda em toda página (ver matcher): em `/admin` valida
  * sessão de forma otimista e aplica a CSP de nonce; no resto do site, só aplica a CSP pública
- * fixa, sem tocar banco — exceto nos endereços de conteúdo com slug, onde consulta a tabela de
+ * fixa, sem tocar banco — exceto em `/blog/<slug>`, onde consulta a tabela de
  * redirecionamentos (só ali; ver `contentRedirect`). NÃO é autorização: toda página e ação de admin valida a sessão de
  * verdade no servidor (docs/03, parte 11).
  */

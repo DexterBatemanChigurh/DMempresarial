@@ -9,7 +9,7 @@ export const postStatus = pgEnum("post_status", [
   "ARCHIVED",
 ]);
 
-/** Soluções, especialistas e páginas não têm revisão nem agendamento no MVP. */
+/** LEGADO: usado pelas tabelas de soluções/especialistas/páginas (apagadas na 0007). Sem uso. */
 export const publishStatus = pgEnum("publish_status", ["DRAFT", "PUBLISHED", "ARCHIVED"]);
 
 /** Formatos editoriais (docs/01, seção 12). Opcionais: ajudam quem escreve, não limitam. */

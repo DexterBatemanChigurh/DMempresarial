@@ -5,7 +5,7 @@ import { redirects } from "@/db/schema";
 
 export type RedirectTarget = { toPath: string; statusCode: number };
 
-/** Destino de um caminho antigo, se houver. Usado quando a página de conteúdo não acha o slug. */
+/** Destino de um caminho antigo, se houver. Consultado pelo Proxy em `/blog/<slug>`. */
 export async function findRedirect(
   executor: Executor,
   path: string,

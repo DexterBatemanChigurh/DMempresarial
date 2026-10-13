@@ -14,8 +14,8 @@ import { createdAt, maxLen, pk, tz, updatedAt } from "./_helpers";
 import { redirectOrigin } from "./enums";
 
 /**
- * Redirecionamentos (slug antigo → novo). Resolvidos quando a página de conteúdo não acha o
- * slug (não no Proxy). Criados automaticamente quando um slug publicado muda (docs/03, parte 20).
+ * Redirecionamentos (slug antigo → novo). Resolvidos no Proxy (src/proxy.ts), antes da página.
+ * Criados automaticamente quando o slug de um artigo publicado muda (docs/03, parte 20).
  */
 export const redirects = pgTable(
   "redirects",

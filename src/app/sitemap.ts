@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
 import { connection } from "next/server";
-import { SOLUTIONS, SPECIALISTS } from "@/content/dm";
 import { listPublicPostsForRoute } from "@/features/content/application/public-posts";
 import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
 import { env } from "@/server/env";
@@ -12,8 +11,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = env().SITE_URL;
   const url = (path: string) => `${base}${path}`;
 
-  const solutions = SOLUTIONS;
-  const specialists = SPECIALISTS;
   const [posts, categories] = await Promise.all([
     listPublicPostsForRoute({ pageSize: 50 }),
     listPublicCategoriesForRoute(),
@@ -22,25 +19,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: url("/"), changeFrequency: "weekly", priority: 1 },
     { url: url("/sobre"), changeFrequency: "monthly", priority: 0.8 },
-    { url: url("/sobre/especialistas"), changeFrequency: "monthly", priority: 0.6 },
     { url: url("/solucoes"), changeFrequency: "monthly", priority: 0.9 },
     { url: url("/blog"), changeFrequency: "daily", priority: 0.8 },
     { url: url("/contato"), changeFrequency: "yearly", priority: 0.5 },
     { url: url("/politica-de-privacidade"), changeFrequency: "yearly", priority: 0.1 },
     { url: url("/termos-de-uso"), changeFrequency: "yearly", priority: 0.1 },
   ];
-
-  const solutionRoutes: MetadataRoute.Sitemap = solutions.map((s) => ({
-    url: url(`/solucoes/${s.slug}`),
-    changeFrequency: "monthly",
-    priority: 0.7,
-  }));
-
-  const specialistRoutes: MetadataRoute.Sitemap = specialists.map((p) => ({
-    url: url(`/sobre/especialistas/${p.slug}`),
-    changeFrequency: "monthly",
-    priority: 0.5,
-  }));
 
   const postRoutes: MetadataRoute.Sitemap = posts.items.map((p) => ({
     url: url(`/blog/${p.slug}`),
@@ -55,11 +39,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.4,
   }));
 
-  return [
-    ...staticRoutes,
-    ...solutionRoutes,
-    ...specialistRoutes,
-    ...postRoutes,
-    ...categoryRoutes,
-  ];
+  return [...staticRoutes, ...postRoutes, ...categoryRoutes];
 }

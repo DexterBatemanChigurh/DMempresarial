@@ -61,7 +61,7 @@ function readPostForm(formData: FormData) {
     body: JSON.parse(str(formData, "body") || "null"),
     format: parsePostFormat(optionalStr(formData, "format")),
     coverMediaId: optionalStr(formData, "coverMediaId"),
-    authorSlug: str(formData, "authorSlug"),
+    authorSlug: "dm-empresarial",
     seoTitle: optionalStr(formData, "seoTitle"),
     seoDescription: optionalStr(formData, "seoDescription"),
     ogMediaId: null,
@@ -83,8 +83,8 @@ export async function createPostAction(
   formData: FormData,
 ): Promise<ActionResult<PostMutated>> {
   let created: { id: string; slug: string };
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     created = await createPostForRoute({
       actor,
       slug: optionalStr(formData, "slug") ?? undefined,
@@ -101,8 +101,8 @@ export async function updatePostAction(
   _prevState: ActionResult<PostMutated> | null,
   formData: FormData,
 ): Promise<ActionResult<PostMutated>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const postId = str(formData, "postId");
     const expectedVersion = Number(str(formData, "expectedVersion"));
     const updated = await updatePostForRoute({
@@ -123,8 +123,8 @@ export async function deletePostAction(
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
   let deleted: { slug: string; categorySlugs: string[] };
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     deleted = await deletePostForRoute({ actor, postId: str(formData, "postId") });
   } catch (error) {
     return fail(toActionError(error));
@@ -143,8 +143,8 @@ export async function transitionPostAction(
   _prevState: ActionResult<PostMutated> | null,
   formData: FormData,
 ): Promise<ActionResult<PostMutated>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const postId = str(formData, "postId");
     const to = str(formData, "to") as PostStatus;
     const expectedVersion = Number(str(formData, "expectedVersion"));
@@ -167,8 +167,8 @@ export async function changePostSlugAction(
   _prevState: ActionResult<PostMutated> | null,
   formData: FormData,
 ): Promise<ActionResult<PostMutated>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const postId = str(formData, "postId");
     const newSlug = str(formData, "newSlug");
     const expectedVersion = Number(str(formData, "expectedVersion"));

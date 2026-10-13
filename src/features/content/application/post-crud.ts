@@ -1,7 +1,6 @@
 import "server-only";
 import { and, eq } from "drizzle-orm";
 import type { Database, Transaction } from "@/db/client";
-import { findSpecialist } from "@/content/dm";
 import {
   categories,
   postCategories,
@@ -75,7 +74,6 @@ function validateFields(input: PostFormInput): void {
   if (input.primaryCategoryId && !input.categoryIds.includes(input.primaryCategoryId)) {
     fieldErrors.primaryCategoryId = ["A categoria principal precisa estar entre as escolhidas."];
   }
-  if (!findSpecialist(input.authorSlug)) fieldErrors.authorSlug = ["Escolha um autor da lista."];
   if (Object.keys(fieldErrors).length > 0) {
     throw new AppError("VALIDATION", "Confira os campos do artigo.", { fieldErrors });
   }

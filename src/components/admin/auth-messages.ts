@@ -1,3 +1,5 @@
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
+
 /**
  * Mensagens de erro de autenticação em português. Genéricas de propósito: nunca dizem se o
  * e-mail existe, nem detalham por que o código falhou além do necessário (sem enumeração de contas).
@@ -20,6 +22,8 @@ export function passwordChangeErrorMessage(error: AuthErrorLike): string {
   if (error.status === 429) return "Muitas tentativas. Aguarde alguns minutos.";
   if (error.code === "INVALID_PASSWORD") return "A senha atual está incorreta.";
   if (error.code === "PASSWORD_TOO_SHORT")
-    return "A nova senha precisa ter pelo menos 12 caracteres.";
+    return `A nova senha precisa ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`;
+  if (error.code === "PASSWORD_TOO_LONG")
+    return `A nova senha pode ter no máximo ${MAX_PASSWORD_LENGTH} caracteres.`;
   return "Não foi possível alterar a senha agora.";
 }

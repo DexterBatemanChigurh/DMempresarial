@@ -20,8 +20,8 @@ export async function transitionLeadAction(
   _prevState: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const id = str(formData, "id");
     const from = parseLeadStatus(str(formData, "from"));
     const to = parseLeadStatus(str(formData, "to"));
@@ -39,8 +39,8 @@ export async function eraseLeadAction(
   _prevState: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     await eraseLeadForRoute({ actor, id: str(formData, "id") });
   } catch (error) {
     return fail(toActionError(error));

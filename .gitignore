@@ -15,12 +15,17 @@ next-env.d.ts
 
 # testes e ferramentas
 playwright-report/
+.lighthouseci/
 test-results/
 .playwright-mcp/
 .vercel/
 
 # storage local de arquivos
 .storage/
+
+# dumps do banco (dados pessoais de leads) — npm run db:backup
+backups/
+*.dump
 
 # sistema/editor
 .DS_Store

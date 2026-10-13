@@ -31,8 +31,8 @@ export async function createCategoryAction(
   _prevState: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const row = await createCategoryForRoute({
       actor,
       name: str(formData, "name"),
@@ -50,8 +50,8 @@ export async function updateCategoryAction(
   _prevState: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const id = str(formData, "id");
     await updateCategoryForRoute({
       actor,
@@ -70,8 +70,8 @@ export async function deleteCategoryAction(
   _prevState: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const id = str(formData, "id");
     await deleteCategoryForRoute({ actor, id });
     revalidatePath("/admin/categorias");
@@ -85,8 +85,8 @@ export async function mergeCategoriesAction(
   _prevState: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const fromId = str(formData, "fromId");
     await mergeCategoriesForRoute({ actor, fromId, toId: str(formData, "toId") });
     revalidatePath("/admin/categorias");
@@ -100,8 +100,8 @@ export async function createTagAction(
   _prevState: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const row = await createTagForRoute({
       actor,
       name: str(formData, "name"),
@@ -118,8 +118,8 @@ export async function deleteTagAction(
   _prevState: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const id = str(formData, "id");
     await deleteTagForRoute({ actor, id });
     revalidatePath("/admin/categorias");
@@ -133,8 +133,8 @@ export async function mergeTagsAction(
   _prevState: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const fromId = str(formData, "fromId");
     await mergeTagsForRoute({ actor, fromId, toId: str(formData, "toId") });
     revalidatePath("/admin/categorias");

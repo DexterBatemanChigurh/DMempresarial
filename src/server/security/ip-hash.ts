@@ -1,7 +1,7 @@
 import "server-only";
 import { createHmac } from "node:crypto";
 import { headers } from "next/headers";
-import { env } from "@/server/env";
+import { deriveSecret } from "./derived-secret";
 
 /** IP do cliente a partir do cabeçalho que a hospedagem/proxy define (o Node não vê o socket
  * diretamente atrás de um proxy reverso). `null` se não houver cabeçalho — sem IP, sem rate
@@ -18,6 +18,5 @@ export async function getClientIp(): Promise<string | null> {
  */
 export function hashIpForToday(ip: string, now: Date = new Date()): string {
   const day = now.toISOString().slice(0, 10);
-  const secret = env().BETTER_AUTH_SECRET ?? "dev-only-insecure-secret-32-chars!!";
-  return createHmac("sha256", secret).update(`${day}:${ip}`).digest("hex");
+  return createHmac("sha256", deriveSecret("ip-hash")).update(`${day}:${ip}`).digest("hex");
 }

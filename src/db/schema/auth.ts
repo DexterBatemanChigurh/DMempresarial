@@ -41,7 +41,8 @@ export const users = pgTable("users", {
   role: userRole("role").default("AUTHOR").notNull(),
   // Conta desativada: preserva autoria e auditoria; a sessão deixa de valer (ver actor.ts).
   disabledAt: timestamp("disabled_at", { withTimezone: true }),
-  // 2FA por TOTP (plugin da biblioteca). ADMIN e EDITOR precisam tê-lo ativo para usar o painel.
+  // LEGADO: 2FA removido em 28/09/2026 (volta numa fase futura). Coluna mantida até a decisão
+  // de migration de limpeza; hoje nenhuma regra depende dela.
   twoFactorEnabled: boolean("two_factor_enabled").default(false).notNull(),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
@@ -104,6 +105,7 @@ export const verifications = pgTable(
 );
 
 /**
+ * LEGADO (2FA removido em 28/09/2026; sem uso no código, mantida até a migration de limpeza).
  * Segundo fator (TOTP). O segredo e os códigos de backup são guardados CIFRADOS pela biblioteca
  * com o BETTER_AUTH_SECRET; nunca são devolvidos pela API depois do cadastro.
  */

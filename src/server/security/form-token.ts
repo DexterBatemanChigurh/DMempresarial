@@ -1,18 +1,16 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { env } from "@/server/env";
+import { deriveSecret } from "./derived-secret";
 
 /**
  * Token de tempo mínimo assinado (docs/03, parte 22: "honeypot + token de tempo mínimo
  * (assinado)"). Um bot que preenche e envia o formulário em milissegundos é bloqueado sem
  * CAPTCHA: o token carrega o instante em que o formulário foi montado, assinado por HMAC para
- * que o cliente não possa forjar um valor antigo. Reaproveita `BETTER_AUTH_SECRET` (segredo de
- * uso geral da aplicação, não um segredo novo por formulário).
+ * que o cliente não possa forjar um valor antigo. A chave é derivada de `BETTER_AUTH_SECRET` só
+ * para esta finalidade (`deriveSecret`).
  */
 function sign(payload: string): string {
-  return createHmac("sha256", env().BETTER_AUTH_SECRET ?? "dev-only-insecure-secret-32-chars!!")
-    .update(payload)
-    .digest("base64url");
+  return createHmac("sha256", deriveSecret("form-token")).update(payload).digest("base64url");
 }
 
 export function mintFormToken(now: Date = new Date()): string {

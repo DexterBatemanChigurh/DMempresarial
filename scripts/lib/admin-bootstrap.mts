@@ -1,17 +1,18 @@
 // Criação do PRIMEIRO administrador (docs/03, parte 10). Não existe senha padrão em lugar
 // nenhum: a senha vem de variável de ambiente ou é gerada aleatoriamente e mostrada uma única
 // vez. Usa o mesmo algoritmo de hash da biblioteca de login (scrypt), então o login funciona.
-import { randomInt, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { hashPassword } from "better-auth/crypto";
 import pg from "pg";
 
-// Sem caracteres ambíguos (0/O, 1/l/I) para facilitar a digitação do primeiro acesso.
-const ALPHABET = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-export const MIN_PASSWORD_LENGTH = 12;
+// Mesma política de senha do painel (fonte única em src/lib/password.ts).
+import {
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+  generatePassword,
+} from "../../src/lib/password.ts";
 
-export function generatePassword(length = 24): string {
-  return Array.from({ length }, () => ALPHABET[randomInt(ALPHABET.length)]).join("");
-}
+export { generatePassword, MIN_PASSWORD_LENGTH };
 
 export type NewAdmin = { email: string; name: string; password: string };
 
@@ -25,6 +26,9 @@ export async function createFirstAdmin(
   if (input.name.trim() === "") throw new Error("Nome obrigatório.");
   if (input.password.length < MIN_PASSWORD_LENGTH) {
     throw new Error(`A senha precisa ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`);
+  }
+  if (input.password.length > MAX_PASSWORD_LENGTH) {
+    throw new Error(`A senha pode ter no máximo ${MAX_PASSWORD_LENGTH} caracteres.`);
   }
 
   const client = new pg.Client({ connectionString: adminUrl, connectionTimeoutMillis: 10_000 });

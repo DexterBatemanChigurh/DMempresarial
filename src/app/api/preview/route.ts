@@ -1,46 +1,42 @@
 import { draftMode } from "next/headers";
 import { redirect } from "next/navigation";
+import { getPostForEditForRoute } from "@/features/content/application/post-crud";
+import { AppError } from "@/lib/errors";
 import { requireAdminSession } from "@/server/auth/admin-guard";
 import { assertCan } from "@/server/permissions";
-import type { Actor, Action } from "@/server/permissions";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Ativa o Draft Mode do Next.js para permitir visualização de conteúdo não publicado.
- * Requer sessão de admin válida. O Draft Mode define um cookie `__prerender_bypass`
- * que faz o Next ignorar o cache estático e renderizar a página na hora, permitindo
- * ver conteúdo DRAFT/REVIEW/SCHEDULED.
+ * Ativa o Draft Mode do Next.js para ver um artigo não publicado (`?postId=<id>`). Exige sessão
+ * de painel e permissão de editar AQUELE artigo. O cookie vale para o site inteiro, então a
+ * página do artigo repete a checagem a cada leitura (`getPostBySlugForPreview`): ativar o preview
+ * do próprio rascunho não abre o de ninguém. Para sair: `/api/preview/sair`.
  *
- * A rota espera `?postId=<id>&slug=<slug>` como query params.
- * Após ativar o Draft Mode, redireciona para a página pública do artigo (`/blog/<slug>`).
+ * O destino é o slug real do artigo, lido do banco — o `slug` da URL é ignorado.
  */
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const postId = searchParams.get("postId");
-  const slug = searchParams.get("slug");
-
-  if (!postId || !slug) {
-    return new Response("Parâmetros inválidos: postId e slug são obrigatórios", { status: 400 });
+  const postId = new URL(request.url).searchParams.get("postId") ?? "";
+  if (!UUID.test(postId)) {
+    return new Response("Parâmetro inválido: postId é obrigatório.", { status: 400 });
   }
 
-  const { actor: sessionActor } = await requireAdminSession();
-  const actor: Actor = sessionActor;
+  // Fora do `try`: sem sessão, `redirect()` para o login precisa propagar.
+  const { actor } = await requireAdminSession();
 
-  const { getPostForEditForRoute } = await import("@/features/content/application/post-crud");
-
-  const post = await getPostForEditForRoute(actor, postId);
-  if (!post) {
-    return new Response("Artigo não encontrado", { status: 404 });
+  let slug: string;
+  try {
+    const { post } = await getPostForEditForRoute(actor, postId);
+    // Dono = usuário que criou o artigo (o autor exibido é outra coisa: um especialista da lista).
+    assertCan(actor, "post:edit", { ownerId: post.createdBy, status: post.status });
+    slug = post.slug;
+  } catch (error) {
+    if (error instanceof AppError) {
+      return new Response(error.publicMessage, { status: error.httpStatus });
+    }
+    throw error;
   }
 
-  // Verifica se o usuário tem permissão para editar este post
-  // Dono = usuário que criou o artigo (o autor exibido é outra coisa: um especialista da lista).
-  const resource = { ownerId: post.post.createdBy, status: post.post.status };
-  assertCan(actor, "post:edit" as Action, resource);
-
-  // Ativa o Draft Mode
-  const draft = await draftMode();
-  draft.enable();
-
-  // Redireciona para a página pública do artigo
+  (await draftMode()).enable();
   redirect(`/blog/${slug}`);
 }

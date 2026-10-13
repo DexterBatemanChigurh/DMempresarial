@@ -58,15 +58,6 @@ export async function listLeadsForAdmin(
   return { page, counts };
 }
 
-/** Contagem por estado para a tela inicial do painel (só quem pode ver leads). */
-export async function countLeadsForDashboard(
-  { db }: Deps,
-  actor: Actor | null | undefined,
-): Promise<Record<LeadStatus, number>> {
-  authorize(actor, "lead:view");
-  return countLeadsByStatus(db);
-}
-
 export async function getLeadForAdmin(
   { db }: Deps,
   actor: Actor | null | undefined,
@@ -191,8 +182,6 @@ export const listLeadsForAdminForRoute = (
   filter: { status?: LeadStatus },
   options?: { page?: number },
 ) => listLeadsForAdmin({ db: getDb() }, actor, filter, options);
-export const countLeadsForDashboardForRoute = (actor: A) =>
-  countLeadsForDashboard({ db: getDb() }, actor);
 export const getLeadForAdminForRoute = (actor: A, id: string) =>
   getLeadForAdmin({ db: getDb() }, actor, id);
 export const transitionLeadForRoute = (input: {

@@ -3,8 +3,9 @@
 Plataforma digital de autoridade da DM Empresarial (consultoria empresarial, Frutal/MG):
 institucional, soluções, especialistas, blog editorial e geração de leads.
 
-> Estado: **Fase 1 (fundação) concluída.** Ainda não há páginas públicas, banco modelado nem CMS.
-> Este README descreve apenas o que existe.
+> Estado (30/09/2026): site público (Home, Sobre, Especialistas, Soluções, Blog, Contato, páginas
+> legais), CMS em `/admin` (artigos, categorias/tags, mídia, leads, usuários, configurações,
+> auditoria) e pipeline de leads prontos. Pendências de lançamento em `fases`.
 
 ## Documentação de produto e design
 
@@ -33,18 +34,21 @@ A porta **5433** é deliberada: a 5432 costuma estar ocupada por outros projetos
 
 ## Comandos
 
-| Comando                             | O que faz                                                                       |
-| ----------------------------------- | ------------------------------------------------------------------------------- |
-| `npm run check`                     | lint + typecheck + testes + build (o portão)                                    |
-| `npm run lint` / `typecheck`        | ESLint 9 (config do Next) / TypeScript 6                                        |
-| `npm test`                          | Vitest (sem banco)                                                              |
-| `npm run test:integration`          | Vitest contra Postgres real (banco de teste)                                    |
-| `npm run format` / `format:check`   | Prettier                                                                        |
-| `npm run db:up` / `db:down`         | Sobe/derruba o Postgres local                                                   |
-| `npm run db:setup`                  | Role dm_app + migrations + dados base (`db:bootstrap`, `db:migrate`, `db:seed`) |
-| `npm run db:setup:remote`           | O mesmo no banco remoto (lê `.env.neon`, nunca versionado)                      |
-| `npm run db:generate` / `db:verify` | Gera migration a partir do schema / confere coerência                           |
-| `npm run db:check`                  | Confirma a conexão com o banco                                                  |
+| Comando                             | O que faz                                                                          |
+| ----------------------------------- | ---------------------------------------------------------------------------------- |
+| `npm run check`                     | lint + typecheck + testes + build (o portão)                                       |
+| `npm run lint` / `typecheck`        | ESLint 9 (config do Next) / TypeScript 6                                           |
+| `npm test`                          | Vitest (sem banco)                                                                 |
+| `npm run test:integration`          | Vitest contra Postgres real (banco de teste)                                       |
+| `npm run format` / `format:check`   | Prettier                                                                           |
+| `npm run db:up` / `db:down`         | Sobe/derruba o Postgres local                                                      |
+| `npm run db:setup`                  | Role dm_app + migrations + dados base (`db:bootstrap`, `db:migrate`, `db:seed`)    |
+| `npm run db:setup:remote`           | O mesmo no banco remoto (lê `.env.neon`, nunca versionado)                         |
+| `npm run db:generate` / `db:verify` | Gera migration a partir do schema / confere coerência                              |
+| `npm run db:check`                  | Confirma a conexão com o banco                                                     |
+| `npm run db:backup` / `db:restore`  | Dump em `backups/` (fora do git) / restauração com confirmação digitada            |
+| `npm run test:e2e`                  | Playwright contra `npm run start` (use banco local: o teste de contato grava lead) |
+| `npm run lighthouse`                | Lighthouse CI (`@lhci/cli`), relatórios em `.lighthouseci/`                        |
 
 ## Estrutura
 

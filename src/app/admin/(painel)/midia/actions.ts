@@ -21,8 +21,8 @@ export async function uploadMediaAction(
   _prevState: ActionResult<UploadedMedia> | null,
   formData: FormData,
 ): Promise<ActionResult<UploadedMedia>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const file = formData.get("file");
     if (!(file instanceof File)) {
       return fail({
@@ -57,8 +57,8 @@ export async function updateMediaAction(
   _prevState: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const id = String(formData.get("id") ?? "");
     const altText = formData.get("altText");
     const caption = formData.get("caption");
@@ -84,8 +84,8 @@ export async function deleteMediaAction(
   _prevState: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
+  const { actor } = await requireAdminSession();
   try {
-    const { actor } = await requireAdminSession();
     const id = String(formData.get("id") ?? "");
     await deleteMediaForRoute({ actor, id });
     revalidatePath("/admin/midia");

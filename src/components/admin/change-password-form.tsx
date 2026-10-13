@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Button, FormMessage, TextField } from "@/components/ui";
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
 import { authClient } from "./auth-client";
 import { passwordChangeErrorMessage } from "./auth-messages";
 
@@ -48,7 +49,7 @@ export function ChangePasswordForm() {
         label="Nova senha"
         type="password"
         autoComplete="new-password"
-        hint="Entre 6 e 12 caracteres."
+        hint={`Entre ${MIN_PASSWORD_LENGTH} e ${MAX_PASSWORD_LENGTH} caracteres.`}
         required
       />
       <TextField

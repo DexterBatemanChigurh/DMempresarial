@@ -24,6 +24,7 @@ describe("passwordChangeErrorMessage", () => {
   it("distingue senha atual incorreta, senha curta e limite", () => {
     expect(passwordChangeErrorMessage({ code: "INVALID_PASSWORD" })).toMatch(/atual/);
     expect(passwordChangeErrorMessage({ code: "PASSWORD_TOO_SHORT" })).toMatch(/12/);
+    expect(passwordChangeErrorMessage({ code: "PASSWORD_TOO_LONG" })).toMatch(/128/);
     expect(passwordChangeErrorMessage({ status: 429 })).toMatch(/Muitas/);
     expect(passwordChangeErrorMessage(undefined)).toMatch(/Não foi possível/);
   });

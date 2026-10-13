@@ -14,6 +14,9 @@ export type AdminContext = {
  * faz um redirecionamento otimista por cookie; aqui a sessão é validada no banco e a conta
  * desativada é recusada (docs/03, partes 10 e 11). Sem 2FA por decisão do usuário (28/09): o
  * segundo fator volta numa fase futura.
+ *
+ * Sem sessão, `redirect()` LANÇA (NEXT_REDIRECT). Chame FORA de `try/catch`: dentro, o `catch`
+ * das actions converte o redirecionamento em erro genérico e a pessoa não vai para o login.
  */
 export async function requireAdminSession(): Promise<AdminContext> {
   const session = await getSession();

@@ -5,6 +5,7 @@ import { nextCookies } from "better-auth/next-js";
 import { getDb, type Database } from "@/db/client";
 import * as schema from "@/db/schema";
 import { AppError } from "@/lib/errors";
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "@/lib/password";
 import { env } from "@/server/env";
 import { logger } from "@/server/logging/logger";
 
@@ -43,8 +44,8 @@ export function createAuth({ db, secret, baseURL }: AuthDeps) {
       enabled: true,
       // Sem cadastro público: contas nascem por convite de ADMIN.
       disableSignUp: true,
-      minPasswordLength: 6,
-      maxPasswordLength: 12,
+      minPasswordLength: MIN_PASSWORD_LENGTH,
+      maxPasswordLength: MAX_PASSWORD_LENGTH,
       autoSignIn: false,
       revokeSessionsOnPasswordReset: true,
     },

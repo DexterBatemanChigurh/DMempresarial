@@ -120,17 +120,6 @@ export function PostForm({ mode, action, initial, options, postId, version, onSa
       />
 
       <SelectField
-        id="authorSlug"
-        label="Autor"
-        required
-        placeholder="Selecione"
-        hint="A lista de especialistas fica em src/content/dm.ts."
-        defaultValue={initial.authorSlug}
-        error={fieldErrors?.authorSlug?.[0]}
-        options={options.authors.map((a) => ({ value: a.slug, label: a.name }))}
-      />
-
-      <SelectField
         id="format"
         label="Formato editorial"
         placeholder="Nenhum"

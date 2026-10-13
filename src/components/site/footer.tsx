@@ -26,16 +26,15 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
     title: "Empresa",
     links: [
       { href: "/sobre", label: "Sobre a DM" },
-      { href: "/sobre/especialistas", label: "Especialistas" },
       { href: "/sobre#como-trabalhamos", label: "Nossa abordagem" },
     ],
   },
   {
     title: "Soluções",
     links: [
-      { href: "/solucoes/consultoria-estrategica", label: "Consultorias" },
-      { href: "/solucoes#servicos", label: "Serviços" },
       { href: "/solucoes", label: "Soluções" },
+      { href: "/solucoes#servicos", label: "Serviços" },
+      { href: "/solucoes#consultorias", label: "Consultorias" },
     ],
   },
   {

@@ -31,7 +31,6 @@ Preencha **todas** no painel da Vercel (Settings → Environment Variables). Use
 | `DATABASE_URL_ADMIN`                 | `postgresql://dm_owner:...@host/db`                   | ❌ **Nunca na Vercel** — só no passo de migração |
 | `BETTER_AUTH_SECRET`                 | `openssl rand -base64 48`                             | ✅                                               |
 | `BETTER_AUTH_URL`                    | `https://dm.empresarial.com`                          | — (cai em `SITE_URL`)                            |
-| `REQUIRE_2FA`                        | `true`                                                | — (padrão `true`; `false` é recusado)            |
 | `CRON_SECRET`                        | `openssl rand -base64 48`                             | ✅                                               |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | `openssl rand -base64 32`                             | (multi-instância)                                |
 | `STORAGE_DRIVER`                     | `s3`                                                  | ✅ (ou os `STORAGE_*` abaixo)                    |
@@ -160,7 +159,7 @@ Após **cada** deploy em production:
 - [ ] `/api/health` → `{"status":"ok"}` (200, `Cache-Control: no-store`)
 - [ ] `/robots.txt` → permite `/`, bloqueia `/admin` e `/api`
 - [ ] `/sitemap.xml` → XML válido, só URLs públicas
-- [ ] Login admin funciona (2FA se configurado)
+- [ ] Login admin funciona (sem 2FA desde 28/09/2026; senha de 12 a 128 caracteres)
 - [ ] Criação de artigo → publica → aparece no blog
 - [ ] Formulário contato → lead gravado → e-mail enviado (verificar Resend dashboard)
 - [ ] Upload imagem → aparece no admin → URL pública acessível

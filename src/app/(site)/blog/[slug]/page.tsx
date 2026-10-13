@@ -13,7 +13,7 @@ import {
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { PostCard } from "@/components/content/post-card";
 import { ArrowRightIcon } from "@/components/ui/icons";
-import { CATEGORY_SOLUTION, findSpecialist } from "@/content/dm";
+import { CATEGORY_SOLUTION } from "@/content/dm";
 import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
 import { buildPublicMediaResolverForRoute } from "@/features/media/application/resolve";
 import { extractMediaIds } from "@/lib/rich-text";
@@ -27,12 +27,21 @@ type Params = { params: Promise<{ slug: string }> };
 // (mesmo padrão de `solucoes/[slug]/page.tsx`).
 export const instant = false;
 
+/**
+ * Com Draft Mode ativo, o rascunho só aparece para quem pode editá-lo (checado na aplicação);
+ * para qualquer outro caso vale a versão publicada — o cookie sozinho não abre nada.
+ */
+async function loadPost(slug: string) {
+  if ((await draftMode()).isEnabled) {
+    const preview = await getPostBySlugForPreviewRoute(slug);
+    if (preview) return preview;
+  }
+  return getPublicPostBySlugForRoute(slug);
+}
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const isDraft = (await draftMode()).isEnabled;
-  const post = isDraft
-    ? await getPostBySlugForPreviewRoute(slug)
-    : await getPublicPostBySlugForRoute(slug);
+  const post = await loadPost(slug);
   if (!post) return { title: "Artigo não encontrado" };
   return publicMetadata({
     title: post.seoTitle ?? post.title,
@@ -45,9 +54,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Params) {
   const { slug } = await params;
   const isDraft = (await draftMode()).isEnabled;
-  const post = isDraft
-    ? await getPostBySlugForPreviewRoute(slug)
-    : await getPublicPostBySlugForRoute(slug);
+  const post = await loadPost(slug);
   // Slug trocado (docs/03 §20): o redirecionamento de verdade (301, com Location de HTTP) é
   // resolvido no Proxy (src/proxy.ts), antes desta página renderizar — um `permanentRedirect()`
   // daqui, que depende de dado de banco, cai no trecho adiado do PPR e vira só uma navegação por
@@ -76,13 +83,28 @@ export default async function BlogPostPage({ params }: Params) {
     ...extractMediaIds(post.body as RichDoc),
     ...related.map((p) => p.coverMediaId),
   ]);
-  const author = findSpecialist(post.authorSlug);
   const solution = post.primaryCategorySlug
     ? CATEGORY_SOLUTION[post.primaryCategorySlug]
     : undefined;
 
   return (
     <>
+      {isDraft ? (
+        <div role="status" className="border-b border-border bg-surface-muted">
+          <Container className="flex flex-wrap items-center justify-between gap-sm py-sm">
+            <Text size="sm">
+              Modo de pré-visualização
+              {post.status !== "PUBLISHED" ? " (rascunho não publicado)" : ""}.
+            </Text>
+            <a
+              href={`/api/preview/sair?slug=${encodeURIComponent(post.slug)}`}
+              className="font-sans text-sm font-semibold text-link underline-offset-4 hover:underline"
+            >
+              Sair da pré-visualização
+            </a>
+          </Container>
+        </div>
+      ) : null}
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -133,16 +155,7 @@ export default async function BlogPostPage({ params }: Params) {
           ) : null}
 
           <div className="mt-lg font-sans text-body-sm">
-            {author ? (
-              <Link
-                href={`/sobre/especialistas/${author.slug}`}
-                className="inline-flex min-h-11 items-center font-semibold text-text hover:text-link"
-              >
-                {author.name}
-              </Link>
-            ) : (
-              <span className="font-semibold text-text">{post.authorName}</span>
-            )}
+            <span className="font-semibold text-text">{post.authorName}</span>
             <p className="mt-2xs text-text-secondary">
               {post.publishedAt?.toLocaleDateString("pt-BR", {
                 day: "2-digit",

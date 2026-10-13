@@ -142,11 +142,10 @@ export function PostStatusPanel({
       {/* Preview Button - only for non-published statuses */}
       {status !== "PUBLISHED" && status !== "ARCHIVED" ? (
         <div className="border-t border-border pt-lg">
-          <form
-            action={`/api/preview?postId=${postId}&slug=${encodeURIComponent(slug)}`}
-            target="_blank"
-            className="mt-lg"
-          >
+          {/* Formulário GET: o navegador substitui a query do `action` pelos campos do
+              formulário, então o parâmetro PRECISA ir como campo (senão chega vazio). */}
+          <form action="/api/preview" method="get" target="_blank" className="mt-lg">
+            <input type="hidden" name="postId" value={postId} />
             <Button type="submit" variant="secondary" size="sm">
               Visualizar rascunho
             </Button>

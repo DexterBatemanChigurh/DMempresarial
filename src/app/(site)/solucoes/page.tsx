@@ -111,8 +111,6 @@ export default function SolutionsIndexPage() {
       {/* 3 SOLUÇÕES — as quatro frentes da Home, agrupadas pelo tipo de problema. */}
       <Section spacing="loose" aria-labelledby="solucoes">
         <Container>
-          {/* Destino antigo dos artigos de marketing do blog: cai no início das frentes. */}
-          <span id="marketing" className="block scroll-mt-24" />
           <SectionLabel>Soluções</SectionLabel>
           <Heading as="h2" variant="h2" id="solucoes" className="mt-md scroll-mt-40">
             Quatro frentes, aplicadas na ordem que o seu caso exigir.

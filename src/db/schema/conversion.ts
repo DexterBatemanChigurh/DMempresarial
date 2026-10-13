@@ -73,7 +73,8 @@ export const leads = pgTable(
   ],
 );
 
-/** Assinantes da newsletter, com duplo aceite (PENDING até confirmar). Dados pessoais. */
+/** LEGADO: newsletter removida em 28/09/2026; tabela sem uso no código, mantida até decidir o
+ * destino dos dados já gravados. Assinantes com duplo aceite (PENDING até confirmar). */
 export const newsletterSubscribers = pgTable(
   "newsletter_subscribers",
   {

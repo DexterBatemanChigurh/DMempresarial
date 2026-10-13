@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDatabase } from "@/db/client";
-import { getPublicSettings } from "@/features/settings/application/settings-crud";
 import {
   getPublicPostBySlug,
   listPublicPosts,
@@ -92,11 +91,5 @@ describe("listPublicCategories", () => {
 
     const found = (await listPublicCategories(deps)).find((c) => c.slug === category.slug);
     expect(found?.postCount).toBe(1);
-  });
-});
-
-describe("getPublicSettings", () => {
-  it("nunca dá erro mesmo sem sessão (não é uma leitura administrativa)", async () => {
-    await expect(getPublicSettings(deps)).resolves.not.toThrow();
   });
 });

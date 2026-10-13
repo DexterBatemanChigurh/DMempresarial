@@ -1,5 +1,6 @@
 import "server-only";
 import type { Database } from "@/db/client";
+import { can, type Actor, type PostStatus } from "@/server/permissions";
 import {
   findPostBySlugForPreview,
   findPublishedPostBySlug,
@@ -34,19 +35,32 @@ export async function getPublicPostBySlug(
 }
 
 /**
- * Busca um post por slug independentemente do status (para preview/Draft Mode).
- * Retorna o post completo com corpo rico, mesmo se for DRAFT/REVIEW/SCHEDULED.
+ * Artigo em qualquer estado (preview/Draft Mode), SÓ para quem pode editá-lo — a mesma regra de
+ * `/api/preview`. O cookie do Draft Mode vale para o site inteiro: sem esta checagem, quem ativou
+ * o preview de um rascunho próprio veria o rascunho de qualquer outra pessoa pelo slug.
+ * Sem permissão (ou sem sessão) devolve `null`, sem revelar que o rascunho existe.
  */
 export async function getPostBySlugForPreview(
   { db }: { db: Database },
+  actor: Actor | null,
   slug: string,
 ): Promise<PublicPost | null> {
-  return findPostBySlugForPreview(db, slug);
+  if (!actor) return null;
+  const post = await findPostBySlugForPreview(db, slug);
+  if (!post) return null;
+  const allowed = can(actor, "post:edit", {
+    ownerId: post.createdBy,
+    status: post.status as PostStatus,
+  });
+  if (!allowed) return null;
+  const { createdBy: _createdBy, ...publicPost } = post;
+  return publicPost;
 }
 
 // -----------------------------------------------------------------------------------------------
 import { getDb } from "@/db/client";
 import { cacheLife, cacheTag } from "next/cache";
+import { getActor } from "@/server/auth/session";
 
 export async function listPublicPostsForRoute(options?: {
   page?: number;
@@ -78,9 +92,9 @@ export async function getPublicPostBySlugForRoute(slug: string) {
 }
 
 /**
- * Busca um post por slug para preview (Draft Mode) — sem cache, busca direta no banco.
- * Usado quando o Draft Mode está ativo para visualizar rascunhos.
+ * Preview (Draft Mode ativo) — sem cache, direto no banco, com a sessão do request.
+ * `null` quando o ator não pode editar o artigo: a página então cai na versão pública.
  */
 export async function getPostBySlugForPreviewRoute(slug: string) {
-  return getPostBySlugForPreview({ db: getDb() }, slug);
+  return getPostBySlugForPreview({ db: getDb() }, await getActor(), slug);
 }

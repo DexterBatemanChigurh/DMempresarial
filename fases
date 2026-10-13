@@ -1,4 +1,4 @@
-# Fases do DM Empresarial — estado atualizado (26/09/2026)
+# Fases do DM Empresarial — estado atualizado (30/09/2026)
 
 Reavaliação contra os Prompts 1–4 e o roadmap de 12 fases (`docs/03`, seção 45), depois da
 auditoria e das correções de 26/09/2026. Estado conferido no código e em testes, não em
@@ -12,15 +12,15 @@ Legenda: 🟢 pronta · 🟡 parcial · 🔴 pendente
 |---|------------------|:------:|--------------------------|-------------|
 | 1 | Fundação técnica | 🟢 | TS estrito, lint, env validado (falha rápida), logger com redação, role `dm_app` sem DDL, Better Auth, `can()` | — |
 | 2 | Design System    | 🟢 | Tokens, fontes (Newsreader + Instrument Sans), componentes, contraste testado. **Cor de ação = azul da marca `#5c6c9d`** (revisão registrada em `docs/02` §09) | — |
-| 3 | Banco e domínio  | 🟢 | Migrations 0000–0006, auditoria append-only, máquinas de estado | — |
+| 3 | Banco e domínio  | 🟢 | Migrations 0000–0008, auditoria append-only, máquinas de estado | — |
 | 4 | CMS              | 🟢 | Artigos, categorias, configurações, mídia, usuários, auditoria, preview, cron, Leads, Redirecionamentos. Especialistas, Soluções e Páginas saíram do painel em 28/09: conteúdo fixo em `src/content/dm.ts` | — |
-| 5 | Páginas públicas | 🟢 | Home, Sobre, Especialistas, Soluções, **Serviços** (visão filtrada, D1), Contato, legais, 404. Menu do Prompt 1 §6 | — |
+| 5 | Páginas públicas | 🟢 | Home, Sobre, Especialistas, Soluções (Serviços é seção de `/solucoes`; `/servicos` redireciona desde 29/09), Contato, legais (**texto real pendente**), 404. Menu do Prompt 1 §6 | — |
 | 6 | Blog/editorial   | 🟢 | Índice, categoria, artigo, busca, relacionados | — |
 | 7 | Leads            | 🟢 | Pipeline de lead; aviso de lead para `LEAD_NOTIFY_TO`. Newsletter **removida** em 28/09 a pedido (tabela `newsletter_subscribers` continua no banco, sem uso) | Atribuição de origem (UTM) segue desligada até decisão jurídica |
-| 8 | SEO              | 🟢 | Metadata, sitemap (inclui /servicos), JSON-LD, redirecionamentos 301 em blog/soluções/especialistas | — |
+| 8 | SEO              | 🟢 | Metadata, sitemap, JSON-LD, redirecionamentos 301 de artigo (slug trocado) no Proxy | — |
 | 9 | Segurança        | 🟡 | CSP 2 camadas, HSTS, COOP, (2FA removido em 28/09 a pedido; volta depois), upload seguro, rate limits (login, lead, upload), CSV sem injeção de fórmula, gitleaks com regras padrão | **Trocar as senhas vazadas** (Neon `neondb_owner` e admin); teste de intrusão formal |
-| 10 | Performance     | 🔴 | Orçamentos definidos, Lighthouse CI configurado | Medir e registrar |
-| 11 | Testes          | 🟡 | 453 unitários + 308 de integração passando; navegador real verificado em 26/09 | Suíte E2E (Playwright) nunca rodou no CI |
+| 10 | Performance     | 🔴 | Orçamentos definidos, Lighthouse CI configurado (`@lhci/cli` desde 30/09; antes o script não rodava) | Medir e registrar |
+| 11 | Testes          | 🟡 | 453 unitários + 308 de integração passando; navegador real verificado em 26/09 | Suíte E2E (Playwright) atualizada em 30/09, ainda fora do CI |
 | 12 | Deploy          | 🟡 | CI corrigido (banco migrado antes do build; reproduzido localmente); adaptadores de produção prontos (Resend e S3/R2); cron no `vercel.json` | Escolher e contratar storage (R2/S3) e Resend; domínio, DNS, SPF/DKIM/DMARC; staging; testar backup/restore |
 
 ## Decisões que dependem do cliente

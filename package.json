@@ -24,6 +24,7 @@
     "db:up": "docker compose --env-file .env.local up -d --wait db",
     "db:down": "docker compose --env-file .env.local down",
     "db:check": "node --env-file=.env.local scripts/db-check.mts",
+    "leads:retention": "node --env-file-if-exists=.env.local scripts/leads-retention.mts",
     "db:bootstrap": "node --env-file-if-exists=.env.local scripts/db-bootstrap.mts",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/db-migrate.mts",
     "db:seed": "node --env-file-if-exists=.env.local scripts/db-seed.mts",
@@ -47,7 +48,6 @@
     "file-type": "22.1.1",
     "next": "16.3.5",
     "pg": "8.23.0",
-    "qrcode": "1.5.4",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "0.0.1",
@@ -56,23 +56,20 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
+    "@lhci/cli": "0.15.1",
     "@playwright/test": "1.63.0",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "24.13.6",
     "@types/pg": "8.23.1",
-    "@types/qrcode": "1.5.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "drizzle-kit": "0.31.11",
     "eslint": "9.39.5",
     "eslint-config-next": "16.3.5",
-    "lighthouse": "13.5.0",
-    "lighthouse-ci": "1.13.1",
     "prettier": "3.9.8",
     "tailwindcss": "4.3.3",
     "typescript": "6.0.3",
-    "vitest": "5.0.1",
-    "web-vitals": "6.2.2"
+    "vitest": "5.0.1"
   },
   "overrides": {
     "@esbuild-kit/core-utils": {
