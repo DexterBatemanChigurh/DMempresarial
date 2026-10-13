@@ -23,6 +23,14 @@ export default async function LoginPage({
   return (
     <Section spacing="loose">
       <Container size="narrow">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/logo-dm.png"
+          alt="DM Empresarial"
+          width={127}
+          height={77}
+          className="mb-xl h-16 w-auto"
+        />
         <Heading as="h1" variant="h1">
           Entrar no painel
         </Heading>

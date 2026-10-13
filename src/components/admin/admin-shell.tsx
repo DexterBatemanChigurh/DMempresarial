@@ -28,10 +28,17 @@ export function AdminShell({
         <div className="flex flex-wrap items-center justify-between gap-md px-lg py-md lg:block lg:px-md lg:py-lg">
           <Link
             href="/admin"
-            className="inline-flex min-h-11 flex-col justify-center px-md font-serif text-h4 leading-tight font-medium whitespace-nowrap text-text"
+            className="inline-flex min-h-11 items-center gap-sm px-md whitespace-nowrap"
           >
-            DM Empresarial
-            <span className="font-sans text-caption font-normal text-text-secondary">Painel</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/logo-dm.png"
+              alt="DM Empresarial"
+              width={127}
+              height={77}
+              className="h-10 w-auto"
+            />
+            <span className="font-sans text-caption text-text-secondary">Painel</span>
           </Link>
           <div className="contents lg:mt-lg lg:block">
             <AdminNav items={nav} />

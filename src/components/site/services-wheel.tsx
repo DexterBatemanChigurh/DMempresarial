@@ -47,8 +47,8 @@ const SERVICES: Service[] = LAYOUT.flatMap((item, index) => {
 });
 
 const ACCENT_TEXT: Record<Accent, string> = {
-  teal: "text-roda-turquesa",
-  blue: "text-roda-azul",
+  teal: "text-roda-turquesa-claro",
+  blue: "text-roda-azul-claro",
 };
 
 const ICON_POSITION: Record<Position, string> = {
@@ -75,20 +75,21 @@ export function ServicesWheel() {
   return (
     <section
       aria-labelledby="home-o-que-fazemos"
-      className="relative w-full overflow-hidden bg-roda-branco px-[6vw] py-[110px] text-roda-marinho max-[600px]:px-[22px] max-[600px]:py-[75px]"
+      className="relative w-full overflow-hidden bg-roda-marinho px-[6vw] py-[110px] text-roda-branco max-[600px]:px-[22px] max-[600px]:py-[75px]"
     >
       <div className="mb-[45px] max-w-[860px]">
         <p className="flex items-center gap-[12px] font-sans text-[13px] font-bold tracking-[0.14em] uppercase">
-          <span aria-hidden="true" className="block h-[2px] w-8 bg-roda-turquesa" />O que fazemos
+          <span aria-hidden="true" className="block h-[2px] w-8 bg-roda-turquesa-claro" />O que
+          fazemos
         </p>
         <h2
           id="home-o-que-fazemos"
-          className="mt-[18px] mb-[14px] font-serif text-[clamp(32px,4vw,52px)] leading-[1.05] font-medium tracking-[-0.035em] max-[600px]:text-[34px]"
+          className="mt-[18px] mb-[14px] font-display text-[clamp(32px,4vw,52px)] leading-[1.05] font-bold tracking-[-0.035em] max-[600px]:text-[34px]"
         >
           Quatro frentes, aplicadas na ordem <br className="max-[600px]:hidden" />
           que o seu caso exigir.
         </h2>
-        <p className="max-w-[600px] font-sans text-[17px] leading-[1.65] text-roda-texto max-[600px]:text-[15px]">
+        <p className="max-w-[600px] font-sans text-[17px] leading-[1.65] text-roda-texto-claro max-[600px]:text-[15px]">
           Começamos sempre por entender o caixa antes de propor qualquer coisa.
         </p>
       </div>
@@ -98,46 +99,61 @@ export function ServicesWheel() {
 
         <div className="relative mx-auto aspect-square w-full max-w-[620px] max-[900px]:order-1 max-[900px]:w-[min(90vw,580px)] max-[600px]:w-full">
           <svg viewBox="0 0 600 600" aria-hidden="true" className="absolute inset-0 size-full">
-            <circle cx="300" cy="300" r="220" className="fill-none stroke-roda-linha" />
-            <circle cx="300" cy="300" r="168" className="fill-none stroke-roda-linha-suave" />
-            <line x1="300" y1="80" x2="300" y2="520" className="stroke-roda-raio" />
-            <line x1="80" y1="300" x2="520" y2="300" className="stroke-roda-raio" />
-            <line x1="145" y1="145" x2="455" y2="455" className="stroke-roda-raio opacity-55" />
-            <line x1="455" y1="145" x2="145" y2="455" className="stroke-roda-raio opacity-55" />
+            <circle cx="300" cy="300" r="220" className="fill-none stroke-roda-branco/25" />
+            <circle cx="300" cy="300" r="168" className="fill-none stroke-roda-branco/12" />
+            <line x1="300" y1="80" x2="300" y2="520" className="stroke-roda-branco/15" />
+            <line x1="80" y1="300" x2="520" y2="300" className="stroke-roda-branco/15" />
+            <line
+              x1="145"
+              y1="145"
+              x2="455"
+              y2="455"
+              className="stroke-roda-branco/15 opacity-55"
+            />
+            <line
+              x1="455"
+              y1="145"
+              x2="145"
+              y2="455"
+              className="stroke-roda-branco/15 opacity-55"
+            />
             <circle
               cx="145"
               cy="145"
               r="4"
-              className="fill-roda-turquesa stroke-roda-branco stroke-3"
+              className="fill-roda-turquesa-claro stroke-roda-marinho stroke-3"
             />
             <circle
               cx="455"
               cy="145"
               r="4"
-              className="fill-roda-azul stroke-roda-branco stroke-3"
+              className="fill-roda-azul-claro stroke-roda-marinho stroke-3"
             />
             <circle
               cx="145"
               cy="455"
               r="4"
-              className="fill-roda-azul stroke-roda-branco stroke-3"
+              className="fill-roda-azul-claro stroke-roda-marinho stroke-3"
             />
             <circle
               cx="455"
               cy="455"
               r="4"
-              className="fill-roda-turquesa stroke-roda-branco stroke-3"
+              className="fill-roda-turquesa-claro stroke-roda-marinho stroke-3"
             />
           </svg>
 
-          {/* Centro com o aro de duas cores. Sem arquivo de logo no projeto ainda: o nome em
-              serifa ocupa o lugar dela. */}
-          <div className="absolute top-1/2 left-1/2 flex aspect-square w-[52%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-roda-branco/95 shadow-roda-centro ring-1 ring-roda-linha ring-inset before:absolute before:-inset-[2px] before:-rotate-[25deg] before:rounded-full before:border-2 before:border-transparent before:border-t-roda-turquesa before:border-r-roda-azul max-[600px]:w-[48%]">
-            <p className="text-center font-serif text-[clamp(1.4rem,3.2vw,2.6rem)] leading-[1.05] font-medium">
-              DM
-              <br />
-              Empresarial
-            </p>
+          {/* Centro com o aro de duas cores e o logo. */}
+          <div className="absolute top-1/2 left-1/2 flex aspect-square w-[52%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-roda-branco/95 shadow-roda-centro ring-1 ring-roda-linha ring-inset before:absolute before:-inset-[2px] before:-rotate-[25deg] before:rounded-full before:border-2 before:border-transparent before:border-t-roda-turquesa-claro before:border-r-roda-azul-claro max-[600px]:w-[48%]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/logo-dm.png"
+              alt="DM Empresarial"
+              width={127}
+              height={77}
+              loading="lazy"
+              className="w-[62%] h-auto"
+            />
           </div>
 
           {SERVICES.map(({ id, title, Icon, position, accent }) => {
@@ -153,7 +169,7 @@ export function ServicesWheel() {
                 onFocus={() => setActive(id)}
                 onBlur={() => setActive(null)}
                 onClick={() => setActive(isActive ? null : id)}
-                className={`absolute flex size-[90px] cursor-pointer flex-col items-center justify-center rounded-full transition-transform duration-300 ease-standard focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-roda-azul motion-reduce:transition-none max-[600px]:size-[65px] ${ACCENT_TEXT[accent]} ${ICON_POSITION[position]} ${isActive ? "scale-[1.08]" : "hover:scale-[1.08]"}`}
+                className={`absolute flex size-[90px] cursor-pointer flex-col items-center justify-center rounded-full transition-transform duration-300 ease-standard focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-roda-turquesa-claro motion-reduce:transition-none max-[600px]:size-[65px] ${ACCENT_TEXT[accent]} ${ICON_POSITION[position]} ${isActive ? "scale-[1.08]" : "hover:scale-[1.08]"}`}
               >
                 <span className="absolute -top-[17px] -left-1 font-sans text-[13px] font-bold">
                   0{id}
@@ -201,10 +217,10 @@ function Column({
             0{service.id}
             <span className="block h-px w-8 bg-current" />
           </p>
-          <h3 className="mb-[13px] font-sans text-[22px] leading-[1.12] font-bold tracking-[-0.015em] text-roda-marinho uppercase max-[1150px]:text-[18px] max-[600px]:text-[20px]">
+          <h3 className="mb-[13px] font-sans text-[22px] leading-[1.12] font-bold tracking-[-0.015em] text-roda-branco uppercase max-[1150px]:text-[18px] max-[600px]:text-[20px]">
             {service.title}
           </h3>
-          <p className="max-w-[380px] font-sans text-[15px] leading-[1.65] text-roda-texto-card max-[1150px]:text-[14px] max-[600px]:text-[15px]">
+          <p className="max-w-[380px] font-sans text-[15px] leading-[1.65] text-roda-texto-claro max-[1150px]:text-[14px] max-[600px]:text-[15px]">
             {service.short}
           </p>
         </article>

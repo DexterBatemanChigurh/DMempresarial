@@ -177,7 +177,7 @@ export default async function DashboardPage() {
             <dt className="font-sans text-label font-semibold tracking-[0.04em] text-text-secondary uppercase">
               {label}
             </dt>
-            <dd className="mt-xs font-serif text-display-m text-text">{value}</dd>
+            <dd className="mt-xs font-display font-bold text-display-m text-text">{value}</dd>
           </div>
         ))}
       </dl>

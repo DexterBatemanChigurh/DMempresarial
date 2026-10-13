@@ -6,7 +6,7 @@ import { z } from "zod";
  */
 
 /** Versão do texto de consentimento aceito (LGPD) — muda se o texto mudar; registrada em cada lead. */
-export const LEAD_CONSENT_VERSION = "2026-10-13";
+export const LEAD_CONSENT_VERSION = "2026-10-13.2";
 
 const EMAIL_FORMAT = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 

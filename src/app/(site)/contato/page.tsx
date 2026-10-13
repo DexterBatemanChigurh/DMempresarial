@@ -67,7 +67,7 @@ export default async function ContactPage() {
               <Heading as="h2" variant="h4" id="localizacao">
                 {CONTACT_PAGE.location.title}
               </Heading>
-              <address className="mt-md font-serif text-h4 leading-snug font-medium text-text not-italic">
+              <address className="mt-md font-display text-h4 leading-snug font-bold text-text not-italic">
                 <span className="block">{street}</span>
                 <span className="block">{city}</span>
               </address>
@@ -152,7 +152,7 @@ export default async function ContactPage() {
                 <span className="block font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
                   {CONTACT_PAGE.direct.whatsappLabel}
                 </span>
-                <span className="mt-sm block font-serif text-h3 font-medium text-text">
+                <span className="mt-sm block font-display text-h3 font-bold text-text">
                   {CONTACT.phone}
                 </span>
                 <span className="mt-xs inline-flex items-center gap-xs font-sans text-body font-semibold text-link underline-offset-4 group-hover:underline">
@@ -167,7 +167,7 @@ export default async function ContactPage() {
                 <span className="block font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
                   {CONTACT_PAGE.direct.emailLabel}
                 </span>
-                <span className="mt-sm block font-serif text-[1.25rem] font-medium break-words text-text sm:text-h3">
+                <span className="mt-sm block font-display text-[1.25rem] font-bold break-words text-text sm:text-h3">
                   {CONTACT.email}
                 </span>
                 <span className="mt-xs inline-flex items-center gap-xs font-sans text-body font-semibold text-link underline-offset-4 group-hover:underline">

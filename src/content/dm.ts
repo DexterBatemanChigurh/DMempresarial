@@ -468,9 +468,9 @@ export const CONTACT = {
   address: "Avenida C. Delfino Nunes, 1111, Frutal — MG",
   hours: "Atendimento todos os dias.",
   /** Rodapé e dados para o Google. null = não aparece no site. */
-  legalName: null as string | null,
+  legalName: "DM EMPRESARIAL LTDA" as string | null,
   /** Formato: "00.000.000/0000-00". */
-  cnpj: null as string | null,
+  cnpj: "17.340.087/0001-49" as string | null,
   /** URL completa de cada rede; deixe vazio ("") para esconder o ícone. */
   social: { instagram: "", linkedin: "", facebook: "" } as Record<string, string>,
 };
@@ -484,25 +484,31 @@ export type LegalDocument = { title: string; paragraphs: string[] };
 export const PRIVACY: LegalDocument = {
   title: "Política de Privacidade",
   paragraphs: [
-    "A DM Empresarial ('DM', 'nós') respeita a sua privacidade. Esta Política explica quais dados pessoais coletamos neste site (dmempresarial.com.br), para que os usamos, por quanto tempo os guardamos e quais são os seus direitos, conforme a Lei Geral de Proteção de Dados (Lei n.º 13.709/2018 — LGPD).",
+    "A DM EMPRESARIAL LTDA, inscrita no CNPJ sob o n.º 17.340.087/0001-49, com sede na Avenida Coronel Delfino Nunes, 1111, Nossa Senhora Aparecida, Frutal/MG ('DM', 'nós'), é a controladora dos dados pessoais tratados neste site e respeita a sua privacidade. Esta Política explica quais dados pessoais coletamos neste site (dmempresarial.com.br), para que os usamos, por quanto tempo os guardamos e quais são os seus direitos, conforme a Lei Geral de Proteção de Dados (Lei n.º 13.709/2018 — LGPD).",
 
     "1. Dados que você nos envia. Ao preencher o formulário de contato, coletamos: nome, e-mail, WhatsApp e a mensagem (obrigatórios); e, se você informar, o nome da empresa e o assunto do contato. Também registramos a data e hora em que você aceitou esta Política e a versão do texto aceito.",
 
-    "2. Dados coletados automaticamente. Para evitar envios abusivos (spam), o site gera um código cifrado a partir do endereço IP de quem envia o formulário. O IP em si não é armazenado, e o código muda a cada dia, o que impede identificar a pessoa por ele. Este site não usa cookies de rastreamento, pixels de anúncios nem ferramentas de analytics.",
+    "2. Registros de acesso. Como qualquer site, o nosso servidor de hospedagem registra automaticamente cada acesso: endereço IP, data e hora, página visitada e tipo de navegador. Esses registros servem para manter o site funcionando com segurança e são guardados por 6 meses, em sigilo e em ambiente controlado, conforme exige o Marco Civil da Internet (Lei n.º 12.965/2014, art. 15). Eles não são usados para traçar perfil de visitantes nem para publicidade.",
 
-    "3. Para que usamos os dados. Exclusivamente para: (a) ler a sua mensagem e responder pelo e-mail ou WhatsApp que você informou; (b) entender o contexto da empresa antes da primeira conversa; (c) proteger o formulário contra abuso. Não enviamos propaganda nem incluímos você em listas de e-mail sem pedido expresso.",
+    "3. Proteção contra spam. Quando você envia o formulário, o site gera um código cifrado a partir do seu endereço IP para limitar envios repetidos. O IP em si não é gravado junto com a sua mensagem, e o código muda a cada dia, o que impede identificar a pessoa por ele. O formulário também usa um campo oculto e um tempo mínimo de preenchimento para barrar robôs, sem CAPTCHA e sem cookies.",
 
-    "4. Base legal. O tratamento se baseia no seu consentimento, dado ao marcar a caixa de aceite do formulário (art. 7.º, I, da LGPD), e no legítimo interesse da DM em proteger o site contra abuso (art. 7.º, IX).",
+    "4. Cookies. Quem apenas navega neste site não recebe cookies: não usamos cookies de rastreamento, de publicidade ou de análise de audiência (analytics), nem pixels de redes sociais. As fontes e imagens são servidas pelo próprio site, sem chamadas a serviços de terceiros. Cookies existem somente na área administrativa, restrita à equipe da DM: um cookie de sessão, que mantém o login ativo, e um cookie de pré-visualização, que permite revisar artigos antes de publicar. Ambos são estritamente necessários, não coletam dados de visitantes e expiram sozinhos.",
 
-    "5. Compartilhamento. A DM não vende, aluga nem cede seus dados. Eles são processados apenas por fornecedores necessários ao funcionamento do site — hospedagem, banco de dados e envio de e-mail —, que atuam como operadores, seguindo as nossas instruções e obrigados a manter sigilo. Alguns desses fornecedores podem armazenar dados fora do Brasil, com as garantias previstas na LGPD.",
+    "5. Funcionalidades e links externos. O site oferece páginas institucionais, um blog com busca interna e o formulário de contato. O que você digita na busca do blog só aparece nos registros de acesso descritos no item 2 e não é usado para identificar você. Os botões de WhatsApp, do mapa (Google Maps) e das redes sociais são apenas links: nada é enviado a esses serviços até você clicar. Ao clicar, você passa a usar o serviço de outra empresa, sujeito à política de privacidade dela.",
 
-    "6. Por quanto tempo guardamos. O código cifrado do IP é apagado em até 30 dias. Os dados do formulário são mantidos por até 24 meses após o envio, para dar continuidade ao atendimento, e depois são excluídos — salvo se houver relação contratual com a DM ou obrigação legal de guardá-los por mais tempo. Você pode pedir a exclusão antes disso a qualquer momento.",
+    "6. Para que usamos os dados. Exclusivamente para: (a) ler a sua mensagem e responder pelo e-mail ou WhatsApp que você informou; (b) entender o contexto da empresa antes da primeira conversa; (c) proteger o site e o formulário contra abuso; (d) cumprir obrigações legais, como a guarda dos registros de acesso. Não enviamos propaganda nem incluímos você em listas de e-mail sem pedido expresso.",
 
-    "7. Seus direitos (art. 18 da LGPD). Você pode, a qualquer momento e sem custo: confirmar se tratamos seus dados; acessá-los; corrigir dados incompletos ou desatualizados; pedir anonimização, bloqueio ou eliminação; saber com quem os compartilhamos; e revogar o consentimento. Basta escrever para contato@dmempresarial.com.br. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).",
+    "7. Base legal. O tratamento se baseia no seu consentimento, dado ao marcar a caixa de aceite do formulário (art. 7.º, I, da LGPD); no cumprimento de obrigação legal, quanto aos registros de acesso (art. 7.º, II); e no legítimo interesse da DM em proteger o site contra abuso (art. 7.º, IX). O site não coleta dados pessoais sensíveis (art. 5.º, II), como saúde, religião ou biometria, e pedimos que você não os inclua na mensagem.",
 
-    "8. Segurança. Adotamos medidas técnicas e administrativas para proteger seus dados contra acesso não autorizado, perda ou alteração, como conexão cifrada (HTTPS) e acesso restrito à equipe responsável.",
+    "8. Compartilhamento. A DM não vende, aluga nem cede seus dados. Eles são processados apenas por fornecedores necessários ao funcionamento do site — hospedagem, banco de dados e envio de e-mail —, que atuam como operadores, seguindo as nossas instruções e obrigados a manter sigilo. Alguns desses fornecedores podem armazenar dados fora do Brasil, com as garantias previstas na LGPD.",
 
-    "9. Alterações. Esta Política pode ser atualizada. A versão vigente fica sempre nesta página, com a data abaixo. Mudanças relevantes passam a valer para os envios feitos depois da publicação.",
+    "9. Por quanto tempo guardamos. O código cifrado do IP é apagado em até 30 dias. Os registros de acesso, em 6 meses. Os dados do formulário são mantidos por até 24 meses após o envio, para dar continuidade ao atendimento, e depois são excluídos — salvo se houver relação contratual com a DM ou obrigação legal de guardá-los por mais tempo. Você pode pedir a exclusão antes disso a qualquer momento.",
+
+    "10. Seus direitos (art. 18 da LGPD). Você pode, a qualquer momento e sem custo: confirmar se tratamos seus dados; acessá-los; corrigir dados incompletos ou desatualizados; pedir anonimização, bloqueio ou eliminação; saber com quem os compartilhamos; e revogar o consentimento. Basta escrever para contato@dmempresarial.com.br. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).",
+
+    "11. Segurança. Adotamos medidas técnicas e administrativas para proteger seus dados contra acesso não autorizado, perda ou alteração, como conexão cifrada (HTTPS) e acesso restrito à equipe responsável.",
+
+    "12. Alterações. Esta Política pode ser atualizada. A versão vigente fica sempre nesta página, com a data abaixo. Mudanças relevantes passam a valer para os envios feitos depois da publicação.",
 
     "Última atualização: 13 de outubro de 2026. Dúvidas ou pedidos: contato@dmempresarial.com.br.",
   ],
@@ -511,7 +517,7 @@ export const PRIVACY: LegalDocument = {
 export const TERMS: LegalDocument = {
   title: "Termos de Uso",
   paragraphs: [
-    "Ao acessar e utilizar o site dmempresarial.com.br ('Site'), operado pela DM Empresarial ('DM'), você concorda com os presentes Termos de Uso. Se não concordar com alguma condição, por favor, não utilize o Site.",
+    "Ao acessar e utilizar o site dmempresarial.com.br ('Site'), operado pela DM EMPRESARIAL LTDA, CNPJ 17.340.087/0001-49, com sede em Frutal/MG ('DM'), você concorda com os presentes Termos de Uso. Se não concordar com alguma condição, por favor, não utilize o Site.",
 
     "1. Objeto. Este Site tem finalidade institucional e informativa: apresentar a DM Empresarial, seus serviços de consultoria e conteúdos educativos sobre gestão e finanças empresariais.",
 
@@ -519,19 +525,21 @@ export const TERMS: LegalDocument = {
 
     "3. Formulário de contato. O formulário de contato disponível no Site é um canal exclusivo para solicitações de informação e diagnóstico inicial. Não constitui prestação de serviço de emergência nem gera, por si só, qualquer vínculo contratual entre as partes.",
 
-    "4. Conteúdo informativo. Os artigos e materiais publicados no Blog da DM têm caráter educativo e informativo. Não substituem consultoria especializada individualizada. A DM não se responsabiliza por decisões tomadas com base exclusivamente no conteúdo do Site.",
+    "4. Acesso e funcionalidades. O acesso ao Site é gratuito e não exige cadastro. O visitante pode navegar pelas páginas institucionais, ler e buscar artigos no blog e enviar mensagens pelo formulário de contato. Os botões de WhatsApp, mapa e redes sociais levam a serviços de terceiros. A área administrativa (/admin) é de uso exclusivo da equipe autorizada da DM; tentar acessá-la sem autorização é proibido. Para proteger o Site, a DM pode limitar envios repetidos do formulário e bloquear acessos automatizados ou abusivos. O uso de cookies e de registros de acesso está descrito na Política de Privacidade, que integra estes Termos.",
 
-    "5. Propriedade intelectual. Todo o conteúdo do Site — textos, logotipos, imagens e estrutura — é de propriedade da DM Empresarial ou está licenciado para seu uso. A reprodução total ou parcial, sem autorização prévia por escrito, é proibida.",
+    "5. Conteúdo informativo. Os artigos e materiais publicados no Blog da DM têm caráter educativo e informativo. Não substituem consultoria especializada individualizada. A DM não se responsabiliza por decisões tomadas com base exclusivamente no conteúdo do Site.",
 
-    "6. Links para terceiros. O Site pode conter links para sites de terceiros. A DM não controla nem se responsabiliza pelo conteúdo, práticas de privacidade ou disponibilidade desses sites.",
+    "6. Propriedade intelectual. Todo o conteúdo do Site — textos, logotipos, imagens e estrutura — é de propriedade da DM Empresarial ou está licenciado para seu uso. A reprodução total ou parcial, sem autorização prévia por escrito, é proibida.",
 
-    "7. Disponibilidade. A DM não garante disponibilidade ininterrupta do Site e pode suspendê-lo temporariamente para manutenção ou atualizações, sem aviso prévio.",
+    "7. Links para terceiros. O Site pode conter links para sites de terceiros. A DM não controla nem se responsabiliza pelo conteúdo, práticas de privacidade ou disponibilidade desses sites.",
 
-    "8. Limitação de responsabilidade. Na extensão permitida pela lei, a DM não será responsável por danos diretos, indiretos, incidentais ou consequentes decorrentes do uso ou da impossibilidade de uso do Site.",
+    "8. Disponibilidade. A DM não garante disponibilidade ininterrupta do Site e pode suspendê-lo temporariamente para manutenção ou atualizações, sem aviso prévio.",
 
-    "9. Alterações. A DM pode revisar estes Termos a qualquer momento. A versão atualizada será publicada nesta página. O uso contínuo do Site após a publicação de alterações implica a aceitação dos novos termos.",
+    "9. Limitação de responsabilidade. Na extensão permitida pela lei, a DM não será responsável por danos diretos, indiretos, incidentais ou consequentes decorrentes do uso ou da impossibilidade de uso do Site.",
 
-    "10. Foro. Fica eleito o foro da Comarca de Frutal/MG para dirimir quaisquer controvérsias decorrentes destes Termos, com renúncia a qualquer outro, por mais privilegiado que seja.",
+    "10. Alterações. A DM pode revisar estes Termos a qualquer momento. A versão atualizada será publicada nesta página. O uso contínuo do Site após a publicação de alterações implica a aceitação dos novos termos.",
+
+    "11. Lei e foro. Estes Termos seguem a legislação brasileira. Fica eleito o foro da Comarca de Frutal/MG para resolver controvérsias decorrentes deles, ressalvado o direito do consumidor de propor ação no foro do seu domicílio, quando aplicável.",
 
     "Última atualização: 13 de outubro de 2026. Contato: contato@dmempresarial.com.br.",
   ],

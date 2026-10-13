@@ -70,10 +70,16 @@ export function Footer({ settings, year }: { settings: FooterSettings | null; ye
       <footer data-tone="dark" className="bg-surface text-text">
         {/* Marca e chamada */}
         <Container size="wide" className="border-b border-border py-2xl">
-          <p className="font-sans text-label font-semibold tracking-[0.12em] uppercase">
-            DM Empresarial
-          </p>
-          <p className="mt-sm max-w-[28rem] font-serif text-h3 font-medium text-text">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/logo-dm-branco.png"
+            alt="DM Empresarial"
+            width={127}
+            height={77}
+            loading="lazy"
+            className="h-16 w-auto"
+          />
+          <p className="mt-sm max-w-[28rem] font-display text-h3 font-bold text-text">
             Estratégia, gestão e soluções para empresas que querem avançar.
           </p>
           <Link

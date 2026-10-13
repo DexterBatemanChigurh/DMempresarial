@@ -103,7 +103,7 @@ export function MediaPicker({ onPick }: { onPick: (image: PickedImage) => void }
               className="w-full max-w-[640px] border border-border bg-surface p-lg backdrop:bg-tinta/40"
             >
               <div className="flex items-center justify-between">
-                <h2 className="font-serif text-h3 font-medium text-text">Escolher imagem</h2>
+                <h2 className="font-display text-h3 font-bold text-text">Escolher imagem</h2>
                 <button
                   type="button"
                   aria-label="Fechar"

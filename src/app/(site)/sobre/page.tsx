@@ -22,7 +22,7 @@ export default function AboutPage() {
       <Section tone="dark" spacing="none" className="pt-2xl pb-3xl md:pt-3xl md:pb-4xl">
         <Container>
           <SectionLabel>{data.hero.eyebrow}</SectionLabel>
-          <h1 className="mt-xl max-w-[16ch] font-serif text-[2.5rem] leading-[1.02] font-bold tracking-[-0.025em] text-text sm:max-w-[20ch] sm:text-[3.5rem] lg:text-[5rem] xl:text-[5.5rem]">
+          <h1 className="mt-xl max-w-[16ch] font-display text-[2.5rem] leading-[1.02] font-bold tracking-[-0.025em] text-text sm:max-w-[20ch] sm:text-[3.5rem] lg:text-[5rem] xl:text-[5.5rem]">
             {data.hero.titleStart} <span className="text-link">{data.hero.titleHighlight}</span>.
           </h1>
           <div className="mt-2xl grid gap-xl border-t border-border pt-lg lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-3xl">
@@ -30,7 +30,7 @@ export default function AboutPage() {
               <p className="font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
                 {data.hero.founderLabel}
               </p>
-              <p className="mt-2xs font-serif text-h4 font-medium text-text">
+              <p className="mt-2xs font-display text-h4 font-bold text-text">
                 {data.hero.founderName}
               </p>
             </div>
@@ -65,13 +65,13 @@ export default function AboutPage() {
               </Heading>
             </div>
             <div className="max-w-reading lg:pt-[calc(var(--spacing-md)+2.25rem)]">
-              <p className="font-serif text-h4 leading-snug font-medium text-text">
+              <p className="font-display text-h4 leading-snug font-bold text-text">
                 {data.identity.lead}
               </p>
               <div className="mt-lg">
                 <Paragraphs items={data.identity.body} />
               </div>
-              <p className="mt-xl border-l-2 border-action pl-md font-serif text-h4 leading-snug font-medium text-text">
+              <p className="mt-xl border-l-2 border-action pl-md font-display text-h4 leading-snug font-bold text-text">
                 {data.identity.note}
               </p>
             </div>
@@ -115,7 +115,7 @@ export default function AboutPage() {
                     <p className="font-sans text-label font-semibold tracking-[0.08em] text-action uppercase">
                       {data.thinking.toLabel}
                     </p>
-                    <p className="mt-xs font-serif text-h4 leading-snug font-medium text-text">
+                    <p className="mt-xs font-display text-h4 leading-snug font-bold text-text">
                       {pair.to}
                     </p>
                   </div>
@@ -147,7 +147,7 @@ export default function AboutPage() {
             <div className="max-w-reading space-y-xl border-l-2 border-border-strong pl-lg md:pl-xl">
               {data.working.items.map((item) => (
                 <div key={item.lead}>
-                  <h3 className="font-serif text-h4 leading-snug font-medium text-text">
+                  <h3 className="font-display text-h4 leading-snug font-bold text-text">
                     {item.lead}
                   </h3>
                   <Text tone="secondary" className="mt-xs">
@@ -228,7 +228,7 @@ export default function AboutPage() {
               <p className="mt-xl font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
                 {data.founder.bookLabel}
               </p>
-              <p className="mt-2xs font-serif text-h4 leading-snug font-medium text-text">
+              <p className="mt-2xs font-display text-h4 leading-snug font-bold text-text">
                 <em>{data.founder.bookTitle}</em>
               </p>
             </div>

@@ -73,7 +73,7 @@ export function ValuesCircle({ names }: { names: string[] }) {
         data-tone="dark"
         className="absolute top-1/2 left-1/2 flex aspect-square w-[44%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-surface text-text"
       >
-        <span className="font-serif text-[clamp(2.5rem,7vw,4.5rem)] leading-none font-medium">
+        <span className="font-display text-[clamp(2.5rem,7vw,4.5rem)] leading-none font-bold">
           DM
         </span>
       </div>

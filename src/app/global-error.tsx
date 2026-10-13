@@ -15,8 +15,15 @@ export default function GlobalError({
       <body className="grid min-h-screen place-items-center bg-surface px-md font-sans text-text">
         <title>Erro · DM Empresarial</title>
         <main className="max-w-reading">
-          <p className="text-label font-semibold tracking-[0.12em] uppercase">DM Empresarial</p>
-          <h1 className="mt-sm font-serif text-h1 font-medium">Algo deu errado</h1>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/logo-dm.png"
+            alt="DM Empresarial"
+            width={127}
+            height={77}
+            className="h-14 w-auto"
+          />
+          <h1 className="mt-sm font-display text-h1 font-bold">Algo deu errado</h1>
           <p className="mt-md text-text-secondary">
             O site não conseguiu carregar agora. Tente de novo em instantes.
           </p>

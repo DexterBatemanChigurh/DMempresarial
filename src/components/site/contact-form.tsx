@@ -86,7 +86,7 @@ export function ContactForm({ action, formToken }: Props) {
       ) : null}
 
       <fieldset className="space-y-md">
-        <legend className="font-serif text-h4 font-medium text-text">Quem está escrevendo?</legend>
+        <legend className="font-display text-h4 font-bold text-text">Quem está escrevendo?</legend>
         <TextField
           id="name"
           label="Seu nome"
@@ -99,7 +99,7 @@ export function ContactForm({ action, formToken }: Props) {
       </fieldset>
 
       <fieldset className="space-y-md">
-        <legend className="font-serif text-h4 font-medium text-text">
+        <legend className="font-display text-h4 font-bold text-text">
           O que está acontecendo?
         </legend>
         <TextareaField
@@ -122,7 +122,7 @@ export function ContactForm({ action, formToken }: Props) {
       </fieldset>
 
       <fieldset className="space-y-md">
-        <legend className="font-serif text-h4 font-medium text-text">
+        <legend className="font-display text-h4 font-bold text-text">
           Como podemos responder?
         </legend>
         <div className="grid gap-md sm:grid-cols-2">

@@ -343,7 +343,7 @@ export default async function BlogIndexPage({
                     className="group grid min-h-11 gap-2xs py-md md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-center md:gap-lg"
                   >
                     <span className="font-sans text-body text-text-secondary">{item.need}</span>
-                    <span className="font-serif text-h4 font-medium text-text group-hover:text-link">
+                    <span className="font-display text-h4 font-bold text-text group-hover:text-link">
                       {item.answer}
                     </span>
                     <ArrowRightIcon className="hidden size-5 text-link md:block" />

@@ -43,6 +43,7 @@
   --color-ouro: #c6a55a;
   --color-ouro-claro: #e2cf98;
   --color-whatsapp: #1fa855;
+  --color-whatsapp-oficial: #25d366;
   --color-whatsapp-texto: #16833f;
   --color-whatsapp-texto-escuro: #127036;
 
@@ -56,6 +57,10 @@
   --color-roda-linha: #ded8cb;
   --color-roda-linha-suave: #ebe7de;
   --color-roda-raio: #e6e1d7;
+  /* Variantes para a roda sobre fundo marinho (contraste ≥ 7:1). */
+  --color-roda-texto-claro: #c3c8d2;
+  --color-roda-turquesa-claro: #6cc4ce;
+  --color-roda-azul-claro: #a8dde3;
 
   /* Espaçamento: escala de base 4 px com nomes (Blueprint 2, seção 06). */
   --spacing-2xs: 0.25rem;
@@ -157,6 +162,7 @@
 /* Fontes vindas de next/font (variáveis definidas no layout raiz). */
 @theme inline {
   --font-serif: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-plus-jakarta), system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-sans: var(--font-instrument-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
@@ -343,10 +349,10 @@
   }
   /* fim do CSS do Tiptap */
   .rich-editor .ProseMirror h2 {
-    @apply pt-md font-serif text-article-h2 font-medium;
+    @apply pt-md font-display text-article-h2 font-bold;
   }
   .rich-editor .ProseMirror h3 {
-    @apply pt-md font-serif text-h3 font-medium;
+    @apply pt-md font-display text-h3 font-bold;
   }
   .rich-editor .ProseMirror h4 {
     @apply pt-md font-sans text-h4 font-semibold;

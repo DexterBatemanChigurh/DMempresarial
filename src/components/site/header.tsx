@@ -65,11 +65,18 @@ export function Header() {
       )}
     >
       <div className="mx-auto flex w-full max-w-wide items-center justify-between px-5 sm:px-6 md:px-8 lg:px-10">
-        <Link
-          href="/"
-          className="inline-flex min-h-11 items-center font-serif text-h4 font-medium text-text"
-        >
-          DM Empresarial
+        <Link href="/" className="inline-flex min-h-11 items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/logo-dm.png"
+            alt="DM Empresarial — página inicial"
+            width={127}
+            height={77}
+            className={cn(
+              "w-auto transition-[height] duration-200 ease-standard",
+              scrolled ? "h-12" : "h-14",
+            )}
+          />
         </Link>
 
         <nav aria-label="Principal" className="hidden items-center gap-xl md:flex">
@@ -111,7 +118,14 @@ export function Header() {
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between px-5 py-md sm:px-6">
-            <span className="font-serif text-h4 font-medium text-text">DM Empresarial</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/logo-dm.png"
+              alt="DM Empresarial"
+              width={127}
+              height={77}
+              className="h-12 w-auto"
+            />
             <IconButton label="Fechar menu" onClick={() => setOpen(false)}>
               <CloseIcon />
             </IconButton>
@@ -123,7 +137,7 @@ export function Header() {
                 href={item.href}
                 aria-current={isActive(item.href) ? "page" : undefined}
                 onClick={() => setOpen(false)}
-                className="font-serif text-h2 font-medium text-text"
+                className="font-display text-h2 font-bold text-text"
               >
                 {item.label}
               </Link>

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { WhatsAppIcon } from "@/components/ui/icons";
+import { WhatsAppLogo } from "@/components/ui/icons";
 
 /**
  * Botão flutuante do WhatsApp. Some nas páginas de contato (`/contato` e filhas): ali o mesmo
@@ -16,9 +16,9 @@ export function WhatsAppFloat({ number }: { number: string }) {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Conversar com a DM pelo WhatsApp (abre em nova aba)"
-      className="fixed right-lg bottom-lg z-40 flex size-14 items-center justify-center rounded-full bg-whatsapp text-papel shadow-overlay transition-colors duration-150 ease-standard hover:bg-whatsapp-texto"
+      className="fixed right-lg bottom-lg z-40 flex size-14 items-center justify-center rounded-full bg-whatsapp-oficial text-papel shadow-overlay transition-transform duration-150 ease-standard hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
-      <WhatsAppIcon className="size-8" />
+      <WhatsAppLogo className="size-8" />
     </a>
   );
 }

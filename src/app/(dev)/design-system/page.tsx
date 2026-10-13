@@ -47,12 +47,12 @@ const PALETTE = [
 ] as const;
 
 const TYPE_SCALE = [
-  ["Display XL", "font-serif text-display-xl"],
-  ["Display L", "font-serif text-display-l"],
-  ["Display M", "font-serif text-display-m"],
-  ["H1", "font-serif text-h1 font-medium"],
-  ["H2", "font-serif text-h2 font-medium"],
-  ["H3", "font-serif text-h3 font-medium"],
+  ["Display XL", "font-display font-bold text-display-xl"],
+  ["Display L", "font-display font-bold text-display-l"],
+  ["Display M", "font-display font-bold text-display-m"],
+  ["H1", "font-display text-h1 font-bold"],
+  ["H2", "font-display text-h2 font-bold"],
+  ["H3", "font-display text-h3 font-bold"],
   ["H4", "font-sans text-h4 font-semibold"],
   ["Body Large", "font-sans text-body-lg"],
   ["Body", "font-sans text-body"],

@@ -47,7 +47,7 @@ export default function SolutionsIndexPage() {
       <Section tone="dark" spacing="none" className="pt-2xl pb-3xl md:pt-3xl md:pb-4xl">
         <Container>
           <SectionLabel>Soluções · DM Empresarial</SectionLabel>
-          <h1 className="mt-lg max-w-[20ch] font-serif text-[2.25rem] leading-[1.05] font-bold tracking-[-0.02em] text-text sm:text-[2.75rem] lg:max-w-[24ch] lg:text-[58px] lg:leading-[1.02]">
+          <h1 className="mt-lg max-w-[20ch] font-display text-[2.25rem] leading-[1.05] font-bold tracking-[-0.02em] text-text sm:text-[2.75rem] lg:max-w-[24ch] lg:text-[58px] lg:leading-[1.02]">
             {page.hero.titleStart} <span className="text-link">{page.hero.titleHighlight}</span>.
           </h1>
           <Text size="lg" tone="secondary" className="mt-lg max-w-[570px]">
@@ -90,7 +90,7 @@ export default function SolutionsIndexPage() {
                     <span className="font-sans text-label font-semibold text-text-secondary tabular-nums">
                       {pad(i + 1)}
                     </span>
-                    <span className="font-serif text-h4 font-medium text-text">{row.text}</span>
+                    <span className="font-display text-h4 font-bold text-text">{row.text}</span>
                     <span className="flex flex-col gap-2xs">
                       <span className="font-sans text-label font-semibold tracking-[0.08em] text-text-secondary uppercase">
                         Frente da DM
@@ -218,7 +218,7 @@ export default function SolutionsIndexPage() {
             <ul className="space-y-lg">
               {HOME.stats.map((stat) => (
                 <li key={stat.label} className="border-t border-border pt-md">
-                  <span className="font-serif text-[2.75rem] leading-none font-medium text-text">
+                  <span className="font-display text-[2.75rem] leading-none font-bold text-text">
                     {stat.value}
                   </span>
                   <Text tone="secondary" className="mt-2xs">

@@ -8,14 +8,14 @@ import { cn } from "@/lib/cn";
 export type HeadingLevel = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 
 const VARIANT = {
-  "display-xl": "font-serif text-display-xl font-normal",
-  "display-l": "font-serif text-display-l font-normal",
-  "display-m": "font-serif text-display-m font-normal",
-  h1: "font-serif text-h1 font-medium",
-  h2: "font-serif text-h2 font-medium",
-  h3: "font-serif text-h3 font-medium",
+  "display-xl": "font-display text-display-xl font-bold",
+  "display-l": "font-display text-display-l font-bold",
+  "display-m": "font-display text-display-m font-bold",
+  h1: "font-display text-h1 font-bold",
+  h2: "font-display text-h2 font-bold",
+  h3: "font-display text-h3 font-bold",
   h4: "font-sans text-h4 font-semibold",
-  "article-h2": "font-serif text-article-h2 font-medium",
+  "article-h2": "font-display text-article-h2 font-bold",
 } as const;
 
 export type HeadingVariant = keyof typeof VARIANT;

@@ -61,6 +61,7 @@ export default async function HomePage() {
           "@type": "Organization",
           name: CONTACT.legalName ?? "DM Empresarial",
           url: env().SITE_URL,
+          logo: `${env().SITE_URL}/brand/logo-dm.png`,
           // SEO local (docs/03 §22): dados de contato confirmados (src/content/dm.ts).
           address: {
             "@type": "PostalAddress",
@@ -81,7 +82,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 items-start gap-2xl lg:grid-cols-[5fr_4fr] lg:gap-x-[120px]">
             <div className="min-w-0">
               <SectionLabel>Consultoria empresarial · Frutal, MG</SectionLabel>
-              <h1 className="mt-lg font-serif text-[2.25rem] leading-[1.05] font-bold tracking-[-0.02em] text-text sm:text-[2.75rem] lg:text-[58px] lg:leading-[1.02]">
+              <h1 className="mt-lg font-display text-[2.25rem] leading-[1.05] font-bold tracking-[-0.02em] text-text sm:text-[2.75rem] lg:text-[58px] lg:leading-[1.02]">
                 {HOME.headlineStart} <span className="text-action">{HOME.headlineHighlight}</span>.
               </h1>
               <Text size="lg" tone="secondary" className="mt-lg max-w-[570px]">
@@ -141,12 +142,12 @@ export default async function HomePage() {
           Números da DM
         </h2>
         <Container>
-          <ul className="flex flex-wrap items-center justify-center gap-x-3xl gap-y-sm">
+          <ul className="flex flex-col items-start gap-y-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-3xl">
             {AUTHORITY_STATS.map((stat) => (
               <li key={stat.label} className="flex items-center gap-sm">
                 <stat.Icon aria-hidden="true" className="size-6 shrink-0 text-action-contrast" />
                 <span className="font-sans text-body-sm text-text-secondary">
-                  <span className="font-serif text-h4 font-medium text-text">{stat.value}</span>{" "}
+                  <span className="font-display text-h4 font-bold text-text">{stat.value}</span>{" "}
                   {stat.label}
                 </span>
               </li>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Instrument_Sans, Newsreader } from "next/font/google";
+import { Instrument_Sans, Newsreader, Plus_Jakarta_Sans } from "next/font/google";
 import { SkipLink } from "@/components/ui";
 import { env } from "@/server/env";
 import "./globals.css";
@@ -14,6 +14,14 @@ const newsreader = Newsreader({
   style: ["normal", "italic"],
   display: "swap",
   variable: "--font-newsreader",
+});
+
+// Títulos: só o Bold, para não pesar no carregamento.
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["700"],
+  display: "swap",
+  variable: "--font-plus-jakarta",
 });
 
 const instrumentSans = Instrument_Sans({
@@ -37,7 +45,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${newsreader.variable} ${instrumentSans.variable}`}>
+    <html
+      lang="pt-BR"
+      className={`${newsreader.variable} ${instrumentSans.variable} ${plusJakarta.variable}`}
+    >
       <body>
         <SkipLink />
         {/* O <main id="conteudo"> fica em cada área (site, painel, login): assim cabeçalho e
