@@ -74,8 +74,8 @@ export function Footer({ settings, year }: { settings: FooterSettings | null; ye
           <img
             src="/brand/logo-dm-branco.png"
             alt="DM Empresarial"
-            width={127}
-            height={77}
+            width={720}
+            height={434}
             loading="lazy"
             className="h-16 w-auto"
           />
