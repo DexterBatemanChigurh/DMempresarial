@@ -24,7 +24,10 @@ export const HOME = {
     { value: "+R$ 2 bilhões", label: "administrados para nossos clientes" },
   ],
   /** Foto do topo: caminho de uma imagem em /public (ex.: "/home/equipe.jpg"); null = espaço vazio. */
-  heroImage: null as { src: string; alt: string } | null,
+  heroImage: {
+    src: "/home/socios.webp",
+    alt: "Os dois sócios da DM Empresarial, sorrindo, de braços cruzados",
+  } as { src: string; alt: string } | null,
 };
 
 // ---------------------------------------------------------------------------------- Sobre

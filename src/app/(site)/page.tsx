@@ -111,13 +111,22 @@ export default async function HomePage() {
 
             <div className="overflow-hidden rounded-[16px] border border-border bg-surface-muted lg:mt-[3px]">
               {HOME.heroImage ? (
-                // Imagem estática de /public, escolhida em src/content/dm.ts.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={HOME.heroImage.src}
-                  alt={HOME.heroImage.alt}
-                  className="aspect-[467/460] w-full object-cover"
-                />
+                // Foto recortada (fundo transparente), apoiada na borda de baixo do cartão.
+                <div className="relative aspect-[467/460]">
+                  <div
+                    aria-hidden="true"
+                    className="absolute top-[14%] left-1/2 aspect-square w-[74%] -translate-x-1/2 rounded-full bg-action/12"
+                  />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={HOME.heroImage.src}
+                    alt={HOME.heroImage.alt}
+                    width={703}
+                    height={1000}
+                    fetchPriority="high"
+                    className="absolute bottom-0 left-1/2 h-[93%] w-auto max-w-none -translate-x-1/2"
+                  />
+                </div>
               ) : (
                 <div className="flex aspect-[467/460] flex-col items-center justify-center gap-md p-xl text-center">
                   <UsersIcon aria-hidden="true" className="size-9 text-text-muted" />
