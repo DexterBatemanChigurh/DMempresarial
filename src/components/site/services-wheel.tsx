@@ -147,10 +147,10 @@ export function ServicesWheel() {
           <div className="absolute top-1/2 left-1/2 flex aspect-square w-[52%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-roda-branco/95 shadow-roda-centro ring-1 ring-roda-linha ring-inset before:absolute before:-inset-[2px] before:-rotate-[25deg] before:rounded-full before:border-2 before:border-transparent before:border-t-roda-turquesa-claro before:border-r-roda-azul-claro max-[600px]:w-[48%]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/brand/logo-dm.png"
+              src="/brand/logo-dm-hd.png"
               alt="DM Empresarial"
-              width={127}
-              height={77}
+              width={545}
+              height={338}
               loading="lazy"
               className="w-[62%] h-auto"
             />
