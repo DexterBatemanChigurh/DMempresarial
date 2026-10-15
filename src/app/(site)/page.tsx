@@ -197,17 +197,10 @@ export default async function HomePage() {
         </Section>
       ) : null}
 
-      {/* O QUE FAZEMOS — roda com as quatro frentes (texto e paleta definidos pelo usuário). */}
-      <ServicesWheel />
-
-      {/* NOSSOS CLIENTES — grid de logos sobre fundo escuro. Dados em src/content/dm.ts → CLIENTS.
-          Adicione logos reais em public/clients/ e preencha o campo logo de cada item. */}
-      <ClientsGrid />
-
       {/* SOBRE NÓS — composição de uma referência do usuário: título centralizado, texto à
           esquerda e, à direita, os valores escritos em volta de um círculo. Texto em
           src/content/dm.ts; sem valores cadastrados, o círculo usa só dados reais da DM. */}
-      <Section tone="muted" spacing="loose" aria-labelledby="home-sobre">
+      <Section spacing="loose" aria-labelledby="home-sobre">
         <Container>
           <Heading as="h2" variant="display-m" id="home-sobre" className="text-center">
             Sobre nós
@@ -231,6 +224,13 @@ export default async function HomePage() {
           </div>
         </Container>
       </Section>
+
+      {/* O QUE FAZEMOS — roda com as quatro frentes (texto e paleta definidos pelo usuário). */}
+      <ServicesWheel />
+
+      {/* NOSSOS CLIENTES — grid de logos sobre fundo escuro. Dados em src/content/dm.ts → CLIENTS.
+          Adicione logos reais em public/clients/ e preencha o campo logo de cada item. */}
+      <ClientsGrid />
 
       {/* CTA final — texto e botões definidos pelo usuário. */}
       <CtaCard

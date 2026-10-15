@@ -8,7 +8,7 @@ import { CLIENTS } from "@/content/dm";
  * h = min(100, sqrt(9000 / (largura / altura))), limitando a largura a 200 px.
  */
 const LOGO_HEIGHTS: number[] = [
-  51, 91, 70, 73, 96, 68, 52, 47, 95, 69, 100, 99, 95, 71, 50, 95, 66, 100, 83, 99,
+  51, 91, 70, 73, 96, 68, 52, 47, 95, 69, 100, 98, 95, 71, 50, 95, 66, 100, 83, 99,
 ];
 
 export function ClientsGrid() {
