@@ -44,6 +44,8 @@
   --color-ouro-claro: #e2cf98;
   --color-whatsapp: #1fa855;
   --color-whatsapp-oficial: #25d366;
+  /* Seleção de texto: azul forte padrão, com texto branco (contraste 5,4:1). */
+  --color-selecao: #1a66d2;
   --color-whatsapp-texto: #16833f;
   --color-whatsapp-texto-escuro: #127036;
 
@@ -264,8 +266,8 @@
   }
 
   ::selection {
-    background-color: var(--surface-muted);
-    color: var(--text);
+    background-color: var(--color-selecao);
+    color: var(--color-papel);
   }
 
   /* Foco sempre visível: anel de 2 px com 2 px de afastamento (Blueprint 2, seções 14 e 26). */

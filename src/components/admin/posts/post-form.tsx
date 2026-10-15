@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useState, type FormEvent } from "react";
 import {
   Button,
   CheckboxField,
@@ -76,8 +76,16 @@ export function PostForm({ mode, action, initial, options, postId, version, onSa
   );
   const fieldErrors = state && !state.ok ? state.error.fieldErrors : undefined;
 
+  // `<form action>` do React 19 limpa todos os campos após o envio, inclusive quando o servidor
+  // devolve erro de validação; enviar pelo onSubmit preserva o que foi digitado.
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startTransition(() => formAction(formData));
+  }
+
   return (
-    <form action={formAction} className="space-y-xl">
+    <form onSubmit={handleSubmit} className="space-y-xl">
       {postId ? <input type="hidden" name="postId" value={postId} /> : null}
       {currentVersion !== undefined ? (
         <input type="hidden" name="expectedVersion" value={currentVersion} />
