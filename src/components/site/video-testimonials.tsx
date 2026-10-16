@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { Container, Heading, Section, SectionLabel } from "@/components/ui";
 import { TESTIMONIALS } from "@/content/dm";
+import { cn } from "@/lib/cn";
 
 /**
  * Depoimentos em vídeo (YouTube, verticais). Nada do YouTube é carregado antes do clique: a capa
@@ -11,16 +12,21 @@ import { TESTIMONIALS } from "@/content/dm";
  * No desktop, ao rolar até a seção, os cards chegam empilhados como um leque de cartas e se abrem
  * lado a lado acompanhando a rolagem (animação guiada pela rolagem em globals.css, classe
  * `depoimentos-leque`). Sem suporte no navegador ou com movimento reduzido, aparecem já abertos.
+ * Com mais de 4 vídeos, o desktop também vira carrossel (setas ‹ › e deslize), sem o leque. No
+ * celular é sempre carrossel.
  */
+/** Quantos cards cabem lado a lado no desktop; acima disso, carrossel. */
+const VISIBLE_DESKTOP = 4;
 /** Sem vídeos cadastrados, a área aparece com cards "em breve" (nenhum nome inventado). */
 const PLACEHOLDER_COUNT = 4;
-const CARD_CLASS = "w-[78%] max-w-[280px] shrink-0 snap-center lg:w-[260px]";
+const CARD_CLASS = "w-[78%] max-w-[280px] shrink-0 snap-center lg:w-[260px] lg:snap-start";
 const PLAY_PATH = "M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z";
 
 export function VideoTestimonials() {
   const [playing, setPlaying] = useState<string | null>(null);
   const items = TESTIMONIALS.items;
   const count = items.length > 0 ? items.length : PLACEHOLDER_COUNT;
+  const isCarousel = count > VISIBLE_DESKTOP;
   const middle = (count - 1) / 2;
   const lequeStyle = (i: number) => {
     const offset = i - middle;
@@ -29,6 +35,34 @@ export function VideoTestimonials() {
       "--leque-r": `${offset * 7}deg`,
       zIndex: count - Math.abs(Math.round(offset)),
     } as CSSProperties;
+  };
+
+  // Setas do carrossel: rolam um card por vez e se desligam nas pontas.
+  const listRef = useRef<HTMLUListElement>(null);
+  const [edges, setEdges] = useState({ start: true, end: false });
+  const updateEdges = useCallback(() => {
+    const list = listRef.current;
+    if (!list) return;
+    setEdges({
+      start: list.scrollLeft <= 4,
+      end: list.scrollLeft + list.clientWidth >= list.scrollWidth - 4,
+    });
+  }, []);
+  useEffect(() => {
+    updateEdges();
+    window.addEventListener("resize", updateEdges);
+    return () => window.removeEventListener("resize", updateEdges);
+  }, [updateEdges]);
+  const scrollByCard = (direction: 1 | -1) => {
+    const list = listRef.current;
+    const card = list?.firstElementChild as HTMLElement | null;
+    if (!list || !card) return;
+    const gap = parseFloat(getComputedStyle(list).columnGap) || 0;
+    const step = card.offsetWidth + gap;
+    // Alvo pelo índice do card (não pela posição atual): cliques rápidos durante a animação
+    // não se perdem.
+    const target = (Math.round(list.scrollLeft / step) + direction) * step;
+    list.scrollTo({ left: target, behavior: "smooth" });
   };
 
   return (
@@ -40,11 +74,31 @@ export function VideoTestimonials() {
     >
       <Container>
         <SectionLabel>{TESTIMONIALS.label}</SectionLabel>
-        <Heading as="h2" variant="h2" id="home-depoimentos" className="mt-md">
-          {TESTIMONIALS.heading}
-        </Heading>
+        <div className="mt-md flex items-end justify-between gap-lg">
+          <Heading as="h2" variant="h2" id="home-depoimentos">
+            {TESTIMONIALS.heading}
+          </Heading>
+          {isCarousel ? (
+            <div className="hidden shrink-0 gap-sm lg:flex">
+              <ArrowButton direction={-1} disabled={edges.start} onClick={() => scrollByCard(-1)} />
+              <ArrowButton direction={1} disabled={edges.end} onClick={() => scrollByCard(1)} />
+            </div>
+          ) : null}
+        </div>
 
-        <ul className="depoimentos-leque -mx-md mt-3xl flex snap-x snap-mandatory gap-lg overflow-x-auto px-md pb-sm [scrollbar-width:none] lg:mx-0 lg:justify-center lg:overflow-visible lg:px-0 lg:pb-0">
+        <ul
+          ref={listRef}
+          onScroll={updateEdges}
+          className={cn(
+            "-mx-md mt-3xl flex snap-x snap-mandatory scroll-px-md gap-lg overflow-x-auto px-md pb-sm [scrollbar-width:none]",
+            // O leque inclina os cards; num carrossel isso desloca o "encaixe" da rolagem lateral,
+            // então ele só existe na fileira fixa (até 4 vídeos).
+            !isCarousel && "depoimentos-leque",
+            isCarousel
+              ? "lg:-mx-sm lg:scroll-px-sm lg:px-sm lg:pt-sm lg:pb-lg"
+              : "lg:mx-0 lg:justify-center lg:overflow-visible lg:px-0 lg:pb-0",
+          )}
+        >
           {items.length === 0
             ? Array.from({ length: PLACEHOLDER_COUNT }, (_, i) => (
                 <li key={i} style={lequeStyle(i)} className={CARD_CLASS}>
@@ -133,5 +187,33 @@ export function VideoTestimonials() {
         </ul>
       </Container>
     </Section>
+  );
+}
+
+function ArrowButton({
+  direction,
+  disabled,
+  onClick,
+}: {
+  direction: 1 | -1;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={direction === 1 ? "Próximos depoimentos" : "Depoimentos anteriores"}
+      className="flex size-12 cursor-pointer items-center justify-center rounded-full border border-border-strong text-text transition-colors hover:bg-text hover:text-surface disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className={cn("size-5 fill-none stroke-current stroke-2", direction === -1 && "rotate-180")}
+      >
+        <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
   );
 }
