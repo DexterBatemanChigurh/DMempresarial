@@ -166,38 +166,6 @@ export default async function HomePage() {
         </Container>
       </Section>
 
-      {/* 3 BLOG — artigos reais do CMS, nunca placeholder. */}
-      {posts.length > 0 ? (
-        <Section tone="muted" spacing="loose" aria-labelledby="home-blog">
-          <Container>
-            <SectionLabel>Blog</SectionLabel>
-            <Heading as="h2" variant="h2" id="home-blog" className="mt-md">
-              Conhecimento para quem toma decisões
-            </Heading>
-
-            <ul
-              className={`mt-2xl grid gap-xl ${BLOG_GRID_COLS[Math.min(posts.length, 4) as 1 | 2 | 3 | 4]}`}
-            >
-              {posts.map((post) => (
-                <li key={post.slug}>
-                  <PostCard
-                    post={post}
-                    resolve={coverResolver}
-                    categoryName={categoryName.get(post.primaryCategorySlug ?? "")}
-                  />
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-2xl">
-              <Button href="/blog" variant="secondary">
-                Ver todos os artigos
-              </Button>
-            </div>
-          </Container>
-        </Section>
-      ) : null}
-
       {/* SOBRE NÓS — composição de uma referência do usuário: título centralizado, texto à
           esquerda e, à direita, os valores escritos em volta de um círculo. Texto em
           src/content/dm.ts; sem valores cadastrados, o círculo usa só dados reais da DM. */}
@@ -233,8 +201,41 @@ export default async function HomePage() {
           Adicione logos reais em public/clients/ e preencha o campo logo de cada item. */}
       <ClientsGrid />
 
-      {/* DEPOIMENTOS EM VÍDEO — dados em src/content/dm.ts → TESTIMONIALS (vazio = oculto). */}
+      {/* DEPOIMENTOS EM VÍDEO — dados em src/content/dm.ts → TESTIMONIALS (vazio = cards "em breve"). */}
       <VideoTestimonials />
+
+      {/* BLOG — artigos reais do CMS, nunca placeholder. Fundo branco: alterna com o creme dos
+          depoimentos logo acima. */}
+      {posts.length > 0 ? (
+        <Section spacing="loose" aria-labelledby="home-blog">
+          <Container>
+            <SectionLabel>Blog</SectionLabel>
+            <Heading as="h2" variant="h2" id="home-blog" className="mt-md">
+              Conhecimento para quem toma decisões
+            </Heading>
+
+            <ul
+              className={`mt-2xl grid gap-xl ${BLOG_GRID_COLS[Math.min(posts.length, 4) as 1 | 2 | 3 | 4]}`}
+            >
+              {posts.map((post) => (
+                <li key={post.slug}>
+                  <PostCard
+                    post={post}
+                    resolve={coverResolver}
+                    categoryName={categoryName.get(post.primaryCategorySlug ?? "")}
+                  />
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-2xl">
+              <Button href="/blog" variant="secondary">
+                Ver todos os artigos
+              </Button>
+            </div>
+          </Container>
+        </Section>
+      ) : null}
 
       {/* CTA final — texto e botões definidos pelo usuário. */}
       <CtaCard
