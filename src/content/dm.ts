@@ -473,7 +473,7 @@ export type TestimonialItem = {
 
 /**
  * Depoimentos em vídeo na Home (entre "Nossos clientes" e a chamada final). Ideal: 2 a 4 vídeos
- * verticais. Com `items` vazio a seção não aparece. Só publique com autorização de uso de imagem.
+ * verticais. Com `items` vazio a seção mostra cards "Vídeo em breve"; preencha para trocar pelos vídeos. Só publique com autorização de uso de imagem.
  */
 export const TESTIMONIALS = {
   label: "Depoimentos",
