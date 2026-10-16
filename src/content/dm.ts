@@ -458,6 +458,29 @@ export const CLIENTS = {
   ] satisfies ClientItem[],
 };
 
+// -------------------------------------------------------------------------------- Depoimentos
+
+export type TestimonialItem = {
+  name: string;
+  company: string;
+  /** Só o ID do vídeo no YouTube (o trecho depois de "v=" ou "shorts/"). Pode ser não listado. */
+  youtubeId: string;
+  /** Capa vertical 9:16 em public/depoimentos/ (nada vem do YouTube antes do clique). */
+  cover: string;
+  /** Frase curta opcional sobre a capa. */
+  quote?: string;
+};
+
+/**
+ * Depoimentos em vídeo na Home (entre "Nossos clientes" e a chamada final). Ideal: 2 a 4 vídeos
+ * verticais. Com `items` vazio a seção não aparece. Só publique com autorização de uso de imagem.
+ */
+export const TESTIMONIALS = {
+  label: "Depoimentos",
+  heading: "Quem passou pela DM conta",
+  items: [] as TestimonialItem[],
+};
+
 // -------------------------------------------------------------------------------- Contato
 
 export const CONTACT = {
@@ -497,7 +520,7 @@ export const PRIVACY: LegalDocument = {
 
     "4. Cookies. Quem apenas navega neste site não recebe cookies: não usamos cookies de rastreamento, de publicidade ou de análise de audiência (analytics), nem pixels de redes sociais. As fontes e imagens são servidas pelo próprio site, sem chamadas a serviços de terceiros. Cookies existem somente na área administrativa, restrita à equipe da DM: um cookie de sessão, que mantém o login ativo, e um cookie de pré-visualização, que permite revisar artigos antes de publicar. Ambos são estritamente necessários, não coletam dados de visitantes e expiram sozinhos.",
 
-    "5. Funcionalidades e links externos. O site oferece páginas institucionais, um blog com busca interna e o formulário de contato. O que você digita na busca do blog só aparece nos registros de acesso descritos no item 2 e não é usado para identificar você. Os botões de WhatsApp, do mapa (Google Maps) e das redes sociais são apenas links: nada é enviado a esses serviços até você clicar. Ao clicar, você passa a usar o serviço de outra empresa, sujeito à política de privacidade dela.",
+    "5. Funcionalidades e links externos. O site oferece páginas institucionais, um blog com busca interna e o formulário de contato. O que você digita na busca do blog só aparece nos registros de acesso descritos no item 2 e não é usado para identificar você. Os botões de WhatsApp, do mapa (Google Maps) e das redes sociais são apenas links: nada é enviado a esses serviços até você clicar. Ao clicar, você passa a usar o serviço de outra empresa, sujeito à política de privacidade dela. Os vídeos de depoimento vêm do YouTube em modo de privacidade aprimorada (youtube-nocookie.com) e só são carregados quando você clica para assistir; a partir desse clique vale a política de privacidade do Google.",
 
     "6. Para que usamos os dados. Exclusivamente para: (a) ler a sua mensagem e responder pelo e-mail ou WhatsApp que você informou; (b) entender o contexto da empresa antes da primeira conversa; (c) proteger o site e o formulário contra abuso; (d) cumprir obrigações legais, como a guarda dos registros de acesso. Não enviamos propaganda nem incluímos você em listas de e-mail sem pedido expresso.",
 
@@ -513,7 +536,7 @@ export const PRIVACY: LegalDocument = {
 
     "12. Alterações. Esta Política pode ser atualizada. A versão vigente fica sempre nesta página, com a data abaixo. Mudanças relevantes passam a valer para os envios feitos depois da publicação.",
 
-    "Última atualização: 13 de outubro de 2026. Dúvidas ou pedidos: contato@dmempresarial.com.br.",
+    "Última atualização: 16 de outubro de 2026. Dúvidas ou pedidos: contato@dmempresarial.com.br.",
   ],
 };
 

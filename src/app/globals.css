@@ -277,6 +277,30 @@
   }
 }
 
+/* Depoimentos em vídeo (Home): no desktop os cards chegam empilhados como um leque de cartas e
+   se abrem lado a lado conforme a seção entra na tela, guiados pela própria rolagem (sem JS).
+   Navegador sem `animation-timeline` ou movimento reduzido: cards já abertos. */
+@keyframes depoimentos-abrir {
+  from {
+    transform: translateX(var(--leque-x)) translateY(56px) rotate(var(--leque-r)) scale(0.9);
+  }
+  to {
+    transform: none;
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 64rem) {
+    .depoimentos-leque {
+      view-timeline-name: --leque;
+    }
+    .depoimentos-leque > li {
+      animation: depoimentos-abrir linear both;
+      animation-timeline: --leque;
+      animation-range: entry 10% cover 55%;
+    }
+  }
+}
+
 /* Movimento reduzido: experiência completa, sem transformações nem revelações. */
 @media (prefers-reduced-motion: reduce) {
   *,

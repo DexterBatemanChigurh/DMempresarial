@@ -83,6 +83,8 @@ export function buildPublicCsp(options: CspOptions = {}): string {
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'"],
+    // Depoimentos em vídeo: iframe do YouTube (privacidade aprimorada), só após o clique.
+    "frame-src": ["https://www.youtube-nocookie.com"],
     "frame-ancestors": ["'none'"],
   };
 

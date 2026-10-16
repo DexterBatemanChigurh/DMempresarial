@@ -96,6 +96,11 @@ describe("buildPublicCsp", () => {
     expect(directive(csp, "default-src")).toEqual(["'self'"]);
   });
 
+  it("só permite iframes do YouTube em modo de privacidade aprimorada", () => {
+    expect(directive(buildPublicCsp(), "frame-src")).toEqual(["https://www.youtube-nocookie.com"]);
+    expect(buildAdminCsp(generateNonce())).not.toContain("frame-src");
+  });
+
   it("permite style-src-attr para estilos inline do React/hidratação", () => {
     expect(directive(buildPublicCsp(), "style-src-attr")).toEqual(["'unsafe-inline'"]);
   });

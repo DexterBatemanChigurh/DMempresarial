@@ -18,6 +18,7 @@ import { PostCard } from "@/components/content/post-card";
 import { listPublicCategoriesForRoute } from "@/features/taxonomy/application/public-taxonomy";
 import { JsonLd, publicMetadata } from "@/components/site/seo";
 import { ClientsGrid } from "@/components/site/clients-grid";
+import { VideoTestimonials } from "@/components/site/video-testimonials";
 import { ServicesWheel } from "@/components/site/services-wheel";
 import { ValuesCircle } from "@/components/site/values-circle";
 import { ABOUT, CONTACT, HOME, WHATSAPP_URL } from "@/content/dm";
@@ -231,6 +232,9 @@ export default async function HomePage() {
       {/* NOSSOS CLIENTES — grid de logos sobre fundo escuro. Dados em src/content/dm.ts → CLIENTS.
           Adicione logos reais em public/clients/ e preencha o campo logo de cada item. */}
       <ClientsGrid />
+
+      {/* DEPOIMENTOS EM VÍDEO — dados em src/content/dm.ts → TESTIMONIALS (vazio = oculto). */}
+      <VideoTestimonials />
 
       {/* CTA final — texto e botões definidos pelo usuário. */}
       <CtaCard
