@@ -7,3 +7,4 @@ next-env.d.ts
 drizzle/meta
 HANDOFF-NEMOTRON.md
 fases
+.claude/settings.local.json

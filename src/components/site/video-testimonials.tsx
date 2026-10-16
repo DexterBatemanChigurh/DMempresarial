@@ -17,7 +17,8 @@ import { cn } from "@/lib/cn";
  */
 /** Quantos cards cabem lado a lado no desktop; acima disso, carrossel. */
 const VISIBLE_DESKTOP = 4;
-/** Sem vídeos cadastrados, a área aparece com cards "em breve" (nenhum nome inventado). */
+/** Sem vídeos cadastrados: em desenvolvimento a área aparece com cards "em breve" (para ver o
+ * espaço); em produção a seção não aparece, para o visitante nunca ver algo inacabado. */
 const PLACEHOLDER_COUNT = 4;
 const CARD_CLASS = "w-[78%] max-w-[280px] shrink-0 snap-center lg:w-[260px] lg:snap-start";
 const PLAY_PATH = "M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z";
@@ -25,6 +26,7 @@ const PLAY_PATH = "M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64
 export function VideoTestimonials() {
   const [playing, setPlaying] = useState<string | null>(null);
   const items = TESTIMONIALS.items;
+  const showPlaceholders = items.length === 0 && process.env.NODE_ENV !== "production";
   const count = items.length > 0 ? items.length : PLACEHOLDER_COUNT;
   const isCarousel = count > VISIBLE_DESKTOP;
   const middle = (count - 1) / 2;
@@ -65,6 +67,8 @@ export function VideoTestimonials() {
     list.scrollTo({ left: target, behavior: "smooth" });
   };
 
+  if (items.length === 0 && !showPlaceholders) return null;
+
   return (
     <Section
       tone="muted"
@@ -95,7 +99,7 @@ export function VideoTestimonials() {
             // então ele só existe na fileira fixa (até 4 vídeos).
             !isCarousel && "depoimentos-leque",
             isCarousel
-              ? "lg:-mx-sm lg:scroll-px-sm lg:px-sm lg:pt-sm lg:pb-lg"
+              ? "lg:-mx-sm lg:scroll-px-sm lg:px-sm lg:pt-sm lg:pb-sm"
               : "lg:mx-0 lg:justify-center lg:overflow-visible lg:px-0 lg:pb-0",
           )}
         >

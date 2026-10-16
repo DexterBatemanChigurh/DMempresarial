@@ -171,10 +171,11 @@ export default async function HomePage() {
           src/content/dm.ts; sem valores cadastrados, o círculo usa só dados reais da DM. */}
       <Section spacing="loose" aria-labelledby="home-sobre">
         <Container>
-          <Heading as="h2" variant="display-m" id="home-sobre" className="text-center">
+          <SectionLabel>Quem somos</SectionLabel>
+          <Heading as="h2" variant="h2" id="home-sobre" className="mt-md">
             Sobre nós
           </Heading>
-          <div className="mt-3xl grid grid-cols-1 items-center gap-3xl lg:grid-cols-2">
+          <div className="mt-2xl grid grid-cols-1 items-start gap-3xl lg:grid-cols-2">
             <div className="max-w-reading">
               <Paragraphs items={ABOUT.whoWeAre} />
               <div className="mt-xl">
@@ -240,6 +241,7 @@ export default async function HomePage() {
       {/* CTA final — texto e botões definidos pelo usuário. */}
       <CtaCard
         id="home-cta"
+        emphasis
         title="Sua empresa pode estar pronta para o próximo passo."
         text="Conte-nos o que está acontecendo. A partir disso, podemos entender o cenário e conversar sobre os caminhos possíveis."
         primary={{ href: "/contato", label: "Conversar com a DM" }}

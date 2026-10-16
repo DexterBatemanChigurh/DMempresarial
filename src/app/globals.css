@@ -200,6 +200,22 @@
   --focus: var(--color-azul-marca-escuro);
 }
 
+/* Destaque da marca (Azul): cartão de chamada final da Home. Texto Papel sobre Azul (4,60:1);
+   o botão principal inverte (Papel com rótulo Azul-escuro) para não sumir no fundo. */
+[data-tone="brand"] {
+  --surface: var(--color-azul-marca);
+  --text: var(--color-papel);
+  --text-secondary: var(--color-papel);
+  --text-muted: var(--color-papel);
+  --action: var(--color-papel);
+  --action-hover: var(--color-areia);
+  --action-contrast: var(--color-azul-marca-escuro);
+  --link: var(--color-papel);
+  --focus: var(--color-papel);
+  --border: rgb(243 239 230 / 0.24);
+  --border-strong: var(--color-papel);
+}
+
 /* Faixa escura (Verde-tinta). A terracota NUNCA é texto ou linha aqui (2,09:1). O botão de ação
    mantém rótulo Papel sobre Azul (4,60:1) e escurece no hover (6,34:1); o azul-claro é só
    link/foco (4,65:1 sobre o verde) — como fundo de botão ele reprova com Papel (2,33:1). */
